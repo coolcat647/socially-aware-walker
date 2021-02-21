@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- Gazebo YDLiDAR G4 plugin -->
+    <xacro:macro name="ydlidar_g4" params="frame:=laser topic:=scan sample_size:=750 update_rate:=11
+               min_angle:=-3.1415926 max_angle:=3.1415926 min_range:=0.26 max_range:=16.0 robot_namespace:=/" >
+        <link name="${frame}_base">
+            <inertial>
+                <origin xyz="-0.00029774 0.0066667 0.00013047" rpy="0 0 0" />
+                <mass value="0.15717" />
+                <inertia
+                            ixx="6.7885E-05"
+                            ixy="-1.3987E-07"
+                            ixz="-8.1554E-07"
+                            iyy="0.00013173"
+                            iyz="-9.0932E-08"
+                            izz="7.1972E-05" />
+            </inertial>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="package://ydlidar/meshes/ydlidar.dae" />
+                </geometry>
+                <material name="">
+                    <color rgba="0.64706 0.61961 0.58824 1" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="package://ydlidar/meshes/ydlidar.dae" />
+                </geometry>
+            </collision>
+        </link>
+        <link name="${frame}_link">
+            <inertial>
+                <origin xyz="-0.00036659 0.00064155 -0.00027052" rpy="0 0 0" />
+                <mass value="0.25482" />
+                <inertia
+                            ixx="8.9194E-05"
+                            ixy="1.8116E-07"
+                            ixz="3.6435E-08"
+                            iyy="0.00018279"
+                            iyz="2.423E-07"
+                            izz="0.00011103" />
+            </inertial>
+        </link>
+        <joint name="${frame}_joint" type="fixed">
+            <origin xyz="0 0 0.03172" rpy="0 0 0" />
+            <parent link="${frame}_base" />
+            <child link="${frame}_link" />
+            <axis xyz="0 0 0" />
+        </joint>
+
+        <!-- Link to gazebo plugin -->
+        <gazebo reference="${frame}_link">
+            <turnGravityOff>true</turnGravityOff>
+            <sensor type="ray" name="${frame}">
+                <!-- <always_on>true</always_on> -->
+                <update_rate>${update_rate}</update_rate>
+                <pose>0 0 0 0 0 0</pose>
+                <visualize>false</visualize>
+                <ray>
+                    <scan>
+                        <horizontal>
+                            <samples>${sample_size}</samples>
+                            <resolution>1</resolution>
+                            <min_angle>${min_angle}</min_angle>
+                            <max_angle>${max_angle}</max_angle>
+                        </horizontal>
+                    </scan>
+                    <range>
+                        <min>${min_range}</min>
+                        <max>${max_range}</max>
+                        <resolution>0.26</resolution>
+                    </range>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.002</stddev>
+                    </noise>
+                </ray>
+                <plugin name="gazebo_ros_${frame}" filename="libgazebo_ros_laser.so">
+                    <updateRate>${update_rate}</updateRate>
+                    <topicName>${topic}</topicName>
+                    <frameName>/${frame}_link</frameName>
+                    <robotNamespace>$(arg robot_namespace)</robotNamespace>
+                </plugin>
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+</robot>

@@ -1,0 +1,16 @@
+actions: []
+authors: Kei Okada <kei.okada@gmail.com>
+brief: ''
+bugtracker: ''
+depends:
+- catkin
+- geometry_msgs
+- roscpp
+description: ROS driver package for Wacohtech dynpick force sensor
+license: BSD
+maintainers: Isaac IY Saito <iiysaito@opensource-robotics.tokyo.jp>
+msgs: []
+package_type: package
+repo_url: ''
+srvs: []
+url: http://wiki.ros.org/dynpick_driver

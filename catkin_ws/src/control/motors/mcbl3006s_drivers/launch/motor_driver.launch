@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="motor_disable" default="false" />
+    <arg name="serial_device" default="/dev/walker_motor_driver" />
+    <arg name="command_interval" default="0.1" doc="car command publishing time interval"/>
+    <arg name="watchdog_interval" default="0.5" doc="zero-velocity command publishing time interval which is designed for robot safety." />
+
+    <node name="differential_drive_node" pkg="mcbl3006s_drivers" type="differential_drive_node" required="true">
+        <param name="motor_disable" value="$(arg motor_disable)" />
+        <param name="serial_device" value="$(arg serial_device)" />
+        <param name="command_interval" value="$(arg command_interval)" />
+        <param name="watchdog_interval" value="$(arg watchdog_interval)" />
+    </node>
+
+</launch>

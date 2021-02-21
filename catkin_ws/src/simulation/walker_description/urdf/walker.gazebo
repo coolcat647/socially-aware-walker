@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- Rear right wheel trans -->
+    <gazebo reference="rear_right_wheel_link">
+        <mu1 value="1.5"/>
+        <mu2 value="1.5"/>
+        <kp  value="1000000.0" />
+        <kd  value="1.0" />
+        <fdir1 value="1 0 0"/>
+        <material>Gazebo/DarkGrey</material>
+    </gazebo>
+    <transmission name="rear_right_wheel_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="rear_right_wheel_joint">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="rear_right_wheel_link">
+            <hardwareInterface>EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <!-- Rear left wheel trans -->
+    <gazebo reference="rear_left_wheel_link">
+        <mu1 value="1.5"/>
+        <mu2 value="1.5"/>
+        <kp  value="1000000.0" />
+        <kd  value="1.0" />
+        <fdir1 value="1 0 0"/>
+        <material>Gazebo/DarkGrey</material>
+    </gazebo>
+    <transmission name="rear_left_wheel_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="rear_left_wheel_joint">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="rear_left_wheel_link">
+            <hardwareInterface>EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <!-- Force sensor trans    -->
+    <gazebo reference="force_sensor_link">
+        <material>Gazebo/Red</material>
+    </gazebo>
+    <transmission name="force_sensor_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="force_sensor_joint">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="force_sensor_link">
+            <hardwareInterface>EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <gazebo reference="front_right_caster_wheel_link">
+        <mu1 value="0.01" />
+        <mu2 value="0.01" />
+    </gazebo>
+    <gazebo reference="front_left_caster_wheel_link">
+        <mu1 value="0.01" />
+        <mu2 value="0.01" />
+    </gazebo>
+
+    <!--        -->
+    <!-- Plugin -->
+    <!--        -->
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>/active_walker</robotNamespace>
+        </plugin>
+    </gazebo>
+
+    <gazebo>
+        <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+        <robotNamespace>/active_walker</robotNamespace>
+        <legacyMode>false</legacyMode>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>40</updateRate>
+        <leftJoint>rear_left_wheel_joint</leftJoint>
+        <rightJoint>rear_right_wheel_joint</rightJoint>
+        <wheelSeparation>0.6</wheelSeparation>
+        <wheelDiameter>0.105</wheelDiameter>
+        <torque>100</torque>
+        <commandTopic>cmd_vel</commandTopic>
+        <odometrySource>0</odometrySource>
+        <odometryTopic>odom</odometryTopic>
+        <odometryFrame>/odom</odometryFrame>
+        <robotBaseFrame>/base_link</robotBaseFrame>
+        <!-- <publishWheelTF>true</publishWheelTF> -->
+        </plugin>
+    </gazebo>
+
+    <!-- The ft_sensor plugin -->
+    <gazebo reference="force_sensor_joint">
+        <provideFeedback>true</provideFeedback>
+    </gazebo>
+    <gazebo>
+        <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+        <updateRate>20.0</updateRate>
+        <topicName>/force</topicName>
+        <jointName>force_sensor_joint</jointName>
+        </plugin>
+    </gazebo>
+
+</robot>

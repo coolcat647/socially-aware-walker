@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="robot_init_x" default="0.0" />
+    <arg name="robot_init_y" default="0.0" />
+
+    <!-- Load the URDF into the ROS Parameter Server -->
+    <param name="robot_description"
+        command="$(find xacro)/xacro.py '$(find walker_description)/urdf/walker.urdf.xacro'" />
+
+    <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+    <node name="urdf_spawner" pkg="walker_description" type="spawn_model_py3" respawn="false" output="screen"
+        args="-urdf -model active_walker -x $(arg robot_init_x) -y $(arg robot_init_y) -param robot_description" />
+
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+    <rosparam file="$(find walker_description)/config/walker_control.yaml" command="load"/>
+
+    <!-- load the controllers -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen" ns="active_walker" args="rear_right_wheel_effort_controller rear_left_wheel_effort_controller joint_state_controller"/>
+
+    <!-- convert joint states to TF transforms for rviz, etc -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+        <param name="robot_description" command="$(find xacro)/xacro.py '$(find walker_description)/urdf/walker.urdf.xacro'" />
+        <remap from="/joint_states" to="/active_walker/joint_states" />
+    </node>
+
+    <!-- load the controllers -->
+    <!-- <rosparam file="$(find walker_description)/config/walker_control.yaml" command="load"/>
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/" args="joint_state_controller
+                      rear_right_wheel_effort_controller
+                      rear_left_wheel_effort_controller"/> -->
+</launch>

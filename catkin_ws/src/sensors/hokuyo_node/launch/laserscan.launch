@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="laser_frame_id" default="laser" />
+
+    <node name="hokuyo" pkg="hokuyo_node" type="hokuyo_node" respawn="false" output="screen">
+        <!-- Starts up faster, but timestamps will be inaccurate. --> 
+        <param name="calibrate_time" type="bool" value="true"/> 
+        <!-- Set the port to connect to here -->
+        <param name="port" type="string" value="/dev/walker_laserscan_sensor"/> 
+      
+        <param name="intensity" type="bool" value="false"/>
+        <param name="min_ang" type="double" value="-2.0862" />
+        <param name="max_ang" type="double" value="2.0923" />
+        <param name="frameid" type="string" value="$(arg laser_frame_id)" />
+    </node>
+</launch>

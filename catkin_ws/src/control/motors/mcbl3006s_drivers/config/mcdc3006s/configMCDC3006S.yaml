@@ -1,0 +1,19 @@
+driverName: "mcdcExampleDriver"
+driverID: 0
+driverType: "mcdc3006s"
+
+maxPos: 100000
+minPos: -100000
+maxVel: 1000
+maxAcc: 200
+maxDec: 200
+contCurrent: 4000
+peakCurrent: 8000
+calibrationSensorPosition: 24000
+calibrationCurrentLimit: 4000
+calibrationSpeed: 500
+calibrationTimeOut: 5000
+
+baudRate: 115200
+l_serialDevice: "/dev/ttyUSB1"
+r_serialDevice: "/dev/ttyUSB0"

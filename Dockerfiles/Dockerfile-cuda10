@@ -1,0 +1,23 @@
+FROM coolcat647/ubuntu18-ros-pytorch:cuda10.0
+
+SHELL ["/bin/bash", "-c"]
+
+ENV ROS_DISTRO melodic
+RUN sudo apt-get update && \
+    sudo apt-get install -y --fix-missing \
+        libgeographic-dev \
+        ros-${ROS_DISTRO}-driver-base \
+        ros-melodic-lms1xx \
+        ros-${ROS_DISTRO}-geographic-msgs \
+        ros-${ROS_DISTRO}-effort-controllers && \
+    source ${HOME}/.bashrc
+
+RUN pip3 install --user empy \
+                        numba \
+                        filterpy
+
+
+# Commands below run as the developer user
+# USER $USERNAME
+
+CMD ["bash"]

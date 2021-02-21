@@ -1,0 +1,23 @@
+<launch>
+  <arg name="device" default="/dev/ttyUSB0" />
+  <arg name="rate" default="1000" />
+  <arg name="sensor_frame_id" default="/sensor" />
+  <arg name="run_rviz" default="true" />
+  <arg name="rvizconfig" default="$(find dynpick_driver)/launch/sample.rviz" />
+  <arg name="topic" default="/force" />
+
+  <include file="$(find dynpick_driver)/launch/driver.launch">
+    <arg name="device" value="$(arg device)" />
+    <arg name="rate" value="$(arg rate)" />
+    <arg name="sensor_frame_id" value="$(arg sensor_frame_id)" />
+    <arg name="topic" value="$(arg topic)" />
+  </include>
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rvizconfig)"
+        if="$(arg run_rviz)" /> 
+  
+  <param name="robot_description" command="$(find xacro)/xacro '$(find dynpick_driver)/urdf/dynpick_WEF-6A200.xacro' sensor_frame_id:=$(arg sensor_frame_id)" />
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+</launch>

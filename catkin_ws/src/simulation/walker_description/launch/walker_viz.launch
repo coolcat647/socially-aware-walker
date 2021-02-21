@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="model" />
+    <arg name="gui" default="False" />
+    <!-- <param name="robot_description"
+        textfile="$(find walker_description)/urdf/walker_description.urdf" /> -->
+    <param name="robot_description"
+        command="$(find xacro)/xacro.py '$(find walker_description)/urdf/walker.urdf.xacro'" />
+    <param name="use_gui" value="$(arg gui)" />
+    
+    <!-- <node name="joint_state_publisher"
+        pkg="joint_state_publisher"
+        type="joint_state_publisher" /> -->
+
+    <!-- <node name="robot_state_publisher"
+        pkg="robot_state_publisher"
+        type="robot_state_publisher" /> -->
+
+    <node name="rviz" pkg="rviz" type="rviz"
+        args="-d $(find walker_description)/urdf.rviz" />
+</launch>

@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="WEF-6A200">
+  <xacro:arg name="sensor_frame_id" default="sensor"/>
+  <xacro:include filename="$(find dynpick_driver)/urdf/dynpick_WEF-6A200_macro.xacro"/>
+  
+  <link name="world"/>
+  
+  <xacro:dynpick prefix="" parent="world" sensor_frame_id="$(arg sensor_frame_id)">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:dynpick>
+</robot>

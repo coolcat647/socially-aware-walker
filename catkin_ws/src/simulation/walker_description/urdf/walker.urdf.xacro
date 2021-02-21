@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="active_walker" xmlns:xacro="http://ros.org/wiki/xacro">
+    <!-- <xacro:arg name="robot_namespace" default="/" />  -->
+    <xacro:arg name="robot_namespace" default="active_walker" />
+
+    <!-- Included URDF/XACRO Files -->
+    <xacro:include filename="$(find walker_description)/urdf/accessories/webcam_c930e.urdf.xacro"/>
+    <xacro:include filename="$(find walker_description)/urdf/accessories/ydlidar_g4.urdf.xacro" />
+
+    <!-- Gazebo plugin -->
+    <xacro:include filename="$(find walker_description)/urdf/walker.gazebo" />
+
+    <!-- Inertia matrices -->
+    <xacro:include filename="$(find walker_description)/urdf/macros.xacro" />
+
+
+    <xacro:property name="M_PI" value="3.1415926"/>
+    <xacro:property name="rear_wheel_mass" value="1.0" />
+    <xacro:property name="rear_wheel_radius" value="0.0625" />
+    <xacro:property name="rear_wheel_width" value="0.02" />
+
+    <xacro:property name="front_wheel_mass" value="0.5" />
+    <xacro:property name="front_wheel_radius" value="0.025" />
+
+    <xacro:property name="ydlidar_xyz" value="$(optenv HUSKY_YDLIDAR_XYZ 0.41 0.0 0.535)" />
+    <xacro:property name="ydlidar_rpy" value="$(optenv HUSKY_YDLIDAR_RPY 0.0 0.0 3.1415926)" />
+    <xacro:property name="webcam_xyz" value="$(optenv HUSKY_WEBCAM_XYZ -4.0e-02 0 -3.25e-02)" />
+    <xacro:property name="webcam_rpy" value="$(optenv HUSKY_WEBCAM_RPY 0 0 3.1415926)" />
+
+
+    <!-- Base link -->
+    <link name="base_link">
+        <inertial>
+            <origin xyz="0.26321 0.0 0.15671" rpy="0 0 0" />
+            <!-- <mass value="3.5774" /> -->
+            <mass value="7.0" />
+            <inertia ixx="0.29508" ixy="1.3791E-07" ixz="0.001404"
+                    iyy="0.26107" iyz="-2.7608E-07" izz="0.1867" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://walker_description/meshes/base_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.79216 0.81961 0.93333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://walker_description/meshes/base_link.STL" />
+            </geometry>
+        </collision>
+    </link>
+
+
+    <!-- Footprint -->
+    <!-- <link name="footprint" />
+    <joint name="footprint_joint" type="fixed">
+        <origin xyz="0 0 -0.12671" rpy="0 0 0" />
+        <parent link="base_link"/>
+        <child link="footprint"/>
+    </joint> -->
+    <link name="base_footprint" />
+    <joint name="footprint_joint" type="fixed">
+        <origin xyz="0 0 -0.15671" rpy="0 0 0" />
+        <parent link="base_link"/>
+        <child link="base_footprint"/>
+    </joint>
+
+
+    <!-- Rear right wheel link & joint -->
+    <link name="rear_right_wheel_link">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="${rear_wheel_mass}" />
+            <!-- <inertia ixx="0.00013887" ixy="-1.6386E-36" ixz="2.1452E-37"
+                    iyy="0.00013887" iyz="-7.5427E-20" izz="0.00026251" /> -->
+            <cylinder_inertia m="${rear_wheel_mass}" r="${rear_wheel_radius}" h="${rear_wheel_width}" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- <mesh filename="package://walker_description/meshes/rear_right_wheel_link.STL" /> -->
+                <cylinder length="${rear_wheel_width}" radius="${rear_wheel_radius}"/>
+            </geometry>
+            <material name="">
+                <color rgba="0.175 0.175 0.175 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- <mesh filename="package://walker_description/meshes/rear_right_wheel_link.STL" /> -->
+                <cylinder length="${rear_wheel_width}" radius="${rear_wheel_radius}"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="rear_right_wheel_joint" type="continuous">
+        <origin xyz="0 -0.301 -0.03" rpy="-1.5708 0 0" />
+        <parent link="base_link" />
+        <child link="rear_right_wheel_link" />
+        <!-- <axis xyz="0 0.099176 0.99507" /> -->
+        <axis xyz="0 0 1" />
+        <!-- <dynamics friction="0.001" /> -->
+        <joint_properties damping="0.0" friction="0.0"/>
+        <limit effort="100" velocity="100"/>
+    </joint>
+
+
+    <!-- Rear left wheel link & joint -->
+    <link name="rear_left_wheel_link">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="${rear_wheel_mass}" />
+            <!-- <inertia ixx="0.00013887" ixy="4.2884E-36" ixz="-8.5028E-20"
+                    iyy="0.00013887" iyz="-7.5708E-21" izz="0.00026251" /> -->
+            <cylinder_inertia m="${rear_wheel_mass}" r="${rear_wheel_radius}" h="${rear_wheel_width}" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- <mesh filename="package://walker_description/meshes/rear_left_wheel_link.STL" /> -->
+                <cylinder length="${rear_wheel_width}" radius="${rear_wheel_radius}"/>
+            </geometry>
+            <material name="">
+                <color rgba="0.175 0.175 0.175 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- <mesh filename="package://walker_description/meshes/rear_left_wheel_link.STL" /> -->
+                <cylinder length="${rear_wheel_width}" radius="${rear_wheel_radius}"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="rear_left_wheel_joint" type="continuous">
+        <origin xyz="0 0.301 -0.03" rpy="-1.5708 0 0" />
+        <parent link="base_link" />
+        <child link="rear_left_wheel_link" />
+        <!-- <axis xyz="0 0.099176 0.99507" /> -->
+        <axis xyz="0 0 1" />
+        <!-- <limit lower="0" upper="0" effort="0" velocity="0" /> -->
+        <!-- <dynamics friction="0.001" /> -->
+        <joint_properties damping="0.0" friction="0.0"/>
+        <limit effort="100" velocity="100"/>
+    </joint>
+
+
+    <!-- Force sensor link & joint -->
+    <link name="force_sensor_link">
+        <inertial>
+            <origin xyz="0.0041884 0.0015924 0.015541" rpy="0 0 0" />
+            <!-- <mass value="0.17912" /> -->
+            <mass value="0.5" />
+            <!-- <inertia ixx="8.7156E-05" ixy="-9.4168E-06" ixz="4.2663E-06"
+                    iyy="0.00011084" iyz="1.6414E-06" izz="0.0001673" /> -->
+            <cylinder_inertia m="0.5" r="0.04" h="0.03" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://walker_description/meshes/force_sensor_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.9569 0.2196 0 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://walker_description/meshes/force_sensor_link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="force_sensor_joint" type="revolute"> <!-- fixed -->
+        <origin xyz="0.16109 0 0.81585" rpy="0 0 -1.5708" />
+        <parent link="base_link" />
+        <child link="force_sensor_link" />
+        <axis xyz="0 0 1" />
+        <limit lower="0" velocity="1000" upper="0" effort="1000" />
+        <!-- <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5" />
+        <dynamics damping="0.0" friction="0.0"/> -->
+    </joint>
+   
+
+    <!-- Handrail link -->
+    <link name="handrail_link">
+        <inertial>
+            <origin xyz="-0.083491 0 -2.9354E-05" rpy="0 0 0" />
+            <!-- <mass value="1.6842" /> -->
+            <mass value="3.3" />
+            <inertia ixx="0.048123" ixy="-3.5053E-19" ixz="4.1278E-06"
+                    iyy="0.012317" iyz="-1.8415E-19" izz="0.06002" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://walker_description/meshes/handrail_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.79216 0.81961 0.93333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://walker_description/meshes/handrail_link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="handrail_joint" type="fixed">
+        <origin xyz="0 0 0.0565" rpy="0 0 1.5708" />
+        <parent link="force_sensor_link" />
+        <child link="handrail_link" />
+        <axis xyz="0 0 0" />
+    </joint>
+
+
+    <!-- Front right caster wheel link & joint-->
+    <link name="front_right_caster_wheel_link">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="${front_wheel_mass}" />
+            <sphere_inertia m="${front_wheel_mass}" r="${front_wheel_radius}"/>
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- <mesh filename="package://walker_description/meshes/front_caster_wheel_link.STL" /> -->
+                <sphere radius="${front_wheel_radius + 0.03}"/>
+            </geometry>
+            <material name="">
+                <color rgba="0.75294 0.75294 0.75294 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- <mesh filename="package://walker_description/meshes/front_caster_wheel_link.STL" /> -->
+                <sphere radius="${front_wheel_radius + 0.03}"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="front_right_caster_wheel_joint" type="fixed">
+        <origin xyz="0.39293 -0.17843 -0.037217" rpy="0 0 0" />
+        <parent link="base_link" />
+        <child link="front_right_caster_wheel_link" />
+        <axis xyz="0 0 0" />
+    </joint>
+
+
+    <!-- Front left caster wheel link & joint-->
+    <link name="front_left_caster_wheel_link">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="${front_wheel_mass}" />
+            <sphere_inertia m="${front_wheel_mass}" r="${front_wheel_radius}"/>
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- <mesh filename="package://walker_description/meshes/front_caster_wheel_link.STL" /> -->
+                <sphere radius="${front_wheel_radius + 0.03}"/>
+            </geometry>
+            <material name="">
+                <color rgba="0.75294 0.75294 0.75294 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- <mesh filename="package://walker_description/meshes/front_caster_wheel_link.STL" /> -->
+                <sphere radius="${front_wheel_radius + 0.03}"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="front_left_caster_wheel_joint" type="fixed">
+        <origin xyz="0.39293 0.17843 -0.037217" rpy="0 0 0" />
+        <parent link="base_link" />
+        <child link="front_left_caster_wheel_link" />
+        <axis xyz="0 0 0" />
+    </joint>
+    
+
+    <!-- YDLiDAR G4 plugin -->
+    <ydlidar_g4 frame="laser" topic="scan" robot_namespace="$(arg robot_namespace)"/>
+    <joint name="ydlidar_mount_joint" type="fixed">
+        <origin xyz="${ydlidar_xyz}" rpy="${ydlidar_rpy}" />
+        <parent link="base_link" />
+        <child link="laser_base" />
+    </joint>
+
+
+    <!-- Logitech C930e webcam -->
+    <webcam_c930e frame="camera" topic="usb_cam" robot_namespace="$(arg robot_namespace)"/>
+    <joint name="webcam_mount_joint" type="fixed">
+        <origin xyz="${webcam_xyz}" rpy="${webcam_rpy}" />
+        <parent link="laser_link" />
+        <child link="camera_link" />
+    </joint>
+
+</robot>

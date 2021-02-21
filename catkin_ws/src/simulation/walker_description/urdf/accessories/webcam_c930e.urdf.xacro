@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- Size of square 'camera' box -->
+    <xacro:property name="camera_size" value="0.01" /> 
+
+    <xacro:macro name="webcam_c930e" params="frame:=camera topic:=usb_cam update_rate:=30.0
+                robot_namespace:=/" >
+        <link name="${frame}_link">
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="${camera_size} ${camera_size} ${camera_size}"/>
+                </geometry>
+            </collision>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="${camera_size} ${camera_size} ${camera_size}"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+            <inertial>
+                <mass value="0.162" />
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+            </inertial>
+        </link>
+
+        <!-- Dummy link for gazebo camera frame correlation -->
+        <link name="${frame}_optical_frame" />
+        <joint name="${frame}_optical_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="-1.5707963267948966 0 -1.5707963267948966"/>
+            <parent link="${frame}_link"/>
+            <child link="${frame}_optical_frame"/>
+        </joint>
+
+        <gazebo reference="${frame}_link">
+            <sensor type="camera" name="camera1">
+                <update_rate>${update_rate}</update_rate>
+                <camera name="head">
+                    <horizontal_fov>1.432915291</horizontal_fov>
+                    <vertical_fov>0.911061854</vertical_fov>
+                    <image>
+                        <width>640</width>
+                        <height>480</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.01</near>
+                        <far>30</far>
+                    </clip>
+                    <noise>
+                        <type>gaussian</type>
+                        <!-- Noise is sampled independently per pixel on each frame.
+                           That pixel's noise value is added to each of its color
+                           channels, which at that point lie in the range [0,1]. -->
+                        <mean>0.0</mean>
+                        <stddev>0.007</stddev>
+                    </noise>
+                </camera>
+                <plugin name="gazebo_ros_${frame}" filename="libgazebo_ros_camera.so">
+                    <alwaysOn>true</alwaysOn>
+                    <updateRate>0.0</updateRate>
+                    <cameraName>${topic}</cameraName>
+                    <imageTopicName>image_raw</imageTopicName>
+                    <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+                    <frameName>/${frame}_optical_frame</frameName>
+                    <hackBaseline>0.07</hackBaseline>
+                    <distortionK1>0.00000001</distortionK1>
+                    <distortionK2>0.00000001</distortionK2>
+                    <distortionK3>0.00000001</distortionK3>
+                    <distortionT1>0.00000001</distortionT1>
+                    <distortionT2>0.00000001</distortionT2>
+                    <CxPrime>0</CxPrime>
+                    <Cx>0</Cx>
+                    <Cy>0</Cy>
+                    <focalLength>0</focalLength>
+                    <robotNamespace>$(arg robot_namespace)</robotNamespace>
+                </plugin>
+            </sensor>
+        </gazebo>
+
+    </xacro:macro>
+
+</robot>

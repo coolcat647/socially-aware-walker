@@ -1,0 +1,12 @@
+add_library(mcdc3006s
+            mcdc3006s.cpp)
+target_link_libraries(mcdc3006s
+                      semaphores rs232 ${catkin_LIBRARIES})
+
+install(TARGETS mcdc3006s
+    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+ADD_SUBDIRECTORY(test)

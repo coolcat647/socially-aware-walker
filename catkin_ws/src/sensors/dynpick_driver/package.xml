@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<package>
+  <name>dynpick_driver</name>
+  <version>0.2.0</version>
+  <description>Driver package for Wacohtech dynpick force sensor. This contains <a href = "http://ros.org/">ROS</a>-compatible linux driver, as well as a communication test tool.<br />
+  As of Oct 2016, it's tested with the following models of dynpick:
+  <ul>
+    <li><a href = "http://www.wacoh-tech.com/products/dynpick/wdf-6m200-3.html">wdf-6m200-3</a></li>
+    <li><a href = "http://www.wacoh-tech.com/en/products/dynpick/200n.html">WEF-6A200</a> (confirmed <a href = "https://github.com/tork-a/dynpick_driver/pull/35#issuecomment-256031851">here</a>)</li>
+  </ul>
+  </description>
+
+  <author email="kei.okada@gmail.com">Kei Okada</author>
+  <maintainer email="dev@opensource-robotics.tokyo.jp">TORK</maintainer>
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <!-- Commonly used license strings: -->
+  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+  <license>BSD</license>
+
+  <!-- Url tags are optional, but mutiple are allowed, one per tag -->
+  <!-- Optional attribute type can be: website, bugtracker, or repository -->
+  <!-- Example: -->
+  <url type="website">http://wiki.ros.org/dynpick_driver</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>python-catkin-pkg</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rviz</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>xacro</run_depend>
+
+  <test_depend>rostest</test_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- You can specify that this package is a metapackage here: -->
+    <!-- <metapackage/> -->
+
+    <!-- Other tools can request additional information be placed here -->
+    <rosdoc config="rosdoc.yaml"/>
+  </export>
+</package>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+    <arg name="joy_dev" default="/dev/input/js0" />
+    <arg name="joy_topic" default="joy" />
+    <arg name="robot_namespace" default="active_walker" />
+
+    <group ns="$(arg robot_namespace)">
+        <node pkg="joy" type="joy_node" name="joy_node">
+            <param name="dev" value="$(arg joy_dev)" />
+            <param name="deadzone" value="0.3" />
+            <param name="autorepeat_rate" value="20" />
+            <remap from="joy" to="$(arg joy_topic)" />
+        </node>
+
+        <node name="teleop_node" pkg="teleop_twist_joy" type="teleop_node" required="true">
+            <param name="enable_turbo_button" value="2" />
+        </node>
+    </group>
+</launch>

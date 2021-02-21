@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="dynpick_WEF_6A200" >
+
+  <xacro:macro name="dynpick" params="parent prefix sensor_frame_id *origin">
+
+    <joint name="${prefix}mount" type="fixed" >
+      <insert_block name="origin" />
+      <parent link="${parent}" />
+      <child link="${prefix}fts_upper" />
+    </joint>
+
+    <link name="${prefix}fts_upper">
+     <visual>
+       <origin xyz="0 0 0.005" rpy="0 0 0"/>
+       <geometry>
+          <cylinder radius="0.04" length="0.01"/>
+       </geometry>
+       <material name="Gray">
+        <color rgba="0.5 0.5 0.5 1"/>
+       </material>
+     </visual>
+    </link>
+
+    <joint name="${prefix}fts" type="fixed" >
+     <origin xyz="0 0 0.01" rpy="0 0 0" />
+     <parent link="${prefix}fts_upper" />
+     <child link="${prefix}fts_body" />
+    </joint>
+
+    <!--link name="${prefix}fts_body"/-->
+    <link name="${prefix}fts_body">
+      <visual>
+        <origin xyz="0 0 ${0.0325/2}" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.04" length="0.0325"/>
+        </geometry>
+        <material name="Red">
+          <color rgba="0.9 0.1 0.1 1"/>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="${prefix}fts_measurement" type="fixed" >
+      <origin xyz="0 0 ${0.0325/2}" rpy="0 0 0" />
+      <parent link="${prefix}fts_body" />
+      <child link="${prefix}${sensor_frame_id}" />
+    </joint>
+
+     <!--link where the measurement comes from-->
+    <link name="${prefix}${sensor_frame_id}"/>
+
+    <joint name="${prefix}lower" type="fixed" >
+     <origin xyz="0 0 0.0325" rpy="0 0 0" />
+     <parent link="${prefix}fts_body" />
+     <child link="${prefix}fts_tool_mount" />
+    </joint>
+
+    <link name="${prefix}fts_tool_mount"/>
+
+  </xacro:macro>
+  
+</robot>

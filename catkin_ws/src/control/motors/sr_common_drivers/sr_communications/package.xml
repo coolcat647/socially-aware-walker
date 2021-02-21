@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<package format="2">
+    <name>sr_communications</name>
+    <version>0.0.3</version>
+    <description>
+        communications for the Social Robots robots
+    </description>
+
+    <!-- Author tags are optional, mutiple are allowed, one per tag -->
+    <!-- Authors do not have to be maintianers, but could be -->
+    <author email="raul.perula@uc3m.es">Raul Perula-Martinez</author>
+    <author email="vgonzale@ing.uc3m.es">Victor Gonzalez</author>
+
+
+    <!-- One maintainer tag required, multiple allowed, one person per tag -->
+    <maintainer email="raul.perula@uc3m.es">Raul Perula-Martinez</maintainer>
+
+
+    <!-- One license tag required, multiple allowed, one license per tag -->
+    <license>LASRL-UC3M V.1.0</license>
+
+
+    <!-- Url tags are optional, but mutiple are allowed, one per tag -->
+    <url type="website">http://wiki.ros.org/sr_communications</url>
+    <url type="bugtracker">https://github.com/UC3MSocialRobots/sr_common_drivers/issues</url>
+    <url type="repository">https://github.com/UC3MSocialRobots/sr_common_drivers.git</url>
+
+
+    <!-- The *_depend tags are used to specify dependencies -->
+    <!-- Dependencies can be catkin packages or system dependencies -->
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <!-- ROS packages dependencies -->
+    <build_depend>roscpp</build_depend>
+    <exec_depend>roscpp</exec_depend>
+
+    <!-- tests dependencies -->
+    <test_depend>gtest</test_depend>
+    <test_depend>google-mock</test_depend>
+
+
+    <!-- The export tag contains other, unspecified, tags -->
+    <export>
+        <!-- Set the include and linker folders -->
+        <cpp cflags="-I${prefix} -I${prefix}/build -Wall" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib" />
+    </export>
+</package>

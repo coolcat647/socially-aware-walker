@@ -1,0 +1,133 @@
+﻿Licencia Académica del Social Robotics Lab - UC3M
+
+V.1.0
+
+LASRL-UC3M © Universidad Carlos III de Madrid 2014
+
+
+La presente Licencia Académica del Social Robotics Lab - UC3M («LASRL-UC3M»), se aplica a la obra o al programa de ordenador (definidos a continuación) suministrados en las condiciones fijadas en la presente licencia. Queda prohibido cualquier uso de la obra distinto del autorizado por la presente licencia (en la medida en que tal uso esté protegido por un derecho del titular de los derechos de autor de la obra).
+
+La obra original se suministrará en las condiciones fijadas en la presente licencia cuando el licenciante (definido a continuación) haya colocado la siguiente advertencia inmediatamente después de la mención a los derechos de autor de la obra original:
+
+Licencia cedida con arreglo a la LASRL-UC3M V.1.0
+
+o haya expresado por otro procedimiento su voluntad de conceder una licencia con arreglo a la LASRL-UC3M.
+
+Los términos de la presente licencia se pueden resumir en:
+
+- El código fuente y el código ejecutable se pueden utilizar con fines no comerciales;
+- El código fuente y el código ejecutable se pueden redistribuir con fines no comerciales;
+- El código fuente puede ser modificado para crear obras derivadas con fines no comerciales.
+- El software se proporciona "tal cual", sin garantías de ningún tipo.
+
+
+1. Definiciones
+==============
+
+En la presente licencia, se entenderá por:
+
+- licencia: la presente licencia.
+- obra original o programa de ordenador: el programa de ordenador distribuido o comunicado por el licenciante con arreglo a la presente licencia en forma de código fuente o, en su caso, de código ejecutable;
+- obras derivadas: las obras o el programa de ordenador que pudiera crear el licenciatario sobre la base de la obra original o de alguna de las modificaciones de ésta tales como: las traducciones, adaptaciones, revisiones, actualizaciones, anotaciones y, en general, cualesquiera transformaciones de la obra original;
+- obra: la obra original o sus obras derivadas;
+- código fuente: la forma de la obra legible por seres humanos que pueda ser estudiada y modificada más fácilmente;
+- código ejecutable: cualquier código, en general compilado, destinado a ser ejecutado como programa por un ordenador;
+- licenciante: la persona física o jurídica que distribuye o comunica la obra con arreglo a la licencia;
+- colaborador: la persona física o jurídica que modifica la obra con arreglo a la licencia o contribuye de cualquier otra manera a crear una obra derivada;
+- licenciatario: la persona física o jurídica que hace un uso cualquiera del programa de ordenador en las condiciones fijadas en la licencia;
+- distribución o comunicación: cualquier acto de venta, donación, préstamo, alquiler, distribución, comunicación, transmisión o cualquier otro acto de puesta a disposición, en línea o fuera de línea, de copias de la obra o de acceso a sus funcionalidades esenciales a otra persona física o jurídica.
+
+
+2. Ámbito de los derechos otorgados por la Licencia
+==================================================
+
+El licenciante concede al licenciatario una licencia de ámbito mundial, permanente y no exclusiva; y lo autoriza a:
+
+- Utilizar y reproducir la obra con fines no comerciales, como docencia o investigación;
+- Modificar la obra original y realizar obras derivadas de la misma;
+- Comunicar al público la obra o copias de la misma, poner a su disposición o exhibir la obra o las copias y, en su caso, ejecutar públicamente la obra;
+- Distribuir la obra o copias de la misma con fines no comerciales;
+
+
+3. Comunicación del Código Fuente
+=================================
+
+El licenciante podrá suministrar la obra en forma de código fuente o código ejecutable. Si la suministrara en forma de código ejecutable, deberá facilitar además una copia legible automáticamente del código fuente de la obra junto con cada copia de la obra que distribuya, o bien indicar, en una advertencia inserta a continuación de la mención a los derechos de autor adjunta a la obra, un repositorio en el que se pueda acceder al código fuente fácilmente y de manera gratuita durante el período en que el licenciante siga distribuyendo o comunicando la obra.
+
+
+4 Limitaciones a los derechos de autor.
+=======================================
+
+En ningún caso podrá interpretarse la presente licencia de modo que prive al licenciatario de los beneficios de los que pudiera disfrutar como consecuencia de las excepciones o limitaciones a los derechos exclusivos de los titulares de los derechos de la obra original o del programa de ordenador, de la extinción de dichos derechos o de cualquier otra limitación aplicable.
+
+
+5. Obligaciones del licenciatario
+================================
+
+La cesión de los derechos en virtud de la presente licencia queda supeditada a ciertas restricciones u obligaciones que habrá de respetar el licenciatario. Dichas obligaciones son:
+
+- Derecho de atribución: El licenciatario deberá mantener íntegramente todas las advertencias y menciones a los derechos de autor, patentes o marcas registradas, así como las que se refieran a la licencia y a la exención de responsabilidad. El licenciatario deberá adjuntar copias de dichas advertencias y menciones y de la Licencia con cada copia de la obra que distribuya o comunique. El licenciatario se responsabilizará de que sus modificaciones u obras derivadas incluyan una advertencia bien destacada declarando que ha modificado la obra, la fecha de modificación y un resumen de las modificaciones realizadas.
+- Si el licenciatario distribuyera o comunicara copias de la obra original o de obras derivadas basadas en la obra original, dicha distribución o comunicación deberá hacerse en las condiciones fijadas en la presente licencia o de una versión posterior de la presente licencia, salvo si la obra original se distribuye expresamente solo en la presente versión de la licencia. El licenciatario (ahora en su calidad de licenciante) no podrá ofrecer ni imponer condiciones adicionales sobre la obra o las obras derivadas que modifiquen o limiten las condiciones de la licencia.
+- Suministro del código fuente: Cuando distribuya o comunique copias de la obra, el licenciatario deberá facilitar una copia del código fuente legible automáticamente o indicar un repositorio en que se pueda acceder al código fuente fácilmente y de manera gratuita durante el período en que siga distribuyendo o comunicando la obra.
+- Salvaguardia de otros derechos: La presente licencia no faculta para utilizar los nombres comerciales, marcas de producto o de servicio o nombres del licenciante, excepto cuando ello, realizado en la medida de lo razonable y conforme a los usos habituales, sea necesario para indicar el origen de la obra y reproducir el contenido de la mención a los derechos de autor.
+Uso no comercial: El licenciatario no podrá usar ni distribuir la obra con fines comerciales, incluyendo licenciamiento, alquiler o venta.
+
+
+6. Secuencia de autoría
+======================
+
+El licenciante original garantiza ser titular originario de los derechos de autor sobre la obra original objeto de la presente licencia o haberlos adquirido mediante la licencia correspondiente y estar facultado para otorgar licencias sobre tales derechos.
+Cada colaborador garantiza ser titular de los derechos de autor sobre las modificaciones que aporta a la obra o haberlos adquirido mediante la correspondiente licencia y estar facultado para otorgar licencias sobre tales derechos.
+Cada vez que el licenciatario acepta la licencia, el licenciante original y los colaboradores posteriores le otorgan una licencia sobre sus propias contribuciones a la obra en las condiciones fijadas en la presente licencia.
+
+
+7. Exclusión de garantía
+========================
+
+La obra se encuentra en proceso de elaboración, siendo objeto de continuas mejoras por parte de numerosos colaboradores. No es una obra acabada y por tanto puede contener defectos o fallos inherentes al desarrollo de este tipo de programas. Por este motivo, la obra, en virtud de la licencia, se suministra «tal cual», sin garantías de ningún tipo, en particular, en una enumeración no exhaustiva, en cuanto a su comercialización, adecuación a un propósito determinado, ausencia de defectos o errores, exactitud y ausencia de infracción de los derechos de propiedad intelectual distintos de los derechos de autor según se afirma en el artículo 6 de la presente licencia.
+Esta exclusión de garantía forma parte esencial de la licencia y es condición para la cesión de cualquier derecho con respecto a la obra.
+
+
+8. Exclusión de responsabilidad
+===============================
+
+El licenciante no será responsable de los daños y perjuicios de cualquier clase, directos o indirectos, materiales o morales, que pudieran derivarse de la licencia o del uso de la obra, en particular, en una enumeración no exhaustiva, de los daños y perjuicios por pérdida de buena reputación, paro técnico, avería o mal funcionamiento de equipos informáticos, pérdida de datos o cualquier perjuicio comercial, incluso si el licenciante conocía la posibilidad de dichos daños. No obstante, el licenciante será responsable, de acuerdo con las normas legales que regulen la responsabilidad por
+los daños causados por productos, en la medida en que dichas normas sean aplicables a la obra.
+
+
+9. Aceptación de la licencia
+============================
+
+El licenciatario acepta irrevocablemente la presente licencia y todas sus condiciones por el mero hecho de ejercer cualquiera de los derechos que le otorga el artículo 2 de la presente licencia, tales como el uso de la obra, la creación de una obra derivada o la distribución o comunicación de la obra o de copias de la misma.
+
+
+10. Información al público
+==========================
+
+En caso de que el licenciatario proceda a la distribución o comunicación de la obra por medios electrónicos (por ejemplo, ofreciendo la descarga de la obra a distancia), el canal o medio de distribución (por ejemplo, un sitio web) deberá facilitar al público, como mínimo, la información exigida por la legislación aplicable acerca del licenciante, la licencia y la manera en que el licenciatario puede acceder a dichos datos, aceptarlos, conservarlos y reproducirlos.
+
+
+11. Extinción de la licencia
+============================
+
+La licencia y los derechos otorgados a su amparo se extinguirán automáticamente si el licenciatario incumple alguna de las condiciones de la licencia. Tal extinción no supondrá, sin embargo, la de las licencias de que disfruten las personas que hayan recibido la obra del licenciatario en virtud de la licencia, siempre que dichas personas sigan cumpliendo plenamente las condiciones de la licencia.
+
+
+12. Varios
+=========
+
+La eventual invalidez o ineficacia de alguna disposición de la presente licencia con arreglo a la legislación vigente no afectará a la validez o eficacia general de la licencia. En tales casos, la disposición se interpretará o reformulará según proceda para hacerla válida y eficaz.
+La Universidad Carlos III de Madrid podrá publicar otras versiones lingüísticas o nuevas versiones de la presente licencia en la medida en que resulte necesario y razonable y sin reducir el ámbito de los derechos concedidos por la licencia. Las nuevas versiones de la licencia se publicarán con un número de versión único.
+Todas las versiones lingüísticas de la presente licencia aprobadas por la Universidad Carlos III de Madrid tienen idéntico valor. Las partes pueden utilizar la versión lingüística de su preferencia.
+
+
+13. Tribunales competentes
+==========================
+
+Los litigios relativos la interpretación de la presente licencia que se planteen entre partes distintas de la Universidad Carlos III de Madrid, se someterán a la jurisdicción exclusiva del tribunal que sea competente en el lugar en que resida o ejerza su actividad principal el licenciante.
+
+
+14. Legislación aplicable
+=========================
+
+La presente Licencia se regirá por la legislación del país de la Unión Europea en el que resida o tenga su domicilio social el licenciante.

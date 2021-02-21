@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="robot_namespace" default="active_walker" />
+    <arg name="inflation_radius" default="0.4" />
+    <arg name="map_resolution" default="0.2" />
+    <arg name="localmap_frameid" default="base_link" />
+    <arg name="scan_src_frameid" default="laser_link" />
+    <arg name="agf_type" default="-1" doc="-1 ->only scan; \
+                                            0 ->original agf; \
+                                            1 ->right hand side socially-aware agf; \
+                                            2 ->left hand side socially-aware agf"/>
+
+    <arg name="solver_timeout_ms" default="100.0" />
+    <arg name="subgoal_timer_interval" default="0.25" />
+
+    <group ns="$(arg robot_namespace)">
+        <!-- Scan to local map node -->
+        <node name="scan2comfortmap_node" pkg="path_finding" type="scan2comfortmap_node" required="true" output="screen">
+            <param name="inflation_radius" type="double" value="$(arg inflation_radius)" />
+            <param name="map_resolution" type="double" value="$(arg map_resolution)" />
+            <param name="localmap_frameid" type="str" value="$(arg localmap_frameid)" />
+            <param name="scan_src_frameid" type="str" value="$(arg scan_src_frameid)" />
+            <param name="agf_type" type="int" value="$(arg agf_type)" />
+        </node> 
+
+        <!-- A* path finding node -->
+        <node name="path_finding_node" pkg="path_finding" type="path_finding_node" required="true" output="screen">
+            <param name="solver_timeout_ms" type="double" value="$(arg solver_timeout_ms)" />
+            <param name="subgoal_timer_interval" type="double" value="$(arg subgoal_timer_interval)" />
+        </node>
+    </group>
+
+</launch>

@@ -1,0 +1,442 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 70
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Status1
+        - /Grid1/Offset1
+        - /Tracking-Visuals1/TrackedPersons1
+        - /Tracking-Visuals1/TrackedPersons1/History as line1
+        - /Tracking-Visuals1/TrackedGroups1
+        - /Tracking-Visuals1/TrackedGroups1/Render group IDs1
+      Splitter Ratio: 0.5833333134651184
+    Tree Height: 202
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.5886790156364441
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: LaserScan
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.15000000596046448
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 136; 138; 133
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 15
+        Y: 15
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 40
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /pedsim_visualizer/walls
+          Name: Walls
+          Namespaces:
+            {}
+          Queue Size: 0
+          Value: true
+      Enabled: false
+      Name: Pedsim-Visuals
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 1
+          Class: spencer_tracking_rviz_plugin/TrackedPersons
+          Color: 130; 130; 130
+          Color map offset: 0
+          Color transform: SRL Tracking Colors
+          Delete after no. cycles: 5
+          Enabled: true
+          Excluded person IDs: ""
+          Font color: 255; 255; 255
+          Font color style: Same color
+          Font scale: 2
+          History as line:
+            Line width: 0.05000000074505806
+            Value: true
+          History size: 10
+          Included person IDs: ""
+          Min. history point distance: 0.4000000059604645
+          Missed alpha: 1
+          Name: TrackedPersons
+          Occlusion alpha: 1
+          Render covariances:
+            Line width: 0.10000000149011612
+            Value: false
+          Render detection IDs: false
+          Render history: true
+          Render person visual: true
+          Render track IDs: true
+          Render track state: false
+          Render velocities: true
+          Show DELETED tracks: false
+          Show MATCHED tracks: true
+          Show MISSED tracks: true
+          Show OCCLUDED tracks: true
+          Style:
+            Line width: 0.05000000074505806
+            Scaling factor: 1
+            Value: Bounding boxes
+          Topic: /pedsim_visualizer/tracked_persons
+          Unreliable: false
+          Value: true
+          Z offset:
+            Use Z position from message: false
+            Value: 0
+        - Alpha: 0.699999988079071
+          Class: spencer_tracking_rviz_plugin/TrackedGroups
+          Color: 130; 130; 130
+          Color map offset: 0
+          Color transform: Flat
+          Connect group members: true
+          Enabled: true
+          Excluded group IDs: ""
+          Excluded person IDs: ""
+          Font color: 255; 255; 255
+          Font color style: Same color
+          Font scale: 2
+          Global history size: 5
+          Group ID Z offset: 2
+          Included group IDs: ""
+          Included person IDs: ""
+          Name: TrackedGroups
+          Occlusion alpha: 1
+          Render group IDs:
+            Hide IDs of single-person groups: false
+            Value: true
+          Render history: false
+          Single-person groups in constant color: false
+          Style:
+            Line width: 0.05000000074505806
+            Scaling factor: 1
+            Value: Simple
+          Topic: /pedsim_visualizer/tracked_groups
+          Tracked persons topic: /pedsim_visualizer/tracked_persons
+          Unreliable: false
+          Value: true
+          Z offset:
+            Use Z position from message: false
+            Value: 0
+      Enabled: false
+      Name: Tracking-Visuals
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /active_walker/debug_reprojection
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /active_walker/trk3d_vis
+      Name: trk3d
+      Namespaces:
+        direction_arrow: true
+        tracking_object: true
+      Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 0
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: LaserScan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /active_walker/scan
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /active_walker/obj_marker
+      Name: det3d
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base_footprint:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        camera_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        force_sensor_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        front_left_caster_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        front_right_caster_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        handrail_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        laser_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        laser_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rear_left_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        rear_right_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz/Axes
+      Enabled: true
+      Length: 0.4000000059604645
+      Name: Axes
+      Radius: 0.10000000149011612
+      Reference Frame: base_link
+      Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: LocalMap
+      Topic: /active_walker/local_map
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 25; 255; 0
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.10000000149011612
+      Name: WalkablePath
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /active_walker/walkable_path
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 173; 127; 168
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.10000000149011612
+      Name: SmoothPath
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0.4000000059604645
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /active_walker/smooth_path
+      Unreliable: false
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /active_walker/path_vis
+      Name: MarkerArray
+      Namespaces:
+        candidate_score: true
+        subgoal: true
+        subgoal_candidate: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /active_walker/robot_status
+      Name: Marker
+      Namespaces:
+        robot_status: true
+      Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Class: rviz/PointStamped
+      Color: 204; 41; 204
+      Enabled: true
+      History Length: 1
+      Name: PointStamped
+      Radius: 0.20000000298023224
+      Topic: /active_walker/short_term_goal
+      Unreliable: false
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 85; 87; 83
+    Default Light: true
+    Fixed Frame: odom
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
+      Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+  Value: true
+  Views:
+    Current:
+      Class: rviz/XYOrbit
+      Distance: 22.106815338134766
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0
+      Focal Shape Fixed Size: false
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 1.0153980255126953
+      Target Frame: base_link
+      Value: XYOrbit (rviz)
+      Yaw: 5.548573970794678
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 1052
+  Hide Left Dock: false
+  Hide Right Dock: true
+  Image:
+    collapsed: false
+  QMainWindow State: 000000ff00000000fd000000040000000000000156000003c2fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df000003800000016bfb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000014d000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006501000001900000026f0000001600ffffff000000010000011f000003c2fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d000003c2000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d0065000000000000000780000002eb00fffffffb0000000800540069006d0065010000000000000450000000000000000000000624000003c200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: true
+  Width: 1920
+  X: 0
+  Y: 0
