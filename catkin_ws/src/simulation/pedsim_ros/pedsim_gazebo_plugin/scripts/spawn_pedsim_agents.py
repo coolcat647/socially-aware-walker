@@ -14,12 +14,16 @@ from pedsim_msgs.msg  import AgentStates
 # xml file containing a gazebo model to represent agent, currently is represented by a cubic but can be changed
 global xml_file
 
+# Samliu
+import dynamic_reconfigure.client
+
 def actor_poses_callback(actors):
     for actor in actors.agent_states:
         actor_id = str( actor.id )
         actor_pose = actor.pose
-        rospy.loginfo("Spawning model: actor_id = %s", actor_id)
+        # rospy.loginfo("Spawning model: actor_id = %s", actor_id)
 
+        rospy.logerr("Spawning model: actor_id = {}, ({:.2f}, {:.2f})".format(actor_id, actor_pose.position.x, actor_pose.position.y))
         model_pose = Pose(Point(x= actor_pose.position.x,
                                y= actor_pose.position.y,
                                z= actor_pose.position.z),
@@ -29,6 +33,11 @@ def actor_poses_callback(actors):
                                     actor_pose.orientation.w) )
 
         spawn_model(actor_id, xml_string, "", model_pose, "world")
+
+    # Samliu
+    client = dynamic_reconfigure.client.Client("pedsim_simulator", timeout=30)
+    client.update_configuration({"paused": True, })
+
     rospy.signal_shutdown("all agents have been spawned !")
 
 

@@ -54,6 +54,7 @@ public:
     bool is_subgoal_safe(const nav_msgs::OccupancyGrid::ConstPtr &map_msg_ptr, nav_msgs::Path::Ptr path_ptr, tf::StampedTransform tf_odom2base);
     bool is_path_safe(const nav_msgs::OccupancyGrid::ConstPtr &map_msg_ptr, nav_msgs::Path::Ptr path_ptr, tf::StampedTransform tf_odom2base);
     bool is_robot_following_path(nav_msgs::Path::Ptr path_ptr, double tracking_progress_percentage, tf::StampedTransform tf_base2odom);
+    bool is_path_deprecated(nav_msgs::Path::Ptr path_ptr);
 
     void timer_cb(const ros::TimerEvent&);
 
@@ -350,6 +351,19 @@ bool AstarPathfindingNode::is_path_safe(const nav_msgs::OccupancyGrid::ConstPtr 
 }
 
 
+bool AstarPathfindingNode::is_path_deprecated(nav_msgs::Path::Ptr path_ptr) {
+    if(!path_ptr || path_ptr->poses.size() == 0){
+        return true;
+    }
+
+    if(ros::Time::now() - path_ptr->header.stamp > ros::Duration(8.0)){
+        return true;
+    }else {
+        return false;
+    }
+}
+
+
 geometry_msgs::Point AstarPathfindingNode::generate_sub_goal2(const nav_msgs::OccupancyGrid::ConstPtr &map_msg_ptr, const geometry_msgs::PoseStamped::ConstPtr &finalgoal_ptr, tf::StampedTransform tf_base2odom) {
     double map_resolution = map_msg_ptr->info.resolution;
     double map_origin_x = map_msg_ptr->info.origin.position.x;
@@ -377,6 +391,7 @@ geometry_msgs::Point AstarPathfindingNode::generate_sub_goal2(const nav_msgs::Oc
 
         // Sub-goal candidates
         std::vector<double> candidate_score_list;
+        int candidate_j_list[13] = {0};
         double prefer_subgoal_distance = 8.0;
         double distance_resolution = 0.4; // map_resolution * 2;
         for(int i = 15; i >= 3; i--) {
@@ -384,6 +399,7 @@ geometry_msgs::Point AstarPathfindingNode::generate_sub_goal2(const nav_msgs::Oc
             int max_distance_idx = std::round(prefer_subgoal_distance / distance_resolution);
             double tmp_dis;
             double obstacle_cost;
+            double max_j_score = 0.0;
             for(int j = 3; j <= max_distance_idx; j++) {
                 tmp_dis = distance_resolution * j;
                 int map_x = std::round((tmp_dis * std::sin(theta_from_yaxis) - map_origin_x + path_start_offsetx_) / map_resolution);
@@ -394,14 +410,27 @@ geometry_msgs::Point AstarPathfindingNode::generate_sub_goal2(const nav_msgs::Oc
                     tmp_dis -= distance_resolution * 3;
                     break;
                 }
-            }
-            double dis_subgoal2finalgoal = std::hypot(tmp_dis * std::sin(theta_from_yaxis) + path_start_offsetx_ - vec_goal_base_frame.getX(),
+                double dis_subgoal2finalgoal = std::hypot(tmp_dis * std::sin(theta_from_yaxis) + path_start_offsetx_ - vec_goal_base_frame.getX(),
                                                     tmp_dis * std::cos(theta_from_yaxis) + path_start_offsety_ - vec_goal_base_frame.getY());
-            // Calculate candidate score
-            double score = (1.0 - obstacle_cost / 100.0) +
-                            //tmp_dis / prefer_subgoal_distance + 
-                            (1.0 - dis_subgoal2finalgoal / dis_base2goal / 2);
-            candidate_score_list.push_back(score);
+                // Calculate candidate score
+                double score = (1.0 - obstacle_cost / 100.0) +
+                                (1.0 - dis_subgoal2finalgoal / dis_base2goal / 2);
+                // Find the max score among the candidates in same direction
+                if(score > max_j_score){
+                    max_j_score = score;
+                    candidate_j_list[15 - i] = j;
+                }
+            }
+            tmp_dis = distance_resolution * candidate_j_list[15 - i];
+            candidate_score_list.push_back(max_j_score);
+
+            // double dis_subgoal2finalgoal = std::hypot(tmp_dis * std::sin(theta_from_yaxis) + path_start_offsetx_ - vec_goal_base_frame.getX(),
+            //                                         tmp_dis * std::cos(theta_from_yaxis) + path_start_offsety_ - vec_goal_base_frame.getY());
+            // // Calculate candidate score
+            // double score = (1.0 - obstacle_cost / 100.0) +
+            //                 //tmp_dis / prefer_subgoal_distance + 
+            //                 (1.0 - dis_subgoal2finalgoal / dis_base2goal / 2);
+            // candidate_score_list.push_back(score);
     
             // Visualization
             geometry_msgs::Point pt;
@@ -430,7 +459,7 @@ geometry_msgs::Point AstarPathfindingNode::generate_sub_goal2(const nav_msgs::Oc
             mkr_candidate_score.color.r = 1.0;
             mkr_candidate_score.color.g = 1.0;
             mkr_candidate_score.color.b = 1.0;
-            mkr_candidate_score.text = std::to_string(score);
+            mkr_candidate_score.text = std::to_string(max_j_score);
             mkr_candidate_score.lifetime = ros::Duration(8.0);
             mrk_array.markers.push_back(mkr_candidate_score);    
     
@@ -470,107 +499,6 @@ geometry_msgs::Point AstarPathfindingNode::generate_sub_goal2(const nav_msgs::Oc
         return subgoal_pt;
     }
 }
-
-
-// geometry_msgs::Point AstarPathfindingNode::generate_sub_goal(const nav_msgs::OccupancyGrid::ConstPtr &map_msg_ptr, tf::StampedTransform tf_base2odom) {
-//     double map_resolution = map_msg_ptr->info.resolution;
-//     double map_origin_x = map_msg_ptr->info.origin.position.x;
-//     double map_origin_y = map_msg_ptr->info.origin.position.y;
-//     int map_width = map_msg_ptr->info.width;
-//     int map_height = map_msg_ptr->info.height;
-//     // int map_limit = map_width * map_height;
-
-//     tf::Vector3 trans_base2odom = tf_base2odom.getOrigin();
-//     tf::Matrix3x3 rot_base2odom = tf_base2odom.getBasis();
-
-//     // Marker reset
-//     visualization_msgs::MarkerArray mrk_array;
-//     mkr_subgoal_candidate_.header.frame_id = map_msg_ptr->header.frame_id;
-//     mkr_subgoal_candidate_.points.clear();  
-
-//     // Sub-goal candidates
-//     std::vector<double> candidate_score_list;
-//     double prefer_subgoal_distance = 8.0;
-//     double distance_resolution = 0.4; // map_resolution * 2;
-
-//     for(int i = 18; i >= 0; i--) {
-//         double theta_from_yaxis = M_PI / 18 * i;
-//         int max_distance_idx = std::round(prefer_subgoal_distance / distance_resolution);
-//         double tmp_dis;
-//         double obstacle_cost;
-//         for(int j = 3; j <= max_distance_idx; j++) {
-//             tmp_dis = distance_resolution * j;
-//             int map_x = std::round((tmp_dis * std::sin(theta_from_yaxis) - map_origin_x + path_start_offsetx_) / map_resolution);
-//             int map_y = std::round((tmp_dis * std::cos(theta_from_yaxis) - map_origin_y + path_start_offsety_) / map_resolution);
-//             int idx = map_y * map_width + map_x;
-//             obstacle_cost = get_local_max_cost(map_msg_ptr, idx);
-//             if(obstacle_cost > kThresObstacleDangerCost) {
-//             // if( > 50 || idx >= map_width * map_height || map_msg_ptr->data[idx] == -1) {
-//                 tmp_dis -= distance_resolution * 3;
-//                 break;
-//             }
-//         }
-//         // Calculate score
-//         // double score = tmp_dis / prefer_subgoal_distance * std::sin(theta_from_yaxis) * (1.0 - obstacle_cost / 100.0);
-//         double score = std::sin(theta_from_yaxis) + (1.0 - obstacle_cost / 100.0 * 2) + tmp_dis / prefer_subgoal_distance * 2;
-//         // double score = (1.0 - obstacle_cost / 100.0);
-//         candidate_score_list.push_back(score);
-
-//         // Visualization
-//         geometry_msgs::Point pt;
-//         pt.x = path_start_offsetx_;
-//         pt.y = path_start_offsety_;
-//         mkr_subgoal_candidate_.points.push_back(pt);    // Origin point
-//         mkr_subgoal_candidate_.id = i;
-//         pt.x += tmp_dis * std::sin(theta_from_yaxis);
-//         pt.y += tmp_dis * std::cos(theta_from_yaxis);
-//         mkr_subgoal_candidate_.points.push_back(pt);
-
-//         // candidate score
-//         visualization_msgs::Marker mkr_candidate_score;
-//         mkr_candidate_score.header.frame_id = "base_link";
-//         mkr_candidate_score.header.stamp = ros::Time();
-//         mkr_candidate_score.ns = "candidate_score";
-//         mkr_candidate_score.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-//         mkr_candidate_score.action = visualization_msgs::Marker::ADD;
-//         mkr_candidate_score.pose.orientation.w = 1.0;
-//         mkr_candidate_score.pose.position.x = pt.x;
-//         mkr_candidate_score.pose.position.y = pt.y;
-//         mkr_candidate_score.pose.position.z = 0.4;
-//         mkr_candidate_score.id = i;
-//         mkr_candidate_score.scale.z = 0.2;
-//         mkr_candidate_score.color.a = 0.2; // Don't forget to set the alpha!
-//         mkr_candidate_score.color.r = 1.0;
-//         mkr_candidate_score.color.g = 1.0;
-//         mkr_candidate_score.color.b = 1.0;
-//         mkr_candidate_score.text = std::to_string(score);
-//         mkr_candidate_score.lifetime = ros::Duration(8.0);
-//         mrk_array.markers.push_back(mkr_candidate_score);    
-
-//     }
-//     mkr_subgoal_candidate_.header.stamp = ros::Time();
-//     mrk_array.markers.push_back(mkr_subgoal_candidate_);    
-
-//     // Find the farthest walkable space
-//     int index = argmax(candidate_score_list.begin(), candidate_score_list.end());
-//     // Convert goal point from base_link coordinate to odom coordinate
-//     tf::Vector3 subgoal_vec(mkr_subgoal_candidate_.points[index * 2 + 1].x, 
-//                             mkr_subgoal_candidate_.points[index * 2 + 1].y, 
-//                             mkr_subgoal_candidate_.points[index * 2 + 1].z);
-//     subgoal_vec = rot_base2odom * subgoal_vec + trans_base2odom;
-//     mrk_subgoal_.pose.position.x = subgoal_vec.getX();
-//     mrk_subgoal_.pose.position.y = subgoal_vec.getY();
-//     mrk_subgoal_.header.stamp = ros::Time();
-//     mrk_array.markers.push_back(mrk_subgoal_);
-    
-//     // Publish marker array
-//     pub_marker_array_.publish(mrk_array);
-
-//     geometry_msgs::Point subgoal_pt;
-//     subgoal_pt.x = mkr_subgoal_candidate_.points[index * 2 + 1].x;
-//     subgoal_pt.y = mkr_subgoal_candidate_.points[index * 2 + 1].y;
-//     return subgoal_pt;
-// }
 
 
 int AstarPathfindingNode::get_local_max_cost(nav_msgs::OccupancyGrid::ConstPtr localmap_ptr, int target_idx) {
@@ -657,6 +585,7 @@ void AstarPathfindingNode::timer_cb(const ros::TimerEvent&){
         bool flag_footprint_safe = is_footprint_safe(localmap_ptr_, footprint_ptr_);
         bool flag_subgoal_safe = is_subgoal_safe(localmap_ptr_, walkable_path_ptr_, tf_odom2base);
         bool flag_path_safe = is_path_safe(localmap_ptr_, walkable_path_ptr_, tf_odom2base);
+        bool flag_path_deprecated = is_path_deprecated(walkable_path_ptr_);
         bool flag_robot_following_path = is_robot_following_path(walkable_path_ptr_, tracking_progress_percentage_, tf_base2odom);
         double dis_robot2goal = hypot(trans_base2odom.getX() - finalgoal_ptr_->pose.position.x, trans_base2odom.getY() - finalgoal_ptr_->pose.position.y);
 
@@ -692,12 +621,15 @@ void AstarPathfindingNode::timer_cb(const ros::TimerEvent&){
             flag_planning_busy_ = false;
             return;
         }
-        else if((dis_robot2goal <= 1.5 || tracking_progress_percentage_ < kThresPercentageOfArrival) && flag_path_safe && flag_robot_following_path){
+        else if((dis_robot2goal <= 1.5 || tracking_progress_percentage_ < kThresPercentageOfArrival) &&
+                flag_path_safe &&
+                flag_robot_following_path &&
+                !flag_path_deprecated){
             // no need plan, just publish old path
-            walkable_path_ptr_->header.stamp = ros::Time::now();
+            // walkable_path_ptr_->header.stamp = ros::Time::now();
             pub_walkable_path_.publish(walkable_path_ptr_);
 
-            mrk_robot_status_.text = "following path " + std::to_string(dis_robot2goal);
+            mrk_robot_status_.text = "following path "; // + std::to_string(dis_robot2goal);
             mrk_robot_status_.header.stamp = ros::Time();
             pub_marker_status_.publish(mrk_robot_status_);
 
@@ -707,9 +639,7 @@ void AstarPathfindingNode::timer_cb(const ros::TimerEvent&){
         else{
             geometry_msgs::Point subgoal_pt;
             if(tracking_progress_percentage_ >= kThresPercentageOfArrival){
-                // Arrival situation
-                // subgoal_pt = generate_sub_goal(localmap_ptr_, tf_base2odom);
-                
+                // Subgoal arrival situation           
                 subgoal_pt = generate_sub_goal2(localmap_ptr_, finalgoal_ptr_, tf_base2odom);
                 ROS_WARN("Almost arrivied, generate new goal: (%.2f, %.2f)", subgoal_pt.x, subgoal_pt.y);
                 mrk_robot_status_.text = "subgoal arrival, generate new subgoal";
@@ -717,21 +647,25 @@ void AstarPathfindingNode::timer_cb(const ros::TimerEvent&){
                 pub_marker_status_.publish(mrk_robot_status_);
             }else if(walkable_path_ptr_ && !flag_subgoal_safe){
                 // Unsafe subgoal situation
-                // subgoal_pt = generate_sub_goal(localmap_ptr_, tf_base2odom);
                 subgoal_pt = generate_sub_goal2(localmap_ptr_, finalgoal_ptr_, tf_base2odom);
                 ROS_WARN("The old subgoal is not safe, generate new goal: (%.2f, %.2f)", subgoal_pt.x, subgoal_pt.y);
                 mrk_robot_status_.text = "subgoal is not safe";
                 mrk_robot_status_.header.stamp = ros::Time();
                 pub_marker_status_.publish(mrk_robot_status_);
-            }else if(walkable_path_ptr_ && !flag_path_safe){
+            }else if(walkable_path_ptr_ && (!flag_path_safe || flag_path_deprecated)){
                 // Unsafe path situation
                 // Get subgoal from old path, and transform it to base frame
                 std::vector<geometry_msgs::PoseStamped>::iterator it = walkable_path_ptr_->poses.begin();
                 tf::Vector3 vec_raw(it->pose.position.x, it->pose.position.y, it->pose.position.z);
                 tf::Vector3 vec_transformed = tf_odom2base * vec_raw;
                 tf::pointTFToMsg(vec_transformed, subgoal_pt);
-                ROS_WARN("The old path is not safe, generate new path");
-                mrk_robot_status_.text = "old path is not safe";
+                if(!flag_path_safe){
+                    ROS_WARN("The old path is not safe, generate new path");
+                    mrk_robot_status_.text = "old path is not safe";
+                }else{
+                    ROS_WARN("The old subgoal is too old, generate new path");
+                    mrk_robot_status_.text = "subgoal is too old";
+                }
                 mrk_robot_status_.header.stamp = ros::Time();
                 pub_marker_status_.publish(mrk_robot_status_);
             }else if(walkable_path_ptr_ && !flag_robot_following_path){
@@ -743,20 +677,9 @@ void AstarPathfindingNode::timer_cb(const ros::TimerEvent&){
                 pub_marker_status_.publish(mrk_robot_status_);
             }else{
                 // New plan situation
-                // subgoal_pt = generate_sub_goal(localmap_ptr_, tf_base2odom);
                 subgoal_pt = generate_sub_goal2(localmap_ptr_, finalgoal_ptr_, tf_base2odom);
                 ROS_WARN("There is no any old path existed, start plan...");
             }
-
-            // Subgoal arrival situation
-            // if(std::hypot(subgoal_pt.x - path_start_offsetx_, subgoal_pt.y - path_start_offsety_) < 0.2){
-            //     walkable_path_ptr_ = nav_msgs::Path::Ptr(new nav_msgs::Path());
-            //     walkable_path_ptr_->header.stamp = ros::Time::now();
-            //     walkable_path_ptr_->header.frame_id = path_frame_id_;
-            //     pub_walkable_path_.publish(walkable_path_ptr_);
-            //     flag_planning_busy_ = false;
-            //     return;
-            // }
 
             // A* path planning
             walkable_path_ptr_ = nav_msgs::Path::Ptr(new nav_msgs::Path());
