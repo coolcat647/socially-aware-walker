@@ -37,7 +37,7 @@ DiffDriveNode::DiffDriveNode(){
 
     // ROS publisher & subscriber
     pub_odom_ = nh_.advertise<nav_msgs::Odometry>("wheel_odom", 50);
-    sub_cmd_ = nh_.subscribe("/cmd_vel", 1, &DiffDriveNode::cmd_cb, this);
+    sub_cmd_ = nh_.subscribe("cmd_vel", 1, &DiffDriveNode::cmd_cb, this);
     srv_rst_odom_ = nh_.advertiseService("reset_odom", 
                                                    &DiffDriveNode::rst_odom_cb,
                                                    this);
