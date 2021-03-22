@@ -16,10 +16,10 @@ from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from std_msgs.msg import Float32
 
 
-k = 0.5  # control gain
-Kp = 1.0  # speed proportional gain
+k = 0.5 * 2  # control gain
+Kp = 1.0 * 0.2  # speed proportional gain
 dt = 0.1  # [s] time difference
-L = 0.6  # [m] Wheel base of vehicle
+L = 0.6   # [m] Wheel base of vehicle
 MAX_ANGULAR_VELOCITY = 1.0
 TARGET_SPEED = 0.4
 
@@ -49,7 +49,7 @@ class StanleyControlNode(object):
         self.pub_short_term_goal = rospy.Publisher('short_term_goal', PointStamped, queue_size=1)
 
         self.sub_path = rospy.Subscriber("walkable_path", Path, self.path_cb, queue_size=1)
-        self.sub_odom = rospy.Subscriber("odom", Odometry, self.odom_cb, queue_size=1)
+        self.sub_odom = rospy.Subscriber("odom_filtered", Odometry, self.odom_cb, queue_size=1)
 
         rospy.loginfo(rospy.get_name() + ' is ready.')
         
@@ -132,6 +132,7 @@ class StanleyControlNode(object):
 
         # theta_e corrects the heading error
         theta_e = self.normalize_angle(target_path[current_target_idx].theta - robot_pose.theta)
+
         # theta_d corrects the cross track error
         # theta_d = np.arctan2(k * error_front_axle, robot_twist.linear.x * np.cos(robot_twist.angular.z)) ########################## TODO: Check
         theta_d = np.arctan2(k * error_front_axle, robot_twist.linear.x) ########################## TODO: Check
@@ -237,7 +238,7 @@ if __name__ == '__main__':
                 cmd_msg = Twist()
                 cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt, 0, TARGET_SPEED)
                 cmd_msg.angular.z = np.clip(delta_omega * dt, -MAX_ANGULAR_VELOCITY, MAX_ANGULAR_VELOCITY)
-                # node.pub_cmd.publish(cmd_msg)
+                node.pub_cmd.publish(cmd_msg)
             else:
                 rospy.loginfo("goal reached! {:.2f}".format(dis_robot2goal))
                 node.pub_cmd.publish(Twist())

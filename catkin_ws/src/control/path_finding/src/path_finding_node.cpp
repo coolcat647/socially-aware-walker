@@ -22,8 +22,8 @@
 #include "Astar.hpp"
 
 
-static const double kMaxDisOfRobotTrackedPoint = 2.0 * 5; // 1.5;
-static const double kThresPercentageOfArrival = 0.99;
+static const double kMaxDisOfRobotTrackedPoint = 2.0;
+static const double kThresPercentageOfArrival = 0.9; // 0.99
 static const int kThresObstacleDangerCost = 40;
 
 
@@ -332,11 +332,7 @@ bool AstarPathfindingNode::is_path_safe(const nav_msgs::OccupancyGrid::ConstPtr 
     tf::Vector3 tras_odom2base = tf_odom2base.getOrigin();
     
     for(std::vector<geometry_msgs::PoseStamped>::iterator it = path_ptr->poses.begin() ; it != path_ptr->poses.end(); ++it) {
-        // tf::Matrix3x3 mat_raw(tf::Quaternion(it->pose.orientation.x, it->pose.orientation.y, it->pose.orientation.z, it->pose.orientation.w));
         tf::Vector3 vec_raw(it->pose.position.x, it->pose.position.y, it->pose.position.z);
-
-        // tf::Matrix3x3 mat_transformed = rot_odom2base * mat_raw;
-        // tf::Vector3 vec_transformed = rot_odom2base * vec_raw + tras_odom2base;
         tf::Vector3 vec_transformed = tf_odom2base * vec_raw;
 
         int map_x = std::round((vec_transformed.getX() - map_origin_x) / map_resolution);
@@ -356,7 +352,7 @@ bool AstarPathfindingNode::is_path_deprecated(nav_msgs::Path::Ptr path_ptr) {
         return true;
     }
 
-    if(ros::Time::now() - path_ptr->header.stamp > ros::Duration(8.0)){
+    if(ros::Time::now() - path_ptr->header.stamp > ros::Duration(20.0)){
         return true;
     }else {
         return false;

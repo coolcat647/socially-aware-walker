@@ -87,7 +87,7 @@
         <torque>100</torque>
         <commandTopic>cmd_vel</commandTopic>
         <odometrySource>0</odometrySource>
-        <odometryTopic>odom</odometryTopic>
+        <odometryTopic>odom_filtered</odometryTopic>
         <odometryFrame>/odom</odometryFrame>
         <robotBaseFrame>/base_link</robotBaseFrame>
         <!-- <publishWheelTF>true</publishWheelTF> -->

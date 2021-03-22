@@ -3,6 +3,6 @@
     <arg name="robot_namespace" value="active_walker" />
 
     <group ns="$(arg robot_namespace)">
-        <node name="path_tracking_node" pkg="path_tracking" type="stanley_control_node.py" output="screen" />
+        <node name="path_tracking_node" pkg="path_tracking" type="stanley_steering_control_node.py" output="screen" />
     </group>
 </launch>

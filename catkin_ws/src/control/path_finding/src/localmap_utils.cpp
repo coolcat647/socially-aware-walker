@@ -146,7 +146,7 @@ void localmap_utils::apply_butterworth_filter(nav_msgs::OccupancyGrid::Ptr local
 
 
 void localmap_utils::butterworth_filter_generate(std::vector<std::vector<int8_t> > &inflation_kernel, double filter_radius, int filter_order, double map_resolution, int peak_value) {
-    double kernel_range = filter_radius * 4;
+    double kernel_range = filter_radius * 8;
     // std::cout << "Filter kernel: " << std::endl;
     for(double y = -kernel_range / 2 ; y <= kernel_range / 2 * 1.00000001; y += map_resolution){
         std::vector<int8_t> tmp_row;

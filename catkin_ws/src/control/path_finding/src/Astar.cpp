@@ -101,8 +101,8 @@ bool Astar::Solver::solve_ros(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr, nav
         // Explore walkable node
         for(int i = 0; i < num_directions_; ++i) {
             // Avoid planning backward path
-            if(num_step < 2 && directions_[i].x < 1) continue;
-            else if(num_step >= 2)
+            if(num_step < 6 && directions_[i].x < 0) continue;
+            else if(num_step >= 6)
                 if(abs(directions_[cur_node->decision].x - directions_[i].x) >= 2 || abs(directions_[cur_node->decision].y - directions_[i].y) >= 2)
                     continue;
 
@@ -112,13 +112,14 @@ bool Astar::Solver::solve_ros(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr, nav
 
             // NEXT_NODE_G_COST = AGAINST_WALL_COST + CURRENT_NODE_G_COST + STEP_COST(balance cost between 4 & 8 directions)
             // int g_cost = against_wall_cost(tmp_grid) / 10 + cur_node->g_val + 10 + ((i == cur_node->decision)? 0 : 10);
-            int g_cost = cur_node->g_val + 10 + ((i == cur_node->decision)? 0 : 10);
+            // int g_cost = cur_node->g_val + ((i == cur_node->decision)? 0 : 1) + ((i >= 4)? 2 : 1);
+            int g_cost = cur_node->g_val + ((i == cur_node->decision)? 0 : 1) + ((i >= 4)? 2 : 1);
 
             Node* successor = find_node(open_set, tmp_grid);
             if(successor == nullptr){
                 successor = new Node(tmp_grid, cur_node);           // Expand a new node from current node
                 successor->g_val = g_cost;
-                successor->h_val = h_func_(successor->grid, goal);  // Calc the heuristic value
+                successor->h_val = h_func_(successor->grid, goal) + against_wall_cost(tmp_grid);  // Calc the heuristic value
                 successor->decision = i;
                 open_set.push_back(successor);
             }else if(g_cost < successor->g_val){
@@ -171,7 +172,8 @@ bool Astar::Solver::is_collision(Grid2D grid) {
 
     // Due to (the second large gaussian value*100) || (prefer not to go to unknown space)
     // if(map_ptr_->data[map_idx] > 40 || map_ptr_->data[map_idx] < 0)
-    if(map_ptr_->data[map_idx] > 40)  
+    // if(map_ptr_->data[map_idx] > 40)
+    if(map_ptr_->data[map_idx] >= 80)  
         return true;
     else
         return false;
@@ -189,15 +191,15 @@ Astar::Grid2D Astar::Heuristic::getDelta(Grid2D source, Grid2D target) {
 
 int Astar::Heuristic::manhattan(Grid2D source, Grid2D target) {
     auto delta = std::move(getDelta(source, target));
-    return static_cast<uint>(10 * (delta.x + delta.y));
+    return static_cast<uint>(1 * (delta.x + delta.y));
 }
 
 int Astar::Heuristic::euclidean(Grid2D source, Grid2D target) {
     auto delta = std::move(getDelta(source, target));
-    return static_cast<uint>(10 * sqrt(pow(delta.x, 2) + pow(delta.y, 2)));
+    return static_cast<uint>(1 * sqrt(pow(delta.x, 2) + pow(delta.y, 2)));
 }
 
 int Astar::Heuristic::octagonal(Grid2D source, Grid2D target) {
     auto delta = std::move(getDelta(source, target));
-    return 10 * (delta.x + delta.y) + (-6) * std::min(delta.x, delta.y);
+    return 1 * (delta.x + delta.y) + (-6) * std::min(delta.x, delta.y);
 }

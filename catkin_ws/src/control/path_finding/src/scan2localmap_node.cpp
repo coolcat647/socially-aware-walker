@@ -25,6 +25,7 @@
 #include <pcl/common/common.h>
 #include <pcl_conversions/pcl_conversions.h> // ros2pcl
 #include <pcl/filters/crop_box.h>
+#include <pcl/filters/voxel_grid.h>
 
 // Custom utils
 #include "localmap_utils.hpp"
@@ -62,7 +63,8 @@ public:
     std::vector<std::vector<int8_t> > inflation_kernel_;
 
     // PCL Cropbox filter
-    pcl::CropBox<pcl::PointXYZ> box_filter_; 
+    pcl::CropBox<pcl::PointXYZ> box_filter_;
+    pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_;  // Voxel grid filter
 
     // Flag for AGF using or not
     int agf_type_;
@@ -117,6 +119,7 @@ Scan2LocalmapNode::Scan2LocalmapNode(ros::NodeHandle nh, ros::NodeHandle pnh): n
     localmap_ptr_->info.resolution = map_resolution;
     localmap_ptr_->info.origin.position.x = -localmap_ptr_->info.resolution * localmap_ptr_->info.width / 2;
     localmap_ptr_->info.origin.position.y = -localmap_ptr_->info.resolution * localmap_ptr_->info.height / 2;
+    // localmap_ptr_->info.origin.position.z = tf_laser2base_.getOrigin().getZ();
     localmap_ptr_->info.origin.orientation.w = 1.0;
     localmap_ptr_->data.resize(localmap_ptr_->info.width * localmap_ptr_->info.height);
     localmap_ptr_->header.frame_id = localmap_frameid_;
@@ -161,9 +164,11 @@ Scan2LocalmapNode::Scan2LocalmapNode(ros::NodeHandle nh, ros::NodeHandle pnh): n
     box_filter_.setMin(Eigen::Vector4f(-1.5, -0.50, -5.0, 1.0));
     box_filter_.setKeepOrganized(false);
     box_filter_.setNegative(true);
+    // Voxel grid filter init
+    voxel_grid_.setLeafSize (map_resolution, map_resolution, map_resolution);
 
     // Filter kernel generator
-    localmap_utils::butterworth_filter_generate(inflation_kernel_, inflation_radius, 6, map_resolution, 100);
+    localmap_utils::butterworth_filter_generate(inflation_kernel_, inflation_radius, 2, map_resolution, 100);
 
     ROS_INFO_STREAM(ros::this_node::getName() + " is ready.");
 }
@@ -291,6 +296,9 @@ void Scan2LocalmapNode::scan_cb(const sensor_msgs::LaserScan &laser_msg) {
     // Apply cropbox filter
     box_filter_.setInputCloud(cloud_transformed);
     box_filter_.filter(*cloud_transformed);
+    // Apply voxel grid filter
+    voxel_grid_.setInputCloud (cloud_transformed);
+    voxel_grid_.filter (*cloud_transformed);
 
     // Localmap init
     std::fill(localmap_ptr_->data.begin(), localmap_ptr_->data.end(), 0);

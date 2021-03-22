@@ -84,8 +84,8 @@ class MultiObjectTrackingNode(object):
             
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             rospy.logwarn("Cannot get tf from {} to {}".format(ODOM_FRAME, msg.header.frame_id))
-            tf_laser2odom = np.identify(4)
-            tf_odom2laser = np.identify(4)
+            tf_laser2odom = np.eye(4)
+            tf_odom2laser = np.eye(4)
         
         dets_list = None
         info_list = None
