@@ -4,11 +4,7 @@
 #include <signal.h>
 
 #include "ros/ros.h"
-#include <geometry_msgs/PolygonStamped.h>
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/Point32.h>
 #include <nav_msgs/OccupancyGrid.h>
-#include <nav_msgs/Odometry.h>
 #include <laser_geometry/laser_geometry.h>
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -128,36 +124,8 @@ Scan2LocalmapNode::Scan2LocalmapNode(ros::NodeHandle nh, ros::NodeHandle pnh): n
     
     // Footprint generator
     footprint_ptr_ = geometry_msgs::PolygonStamped::Ptr(new geometry_msgs::PolygonStamped());
+    localmap_utils::read_footprint_from_yaml(nh_, "footprint", footprint_ptr_);
     footprint_ptr_->header.frame_id = localmap_frameid_;
-    geometry_msgs::Point32 pt;
-    pt.x = -0.1, pt.y = 0.3314, pt.z = 0.0;         // end 1
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = 0.3, pt.y = 0.3314, pt.z = 0.0;
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = 0.4414, pt.y = 0.19, pt.z = 0.0;         // front 1
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = 0.5914, pt.y = 0.19, pt.z = 0.0;         // front 2
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = 0.5914, pt.y = -0.19, pt.z = 0.0;        // front 3
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = 0.4414, pt.y = -0.19, pt.z = 0.0;        // front 4
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = 0.3, pt.y = -0.3314, pt.z = 0.0;
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = -0.1, pt.y = -0.3314, pt.z = 0.0;        // end 2
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = -0.1, pt.y = -0.2014, pt.z = 0.0;        // end 3
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = 0.25, pt.y = -0.2014, pt.z = 0.0;
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = 0.3561, pt.y = -0.0953, pt.z = 0.0;
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = 0.3561, pt.y = 0.0953, pt.z = 0.0;
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = 0.25, pt.y = 0.2014, pt.z = 0.0;
-    footprint_ptr_->polygon.points.push_back(pt);
-    pt.x = -0.1, pt.y = 0.2014, pt.z = 0.0;         // end 4
-    footprint_ptr_->polygon.points.push_back(pt);
 
     // Cropbox filter init
     box_filter_.setMax(Eigen::Vector4f(0.4, 0.50, 5.0, 1.0));

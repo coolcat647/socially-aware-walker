@@ -10,10 +10,13 @@
                                             1 ->right hand side socially-aware agf; \
                                             2 ->left hand side socially-aware agf"/>
 
-    <arg name="solver_timeout_ms" default="100.0" />
+    <arg name="solver_timeout_ms" default="200.0" />
     <arg name="subgoal_timer_interval" default="0.25" />
 
     <group ns="$(arg robot_namespace)">
+        <!-- Robot footprint parameters -->
+        <rosparam file="$(find path_finding)/cfg/footprint.yaml" />
+
         <!-- Scan to local map node -->
         <node name="scan2comfortmap_node" pkg="path_finding" type="scan2comfortmap_node" required="true" output="screen">
             <param name="inflation_radius" type="double" value="$(arg inflation_radius)" />

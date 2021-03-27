@@ -169,3 +169,50 @@ void localmap_utils::butterworth_filter_generate(std::vector<std::vector<int8_t>
 
     ROS_INFO_STREAM("Inflation kernel size: (" << inflation_kernel.size() << ", " << inflation_kernel[0].size() << ")");
 }
+
+void localmap_utils::read_footprint_from_yaml(ros::NodeHandle nh, std::string footprint_topic_name, geometry_msgs::PolygonStamped::Ptr footprint_ptr) {
+    XmlRpc::XmlRpcValue footprint_xmlrpc;
+    nh.getParam(footprint_topic_name, footprint_xmlrpc);
+    if(footprint_xmlrpc.getType() == XmlRpc::XmlRpcValue::TypeString &&
+        footprint_xmlrpc != "" &&
+        footprint_xmlrpc != "[]") {
+        ROS_FATAL("Reading footprint from string is not implement!");
+        exit(-1);
+    }
+    else if(footprint_xmlrpc.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+        // Make sure we have an array of at least 3 elements.
+        if(footprint_xmlrpc.size() < 3) {
+            ROS_FATAL("The footprint must be specified as list of lists on the parameter server");
+            throw std::runtime_error("The footprint must be specified as list of lists on the parameter server with at least "
+                                        "3 points eg: [[x1, y1], [x2, y2], ..., [xn, yn]]");
+        }
+        for (int i = 0; i < footprint_xmlrpc.size(); i++) {
+            // Make sure each element of the list is an array of size 2. (x and y coordinates)
+            XmlRpc::XmlRpcValue point = footprint_xmlrpc[i];
+            if (point.getType() != XmlRpc::XmlRpcValue::TypeArray || point.size() != 2) {
+                ROS_FATAL("The footprint must be specified as list of lists on the parameter server eg: "
+                            "[[x1, y1], [x2, y2], ..., [xn, yn]], but this spec is not of that form.");
+                throw std::runtime_error("The footprint must be specified as list of lists on the parameter server eg: "
+                                            "[[x1, y1], [x2, y2], ..., [xn, yn]], but this spec is not of that form");
+            }
+            geometry_msgs::Point32 pt;
+
+            pt.x = localmap_utils::getNumberFromXMLRPC(point[0], footprint_topic_name);
+            pt.y = localmap_utils::getNumberFromXMLRPC(point[1], footprint_topic_name);
+            footprint_ptr->polygon.points.push_back(pt);
+        }
+    }
+}
+
+
+double localmap_utils::getNumberFromXMLRPC(XmlRpc::XmlRpcValue& value, const std::string& full_param_name) {
+    // Make sure that the value we're looking at is either a double or an int.
+    if (value.getType() != XmlRpc::XmlRpcValue::TypeInt &&
+        value.getType() != XmlRpc::XmlRpcValue::TypeDouble) {
+        std::string& value_string = value;
+        ROS_FATAL("Values in the footprint specification (param %s) must be numbers. Found value %s.",
+                   full_param_name.c_str(), value_string.c_str());
+        throw std::runtime_error("Values in the footprint specification must be numbers");
+    }
+    return value.getType() == XmlRpc::XmlRpcValue::TypeInt ? (int)(value) : (double)(value);
+}

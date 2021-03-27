@@ -286,7 +286,7 @@
     
 
     <!-- YDLiDAR G4 plugin -->
-    <ydlidar_g4 frame="laser" topic="scan" robot_namespace="$(arg robot_namespace)"/>
+    <ydlidar_g4 frame="laser" topic="scan" min_angle="${M_PI / 4}" max_angle="${M_PI / 4 * 7}" robot_namespace="$(arg robot_namespace)"/>
     <joint name="ydlidar_mount_joint" type="fixed">
         <origin xyz="${ydlidar_xyz}" rpy="${ydlidar_rpy}" />
         <parent link="base_link" />
