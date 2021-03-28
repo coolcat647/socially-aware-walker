@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+    <arg name="flag_only_static" default="true" />
+    <arg name="static_obstacle_radius" default="0.8" />
+    <arg name="dynamic_obstacle_radius" default="0.8" />
+    <arg name="base_frameid" value="base_link" />
+    <arg name="odom_frameid" value="odom" />
+    <arg name="robot_namespace" value="active_walker" />
+
+    <arg name="cmd_freq" default="5.0" />
+    <arg name="goal_tolerance" default="0.2" />
+
+    <group ns="$(arg robot_namespace)">
+        <node name="scan2observation_node" pkg="sarl_ros" type="scan2observation_node" required="true" output="screen">
+            <param name="flag_only_static" type="bool" value="$(arg flag_only_static)" />
+            <param name="static_obstacle_radius" type="double" value="$(arg static_obstacle_radius)" />
+            <param name="dynamic_obstacle_radius" type="double" value="$(arg dynamic_obstacle_radius)" />
+            <param name="base_frameid" type="string" value="$(arg base_frameid)" />
+            <param name="odom_frameid" type="string" value="$(arg odom_frameid)" />
+        </node>
+
+        <node name="sarl_node" pkg="sarl_ros" type="sarl_node.py" required="true" output="screen"
+            args="--policy sarl --model_dir $(find sarl_ros)/src/crowd_nav/models/output_unicycle_sarl">
+            <param name="cmd_freq" type="double" value="$(arg cmd_freq)" />
+            <param name="goal_tolerance" type="double" value="$(arg goal_tolerance)" />
+        </node>
+    </group>
+
+
+</launch>
