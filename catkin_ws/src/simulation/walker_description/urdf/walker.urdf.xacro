@@ -302,4 +302,33 @@
         <child link="camera_link" />
     </joint>
 
+    <!-- Sensor mount -->
+    <link name='sensor_mount_link'>
+        <inertial>
+            <origin xyz="0.1 0 0" rpy="0 0 0" />
+            <mass value="0.1" />
+            <box_inertia m="0.1" x="0.2" y="0.08" z="0.01"/>
+        </inertial>
+        <collision name='collision'>
+            <origin xyz="0.1 0 0" rpy="0 0 0" />
+            <geometry>  
+                <box size="0.2 0.08 0.01" />
+            </geometry>
+        </collision>
+        <visual name='visual'>
+            <origin xyz="0.1 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0.2 0.08 0.01" />
+            </geometry>
+            <material name="">
+                <color rgba="0.79216 0.81961 0.93333 1" />
+            </material>
+        </visual>
+    </link>
+    <joint name="sensor_mount_joint" type="fixed">
+        <origin xyz="0.24 0 0.535" rpy="0 0 0" />
+        <parent link="base_link"/>
+        <child link="sensor_mount_link"/>
+    </joint>
+
 </robot>

@@ -198,7 +198,8 @@ class MultiObjectTrackingNode(object):
                 # str_marker.lifetime = rospy.Duration(self.marker_lifetime)
                 # str_marker.type = Marker.TEXT_VIEW_FACING
                 # str_marker.action = Marker.ADD
-                # str_marker.text = "{}".format(int(d[5])) # str(d[5])
+                # # str_marker.text = "{}".format(int(d[5])) # str(d[5])
+                # str_marker.text = "person" + str(int(d[5]))
                 # marker_array.markers.append(str_marker)
                 
                 # Show direction 

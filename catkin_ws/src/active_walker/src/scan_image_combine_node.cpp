@@ -148,6 +148,7 @@ public:
     tf::TransformListener tf_listener_;
     laser_geometry::LaserProjection projector_;
     ros::Publisher pub_combined_image_;
+    ros::Publisher pub_detection_image_;
     ros::Publisher pub_marker_array_;
     // ros::Publisher pub_debug_mrk_array_;
     ros::Publisher pub_colored_pc_;
@@ -182,6 +183,7 @@ ScanImageCombineNode::ScanImageCombineNode(ros::NodeHandle nh, ros::NodeHandle p
 
     // ROS publisher & subscriber & message filter
     pub_combined_image_ = nh_.advertise<sensor_msgs::Image>("debug_reprojection", 1);
+    pub_detection_image_ = nh_.advertise<sensor_msgs::Image>("detection_image", 1);
     if(flag_det_vis_) {
         pub_marker_array_ = nh.advertise<visualization_msgs::MarkerArray>("obj_marker", 1);
         // pub_debug_mrk_array_ = nh.advertise<visualization_msgs::MarkerArray>("debug_marker", 1);
@@ -698,10 +700,35 @@ void ScanImageCombineNode::img_scan_cb(const cv_bridge::CvImage::ConstPtr &cv_pt
         colored_cloud_msg.header.frame_id = "laser_link";
         pub_colored_pc_.publish(colored_cloud_msg);
     }
+
+    if(pub_detection_image_.getNumSubscribers() > 0){
+        cv_bridge::CvImage result_image(cv_ptr->header, "rgb8", cvimage);
+        pub_detection_image_.publish(result_image.toImageMsg());
+    }
+
     if(pub_combined_image_.getNumSubscribers() > 0){
         // Draw points in images
         for (int j = 0; j < pts_uv.size(); ++j)
-            cv::circle(cvimage, pts_uv[j], 2, cv::Scalar(0, 255, 0), -1);
+            cv::circle(cvimage, pts_uv[j], 2, cv::Scalar(255, 0, 0), -1);
+
+        // Classify the human points (green) and static obstacle (red) 
+        // for (int i = 0; i < pts_uv.size(); ++i){
+        //     bool flag_human_pt = false;
+        //     for(int j = 0; j < obj_list_.size(); j++) {
+        //         for(int k = 0; k < obj_list_[j].cloud->points.size(); k++){
+        //             cv::Point2d obj_pt2d = point_laser2pixel(obj_list_[j].cloud->points[k].x, obj_list_[j].cloud->points[k].y, 0.0);
+        //             if(pts_uv[i] == obj_pt2d){
+        //                 flag_human_pt = true;
+        //                 break;
+        //             }
+        //         }
+        //         if(flag_human_pt == true) break;
+        //     }
+        //     if(flag_human_pt)
+        //         cv::circle(cvimage, pts_uv[i], 2, cv::Scalar(0, 255, 0), -1);
+        //     else
+        //         cv::circle(cvimage, pts_uv[i], 2, cv::Scalar(255, 0, 0), -1);
+        // }
 
         // for (int j = 0; j < pts_uv2_list.size(); ++j)
         //     cv::circle(cvimage, pts_uv2_list[j], 5, cv::Scalar(255, 0, 0), -1);

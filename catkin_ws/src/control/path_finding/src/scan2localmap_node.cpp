@@ -185,8 +185,7 @@ void Scan2LocalmapNode::trk3d_cb(const walker_msgs::Trk3DArray::ConstPtr &msg_pt
     for(int i = 0; i < msg_ptr->trks_list.size(); i++) {
         // Convert object pose from laser coordinate to base coordinate
         tf::Vector3 pt_laser(msg_ptr->trks_list[i].x, msg_ptr->trks_list[i].y, 0);
-        // tf::Vector3 pt_base = tf_laser2base_.getBasis() * pt_laser + tf_laser2base_.getOrigin();
-        tf::Vector3 pt_base = tf_trk2base.getBasis() * pt_laser + tf_trk2base.getOrigin();
+        tf::Vector3 pt_base = tf_trk2base * pt_laser;
         tf::Quaternion q;
         q.setRPY(0, 0, msg_ptr->trks_list[i].yaw);
         double yaw, pitch, roll;
@@ -215,6 +214,13 @@ void Scan2LocalmapNode::trk3d_cb(const walker_msgs::Trk3DArray::ConstPtr &msg_pt
                     localmap_utils::apply_social_agf(localmap_ptr_, idx, yaw, std::ceil(1.0), 100, false);
                     break;
             }
+            // Clear points belong human again
+            // pcl::CropBox<pcl::PointXYZ> human_boxcrop;
+            // human_boxcrop.setMax(Eigen::Vector4f(pt_base.getX() + 0.5, pt_base.getY() + 0.5, 5.0, 1.0));
+            // human_boxcrop.setMin(Eigen::Vector4f(pt_base.getX() - 0.5, pt_base.getY() - 0.5, -5.0, 1.0));
+            // human_boxcrop.setNegative(true);
+            // human_boxcrop.setInputCloud(cloud_transformed);
+            // human_boxcrop.filter(*cloud_transformed);
         }
     }
 

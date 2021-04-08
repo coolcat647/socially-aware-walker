@@ -11,31 +11,27 @@ import xml.etree.ElementTree as ET
 global gzb_world
 def generate_pose(x1, y1, x2, y2):
     if x2-x1==0:
-        print >> gzb_world, "\t  <pose frame=''>{} {}  1.4 0 0 {}</pose>".format( (x2+x1)/2, (y2+y1)/2, 1.57 )#x1, y1, math.atan((y2-y1)/(x2-x1)) )
+        print >> gzb_world, "        <pose frame=''>{} {}  1.4 0 0 {}</pose>".format( (x2+x1)/2, (y2+y1)/2, 1.57 )#x1, y1, math.atan((y2-y1)/(x2-x1)) )
     else:
-        print >> gzb_world, "\t  <pose frame=''>{} {}  1.4 0 0 {}</pose>".format( (x2+x1)/2, (y2+y1)/2, math.atan( (y2-y1)/(x2-x1) )  )#x1, y1, math.atan((y2-y1)/(x2-x1)) )
+        print >> gzb_world, "        <pose frame=''>{} {}  1.4 0 0 {}</pose>".format( (x2+x1)/2, (y2+y1)/2, math.atan( (y2-y1)/(x2-x1) )  )#x1, y1, math.atan((y2-y1)/(x2-x1)) )
 
 def generate_size(x1, y1, x2, y2):
     l = math.sqrt( pow(y2-y1,2) + pow(x2-x1,2)  )
-    print >> gzb_world, "\t     <size> {} .2  2.8 </size>".format( l )
+    print >> gzb_world, "              <size> {} 0.2  2.8 </size>".format( l )
     
     
     
 def generate_obstacle(x1, y1, x2, y2, idx):
-     print >> gzb_world, '''
-     <model name='grey_wall_{}'>
+    print >> gzb_world, '''
+    <model name='grey_wall_{}'>
       <static>1</static>
-      <link name='link'>
-      '''.format(idx)
-     generate_pose(x1, y1, x2, y2)     
-     print >> gzb_world, '''    
-        <collision name='collision'>
+      <link name='link'>'''.format(idx)
+    generate_pose(x1, y1, x2, y2)     
+    print >> gzb_world, '''        <collision name='collision'>
           <geometry>
-            <box>
-            '''
-     generate_size(x1, y1, x2, y2)
-     print >> gzb_world, '''
-      \t   </box>
+            <box>'''
+    generate_size(x1, y1, x2, y2)
+    print >> gzb_world, '''            </box>
           </geometry>
           <max_contacts>10</max_contacts>
           <surface>
@@ -54,19 +50,17 @@ def generate_obstacle(x1, y1, x2, y2, idx):
         <visual name='visual'>
           <cast_shadows>0</cast_shadows>
           <geometry>
-            <box>
-            '''
-     generate_size(x1, y1, x2, y2)
-     print >> gzb_world, '''
-      \t   </box>
-       </geometry>
-          <material>
-            <script>
-              <uri>model://grey_wall/materials/scripts</uri>
-              <uri>model://grey_wall/materials/textures</uri>
-              <name>vrc/grey_wall</name>
-            </script>
-          </material>
+            <box>'''
+    generate_size(x1, y1, x2, y2)
+    print >> gzb_world, '''            </box>
+          </geometry>
+            <material>
+              <script>
+                <uri>model://grey_wall/materials/scripts</uri>
+                <uri>model://grey_wall/materials/textures</uri>
+                <name>vrc/grey_wall</name>
+              </script>
+            </material>
         </visual>
         <self_collide>0</self_collide>
         <enable_wind>0</enable_wind>
@@ -101,34 +95,28 @@ def generate_gzb_world( pedsim_file_name ):
     global gzb_world    
     with open(gazebo_world, 'w') as gzb_world:
         print >> gzb_world, "<?xml version=\"1.0\" ?>"    
-        print >> gzb_world, '''
-    <!-- this file is auto generated using pedsim_gazebo_plugin pkg -->    
-    <sdf version="1.5">
-      <world name="default">
-      
-      <!-- Ground Plane -->
-      
-      <include>
-        <uri>model://ground_plane</uri>
-      </include>
+        print >> gzb_world, '''  <!-- this file is auto generated using pedsim_gazebo_plugin pkg -->    
+  <sdf version="1.5">
+    <world name="default">
     
-      <include>
-        <uri>model://sun</uri>
-      </include>
-    
-        '''
+    <!-- Ground Plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+  
+    <include>
+      <uri>model://sun</uri>
+    </include>
+      '''
         # use the parse() function to load and parse an XML file
     #    xmlfile =  pkg_path + "/scenarios/obstacle.xml"
         parseXML(xml_scenario)
-        print >> gzb_world, '''
-            <plugin name="ActorPosesPlugin" filename="libActorPosesPlugin.so">
-        </plugin>
-    
-    
-      </world>
-    </sdf>
-    
-        '''
+        print >> gzb_world, '''    <plugin name="ActorPosesPlugin" filename="libActorPosesPlugin.so">
+    </plugin>
+
+  </world>
+</sdf>
+'''
     print "gazbo world has been generated: {}".format( gazebo_world)
       
       
@@ -158,7 +146,8 @@ def generate_launch_file( pedsim_file_name ):
 
       
 if __name__ == "__main__": 
-    pedsim_file_name = raw_input(">> enter pedsim scenaria name: file_name.xml \n")
+    # pedsim_file_name = raw_input(">> enter pedsim scenaria name: file_name.xml \n")
+    pedsim_file_name = "fallguys_scenario.xml"
 
     # genrate gazebo wolrd 
     generate_gzb_world( pedsim_file_name )     
