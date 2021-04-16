@@ -32,8 +32,8 @@ void localmap_utils::apply_original_agf(nav_msgs::OccupancyGrid::Ptr localmap_pt
             double y = -max_proxemics_range + map_resolution * i;
             double x = -max_proxemics_range + map_resolution * j;
             double alpha = std::atan2(-y, -x) - target_yaw + M_PI * 0.5;
-            double alpha_prime = std::atan2(std::sin(alpha), std::cos(alpha));
-            double sigma_front = (alpha_prime > 0)? sigma_head : sigma_rear;
+            double alpha_normalized = std::atan2(std::sin(alpha), std::cos(alpha));
+            double sigma_front = (alpha_normalized > 0)? sigma_head : sigma_rear;
             double sin_pow2 = std::pow(std::sin(target_yaw), 2);
             double cos_pow2 = std::pow(std::cos(target_yaw), 2);
             double sigma_side_pow2 = std::pow(sigma_side, 2);
@@ -74,8 +74,7 @@ void localmap_utils::apply_social_agf(nav_msgs::OccupancyGrid::Ptr localmap_ptr,
     std::vector<std::vector<int8_t> > agf_kernel(kernel_size, std::vector<int8_t>(kernel_size, 0));
     for(int i = 0; i < kernel_size; i++){
         for(int j = 0; j < kernel_size; j++){
-            double sigma_head = std::max(target_speed, 0.5);
-            // double sigma_side = sigma_head * 2 / 5;
+            double sigma_head = std::max(target_speed * 2, 0.5);
             double sigma_right = (flag_right_hand_side)? sigma_head * 3 / 5 : sigma_head / 5;
             double sigma_left = (flag_right_hand_side)? sigma_head / 5 : sigma_head * 3 / 5;
             double sigma_rear = sigma_head / 2;
@@ -83,8 +82,8 @@ void localmap_utils::apply_social_agf(nav_msgs::OccupancyGrid::Ptr localmap_ptr,
             double y = -max_proxemics_range + map_resolution * i;
             double x = -max_proxemics_range + map_resolution * j;
             double alpha = std::atan2(-y, -x) - target_yaw + M_PI * 0.5;
-            double alpha_prime = std::atan2(std::sin(alpha), std::cos(alpha));
-            double sigma_front = (alpha_prime > 0)? sigma_head : sigma_rear;
+            double alpha_normalized = std::atan2(std::sin(alpha), std::cos(alpha));
+            double sigma_front = (alpha_normalized > 0)? sigma_head : sigma_rear;
             double alpha_side = std::atan2(std::sin(alpha + M_PI * 0.5), std::cos(alpha + M_PI * 0.5));
             double sigma_side = (alpha_side > 0)? sigma_right : sigma_left;
 

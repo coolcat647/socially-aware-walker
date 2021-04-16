@@ -205,22 +205,22 @@ void Scan2LocalmapNode::trk3d_cb(const walker_msgs::Trk3DArray::ConstPtr &msg_pt
         if(map_x < map_width && map_y < map_height) {
             switch(agf_type_){
                 case 0:
-                    localmap_utils::apply_original_agf(localmap_ptr_, idx, yaw, std::ceil(1.0), 100);
+                    localmap_utils::apply_original_agf(localmap_ptr_, idx, yaw, speed, 100);
                     break;
                 case 1:
-                    localmap_utils::apply_social_agf(localmap_ptr_, idx, yaw, std::ceil(1.0), 100, true);
+                    localmap_utils::apply_social_agf(localmap_ptr_, idx, yaw, speed, 100, true);
                     break;
                 case 2:
-                    localmap_utils::apply_social_agf(localmap_ptr_, idx, yaw, std::ceil(1.0), 100, false);
+                    localmap_utils::apply_social_agf(localmap_ptr_, idx, yaw, speed, 100, false);
                     break;
             }
             // Clear points belong human again
-            // pcl::CropBox<pcl::PointXYZ> human_boxcrop;
-            // human_boxcrop.setMax(Eigen::Vector4f(pt_base.getX() + 0.5, pt_base.getY() + 0.5, 5.0, 1.0));
-            // human_boxcrop.setMin(Eigen::Vector4f(pt_base.getX() - 0.5, pt_base.getY() - 0.5, -5.0, 1.0));
-            // human_boxcrop.setNegative(true);
-            // human_boxcrop.setInputCloud(cloud_transformed);
-            // human_boxcrop.filter(*cloud_transformed);
+            pcl::CropBox<pcl::PointXYZ> human_boxcrop;
+            human_boxcrop.setMax(Eigen::Vector4f(pt_base.getX() + 0.4, pt_base.getY() + 0.4, 5.0, 1.0));
+            human_boxcrop.setMin(Eigen::Vector4f(pt_base.getX() - 0.4, pt_base.getY() - 0.4, -5.0, 1.0));
+            human_boxcrop.setNegative(true);
+            human_boxcrop.setInputCloud(cloud_transformed);
+            human_boxcrop.filter(*cloud_transformed);
         }
     }
 
