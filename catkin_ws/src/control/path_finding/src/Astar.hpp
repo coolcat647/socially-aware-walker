@@ -50,6 +50,7 @@ namespace Astar {
     class Solver {
     public:
         Solver();
+        Solver(int max_danger_cost, float robot_width, float robot_length);
         bool solve_ros(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr, nav_msgs::Path::Ptr path, int start_idx, int goal_idx, double timeout_ms);
         bool is_goal(Grid2D grid);
         bool is_collision(Grid2D grid);
@@ -61,13 +62,12 @@ namespace Astar {
     private:
         int num_directions_;
         GridList directions_;
-
+        HeuristicFunc h_func_;
         nav_msgs::OccupancyGrid::ConstPtr map_ptr_;
 
-        bool flag_success_;
-
-    
-        HeuristicFunc h_func_;
+        int max_danger_cost_ = 80;
+        float robot_width_ = 0.6;
+        float robot_length_ = 0.6;
     };
 
     class Heuristic {

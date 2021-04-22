@@ -31,8 +31,22 @@ Astar::Solver::Solver() {
         {0, 1}, {1, 0}, {0, -1}, {-1, 0},
         {-1, 1}, {1, 1}, {1, -1}, {-1, -1} 
     };
-    set_heuristic(&Heuristic::manhattan);
+    // set_heuristic(&Heuristic::manhattan);
+    set_heuristic(&Heuristic::euclidean);
     set_diagonal_move(true);
+}
+
+Astar::Solver::Solver(int max_danger_cost, float robot_width, float robot_length) {
+    directions_ = {
+        {0, 1}, {1, 0}, {0, -1}, {-1, 0},
+        {-1, 1}, {1, 1}, {1, -1}, {-1, -1} 
+    };
+    set_heuristic(&Heuristic::euclidean);
+    set_diagonal_move(true);
+
+    max_danger_cost_ = max_danger_cost;
+    float robot_width_ = robot_width;
+    float robot_length_ = robot_length;
 }
 
 void Astar::Solver::set_diagonal_move(bool enable) {
@@ -76,10 +90,10 @@ bool Astar::Solver::solve_ros(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr, nav
     }
 
     int num_step = 0;
-    flag_success_ = false;
+    bool flag_success = false;
     while(!open_set.empty()) {
         if(ros::Time::now() - begin_time > timeout){
-            flag_success_ = false;
+            flag_success = false;
             break;
         }
 
@@ -89,8 +103,8 @@ bool Astar::Solver::solve_ros(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr, nav
                 cur_node = node;
         }
 
-        if(cur_node->grid == goal) {                        // If get goal
-            flag_success_ = true;
+        if(cur_node->grid == goal) {                            // If get goal
+            flag_success = true;
             break;
         }
 
@@ -100,20 +114,17 @@ bool Astar::Solver::solve_ros(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr, nav
 
         // Explore walkable node
         for(int i = 0; i < num_directions_; ++i) {
-            // Avoid planning backward path
-            if(num_step < 6 && directions_[i].x < 0) continue;
-            else if(num_step >= 6)
-                if(abs(directions_[cur_node->decision].x - directions_[i].x) >= 2 || abs(directions_[cur_node->decision].y - directions_[i].y) >= 2)
-                    continue;
+            ////////////////////////////////////////
+            //                                    // 
+            // TODO: Avoid planning backward path //
+            //                                    //
+            ////////////////////////////////////////
 
             Grid2D tmp_grid(cur_node->grid + directions_[i]);
             if(find_node(close_set, tmp_grid) || is_collision(tmp_grid))
                 continue;                                           // Skip visited node & skip wall 
 
-            // NEXT_NODE_G_COST = AGAINST_WALL_COST + CURRENT_NODE_G_COST + STEP_COST(balance cost between 4 & 8 directions)
-            // int g_cost = against_wall_cost(tmp_grid) / 10 + cur_node->g_val + 10 + ((i == cur_node->decision)? 0 : 10);
-            // int g_cost = cur_node->g_val + ((i == cur_node->decision)? 0 : 1) + ((i >= 4)? 2 : 1);
-            int g_cost = cur_node->g_val + ((i == cur_node->decision)? 0 : 1) + ((i >= 4)? 2 : 1);
+            int g_cost = cur_node->g_val + 1;
 
             Node* successor = find_node(open_set, tmp_grid);
             if(successor == nullptr){
@@ -132,23 +143,25 @@ bool Astar::Solver::solve_ros(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr, nav
         num_step++;
     } // while loop end
 
-    if(flag_success_){
-        int old_decision = -10;
-        int cnt_same_direction = 0;
+    if(flag_success){
+        int max_sampling_grid = (int)(robot_length_ / map_ptr_->info.resolution);
+        int old_decision = -1;
+        int cnt_sampled_grid = 0;
         while(cur_node != nullptr) {
             // printf("%d ", cur_node->decision);
-            if(cur_node->decision != old_decision || cnt_same_direction == 4) {
+            if(old_decision == -1 || cnt_sampled_grid == max_sampling_grid) {
                 old_decision = cur_node->decision;
                 geometry_msgs::PoseStamped pose;
                 pose.pose.position.x = cur_node->grid.x * map_ptr_->info.resolution \
                                         + map_ptr_->info.origin.position.x;
                 pose.pose.position.y = cur_node->grid.y * map_ptr_->info.resolution \
                                         + map_ptr_->info.origin.position.y;
+                pose.pose.orientation.w = 1.0;
                 path->poses.push_back(pose);
 
-                cnt_same_direction = 0;
+                cnt_sampled_grid = 0;
             }else{
-                cnt_same_direction++;
+                cnt_sampled_grid++;
             }
             cur_node = cur_node->parent;
         }
@@ -156,7 +169,7 @@ bool Astar::Solver::solve_ros(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr, nav
     }
     
     path->header.stamp = ros::Time::now();
-    return flag_success_;
+    return flag_success;
 }
 
 bool Astar::Solver::is_collision(Grid2D grid) {
@@ -169,11 +182,7 @@ bool Astar::Solver::is_collision(Grid2D grid) {
 
     // Check collision
     int map_idx = grid.y * width + (grid.x % width);
-
-    // Due to (the second large gaussian value*100) || (prefer not to go to unknown space)
-    // if(map_ptr_->data[map_idx] > 40 || map_ptr_->data[map_idx] < 0)
-    // if(map_ptr_->data[map_idx] > 40)
-    if(map_ptr_->data[map_idx] >= 80)  
+    if(map_ptr_->data[map_idx] >= max_danger_cost_)  
         return true;
     else
         return false;

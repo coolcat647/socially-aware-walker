@@ -251,7 +251,7 @@ bool AstarPathfindingNode::is_footprint_safe(const nav_msgs::OccupancyGrid::Cons
         int map_x = std::round(footprint_ptr->polygon.points[i].x - map_origin_x) / map_resolution;
         int map_y = std::round(footprint_ptr->polygon.points[i].y - map_origin_y) / map_resolution;
         int idx = map_y * map_msg_ptr->info.width + map_x;
-        if(map_msg_ptr->data[idx] >= 80 || map_msg_ptr->data[idx] < 0) {
+        if(map_msg_ptr->data[idx] >= kThresObstacleDangerCost || map_msg_ptr->data[idx] < 0) {
             return false;
         }
     }
@@ -305,8 +305,7 @@ bool AstarPathfindingNode::is_subgoal_safe(const nav_msgs::OccupancyGrid::ConstP
     int map_y = std::round((vec_transformed.getY() - map_origin_y) / map_resolution);
     int idx = map_y * map_width + map_x;
 
-    // if(get_local_max_cost(map_msg_ptr, idx) >= kThresObstacleDangerCost || map_msg_ptr->data[idx] < 0) {
-    if(get_local_max_cost(map_msg_ptr, idx) >= 80 || map_msg_ptr->data[idx] < 0) {
+    if(get_local_max_cost(map_msg_ptr, idx) >= kThresObstacleDangerCost || map_msg_ptr->data[idx] < 0) {
         return false;
     }
     return true;
@@ -326,9 +325,7 @@ bool AstarPathfindingNode::is_path_safe(const nav_msgs::OccupancyGrid::ConstPtr 
     }
 
     // Transformation matrix from odom to baselink (for localmap check)
-    // tf::Matrix3x3 rot_odom2base = tf_base2odom.getBasis().transpose();
-    // tf::Vector3 tras_odom2base = rot_odom2base * tf_base2odom.getOrigin() * (-1);
-    tf::Matrix3x3 rot_odom2base = tf_odom2base.getBasis();
+    // tf::Matrix3x3 rot_odom2base = tf_odom2base.getBasis();
     tf::Vector3 tras_odom2base = tf_odom2base.getOrigin();
     
     for(std::vector<geometry_msgs::PoseStamped>::iterator it = path_ptr->poses.begin() ; it != path_ptr->poses.end(); ++it) {
@@ -387,10 +384,10 @@ geometry_msgs::Point AstarPathfindingNode::generate_sub_goal(const nav_msgs::Occ
 
         // Sub-goal candidates
         std::vector<double> candidate_score_list;
-        int candidate_j_list[13] = {0};
+        int candidate_j_list[15] = {0};
         double prefer_subgoal_distance = 8.0;
         double distance_resolution = 0.4; // map_resolution * 2;
-        for(int i = 15; i >= 3; i--) {
+        for(int i = 16; i >= 2; i--) {
             double theta_from_yaxis = M_PI / 18 * i;
             int max_distance_idx = std::round(prefer_subgoal_distance / distance_resolution);
             double tmp_dis;
@@ -414,19 +411,11 @@ geometry_msgs::Point AstarPathfindingNode::generate_sub_goal(const nav_msgs::Occ
                 // Find the max score among the candidates in same direction
                 if(score > max_j_score){
                     max_j_score = score;
-                    candidate_j_list[15 - i] = j;
+                    candidate_j_list[16 - i] = j;
                 }
             }
-            tmp_dis = distance_resolution * candidate_j_list[15 - i];
+            tmp_dis = distance_resolution * candidate_j_list[16 - i];
             candidate_score_list.push_back(max_j_score);
-
-            // double dis_subgoal2finalgoal = std::hypot(tmp_dis * std::sin(theta_from_yaxis) + path_start_offsetx_ - vec_goal_base_frame.getX(),
-            //                                         tmp_dis * std::cos(theta_from_yaxis) + path_start_offsety_ - vec_goal_base_frame.getY());
-            // // Calculate candidate score
-            // double score = (1.0 - obstacle_cost / 100.0) +
-            //                 //tmp_dis / prefer_subgoal_distance + 
-            //                 (1.0 - dis_subgoal2finalgoal / dis_base2goal / 2);
-            // candidate_score_list.push_back(score);
     
             // Visualization
             geometry_msgs::Point pt;
@@ -670,7 +659,7 @@ void AstarPathfindingNode::timer_cb(const ros::TimerEvent&){
             // A* path planning
             walkable_path_ptr_ = nav_msgs::Path::Ptr(new nav_msgs::Path());
             walkable_path_ptr_->header.frame_id = path_frame_id_;
-            Astar::Solver solver;
+            Astar::Solver solver(kThresObstacleDangerCost, 0.6, 0.6);
             // coordinate to map grid
             // Trick: start plan from the grid which is in front of robot
             int origin_idx = std::round((-map_origin_y + path_start_offsety_) / map_resolution) * map_width + 
@@ -694,7 +683,7 @@ void AstarPathfindingNode::timer_cb(const ros::TimerEvent&){
             else{
                 // Publish empty path if there are no path finding solution.
                 ROS_WARN("No solution for path finding in timeout: %.1f ms", solver_timeout_ms_);
-                walkable_path_ptr_->header.stamp = ros::Time::now();
+                // walkable_path_ptr_->header.stamp = ros::Time::now();
                 pub_walkable_path_.publish(walkable_path_ptr_);
             }
 
