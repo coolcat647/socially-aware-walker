@@ -3,7 +3,7 @@
 <launch>
     <arg name="joy_dev" default="/dev/input/js0" />
     <arg name="joy_topic" default="joy" />
-    <arg name="robot_namespace" default="active_walker" />
+    <arg name="robot_namespace" default="walker" />
 
     <group ns="$(arg robot_namespace)">
         <node pkg="joy" type="joy_node" name="joy_node">

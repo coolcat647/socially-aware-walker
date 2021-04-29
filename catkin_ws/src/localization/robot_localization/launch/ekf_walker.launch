@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
 
-    <arg name="robot_namespace" default="active_walker" />
+    <arg name="robot_namespace" default="walker" />
     <group ns="$(arg robot_namespace)">
         <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
         <rosparam command="load" file="$(find robot_localization)/params/ekf_walker.yaml" />

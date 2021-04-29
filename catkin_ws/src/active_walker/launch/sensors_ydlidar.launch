@@ -8,7 +8,7 @@
     <arg name="use_rviz" default="false" />
     <arg name="use_proc" default="false" />
 
-    <arg name="robot_namespace" default="active_walker" />
+    <arg name="robot_namespace" default="walker" />
     <group ns="$(arg robot_namespace)">
 
         <!-- USB camera -->

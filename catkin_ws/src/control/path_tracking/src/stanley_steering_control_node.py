@@ -15,7 +15,7 @@ from nav_msgs.msg import Path, Odometry
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from std_msgs.msg import Float32
 
-SPEED_PROPORTIONAL_GAIN     = 1.0   # speed proportional gain
+SPEED_PROPORTIONAL_GAIN     = 2.0   # speed proportional gain
 CROSSTRACK_ERROR_GAIN       = 5.0   # crosstrack error gain
 LENGTH_OF_ROBOT_BASE        = 0.6   # [m] Wheel base of vehicle
 WIDTH_OF_ROBOT_BASE         = 0.6

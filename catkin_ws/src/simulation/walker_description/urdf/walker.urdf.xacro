@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<robot name="active_walker" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="walker" xmlns:xacro="http://ros.org/wiki/xacro">
     <!-- <xacro:arg name="robot_namespace" default="/" />  -->
-    <xacro:arg name="robot_namespace" default="active_walker" />
+    <xacro:arg name="robot_namespace" default="walker" />
 
     <!-- Included URDF/XACRO Files -->
     <xacro:include filename="$(find walker_description)/urdf/accessories/webcam_c930e.urdf.xacro"/>
@@ -104,7 +104,7 @@
         <!-- <axis xyz="0 0.099176 0.99507" /> -->
         <axis xyz="0 0 1" />
         <!-- <dynamics friction="0.001" /> -->
-        <joint_properties damping="0.0" friction="0.0"/>
+        <joint_properties damping="1.0" friction="0.0"/>
         <limit effort="100" velocity="100"/>
     </joint>
 
@@ -144,7 +144,7 @@
         <axis xyz="0 0 1" />
         <!-- <limit lower="0" upper="0" effort="0" velocity="0" /> -->
         <!-- <dynamics friction="0.001" /> -->
-        <joint_properties damping="0.0" friction="0.0"/>
+        <joint_properties damping="1.0" friction="0.0"/>
         <limit effort="100" velocity="100"/>
     </joint>
 
@@ -180,9 +180,10 @@
         <parent link="base_link" />
         <child link="force_sensor_link" />
         <axis xyz="0 0 1" />
-        <limit lower="0" velocity="1000" upper="0" effort="1000" />
+        <limit lower="0" velocity="100" upper="0" effort="100" />
         <!-- <safety_controller k_velocity="10" k_position="15" soft_lower_limit="-2.0" soft_upper_limit="0.5" />
         <dynamics damping="0.0" friction="0.0"/> -->
+        <dynamics damping="0.0" friction="0.0"/>
     </joint>
    
 
@@ -211,11 +212,13 @@
             </geometry>
         </collision>
     </link>
-    <joint name="handrail_joint" type="fixed">
+    <joint name="handrail_joint" type="fixed"> <!-- revolute -->
         <origin xyz="0 0 0.0565" rpy="0 0 1.5708" />
         <parent link="force_sensor_link" />
         <child link="handrail_link" />
-        <axis xyz="0 0 0" />
+        <axis xyz="0 0 1" />
+        <limit lower="0" velocity="100" upper="0" effort="100" />
+        <dynamics damping="1.0"/>
     </joint>
 
 

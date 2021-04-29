@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <arg name="robot_namespace" default="active_walker" />
-    <arg name="inflation_radius" default="0.4" />
-    <arg name="map_resolution" default="0.2" />
+    <arg name="robot_namespace" default="walker" />
+    <arg name="inflation_radius" default="0.2" />
+    <arg name="map_resolution" default="0.1" />
     <arg name="localmap_frameid" default="base_link" />
     <arg name="scan_src_frameid" default="laser_link" />
     <arg name="agf_type" default="1" doc=" -1 ->only scan; \

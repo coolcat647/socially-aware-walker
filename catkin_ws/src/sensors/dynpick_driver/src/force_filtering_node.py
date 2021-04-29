@@ -19,9 +19,9 @@ class ForceFilteringNode(object):
     def __init__(self):
         # Kalman filter
         if rospy.get_param('~use_only_main_force', True):
-            self.force_data_dimension = 2
+            self.force_data_dimension = 2       # force y, torque z
         else:
-            self.force_data_dimension = 6
+            self.force_data_dimension = 6       # force xyz, torque xyz
 
         self.kf = KalmanFilter(dim_x=self.force_data_dimension, dim_z=self.force_data_dimension)       
         self.kf.F = np.eye(self.force_data_dimension)      # state transition matrix
@@ -39,40 +39,43 @@ class ForceFilteringNode(object):
             self.force_offset = np.array([-16.60148969, -13.33039515, -18.94458855, 2.96805553, 0.3066922, 0.39198671])
         else:
             # Calculate the offset by force averaging
-            force_data_array = np.zeros(self.force_data_dimension)
-            for i in range(1, 250*4):
+            force_data_array = None
+            for i in range(1, 20*4):
                 try:
-                    msg = rospy.wait_for_message('/force', WrenchStamped, timeout=0.5)    
+                    msg = rospy.wait_for_message('force', WrenchStamped, timeout=0.5)
                 except rospy.ROSException as e:
                     rospy.logerr("Timeout while waiting for force data!")
                     exit(-1)
 
-                tmp_force = np.array([msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z,
+                if self.force_data_dimension == 2:
+                    tmp_force = np.array([msg.wrench.force.y, msg.wrench.torque.z], dtype=np.float32)
+                else:
+                    tmp_force = np.array([msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z,
                                         msg.wrench.torque.x, msg.wrench.torque.y, msg.wrench.torque.z], dtype=np.float32)
-                if force_data_array.shape == 0:
+
+                if force_data_array is None:
                     force_data_array = tmp_force
                 else:
                     force_data_array = np.vstack((force_data_array, tmp_force))
-                    # print(force_data_array.shape)
 
             # Force offset & initial value
             self.force_offset = np.average(force_data_array, axis=0)
             self.kf.x[:] = (force_data_array[-1, :] - self.force_offset).reshape((self.force_data_dimension, 1))
         print("default force offset:", self.force_offset)
 
-        self.pub_force = rospy.Publisher('/force_filtered', WrenchStamped, queue_size=1)
-        self.sub_force = rospy.Subscriber("/force", WrenchStamped, self.force_cb, queue_size=1)
+        self.pub_force = rospy.Publisher('force_filtered', WrenchStamped, queue_size=1)
+        self.sub_force = rospy.Subscriber("force", WrenchStamped, self.force_cb, queue_size=1)
         print(rospy.get_name() + ' is ready.')
         
 
     def force_cb(self, msg):
         # start_crawling_time = time.time()
 
-        force_raw = np.array([msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z,
-                                msg.wrench.torque.x, msg.wrench.torque.y, msg.wrench.torque.z], dtype=np.float32)
-        force_tmp = force_raw - self.force_offset
-
         if self.force_data_dimension == 6:
+            force_raw = np.array([msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z,
+                                msg.wrench.torque.x, msg.wrench.torque.y, msg.wrench.torque.z], dtype=np.float32)
+            force_tmp = force_raw - self.force_offset
+
             # Kalman filter predict
             self.kf.predict()
             # Kalman filter update
@@ -87,7 +90,10 @@ class ForceFilteringNode(object):
             self.pub_force.publish(output_msg)
 
         elif self.force_data_dimension == 2:
-            force_tmp = np.array([force_tmp[1], force_tmp[5]], dtype=np.float32)
+            force_raw = np.array([msg.wrench.force.y, msg.wrench.torque.z], dtype=np.float32)
+            force_tmp = force_raw - self.force_offset
+
+            # force_tmp = np.array([force_tmp[1], force_tmp[5]], dtype=np.float32)
 
             # Kalman filter predict
             self.kf.predict()
