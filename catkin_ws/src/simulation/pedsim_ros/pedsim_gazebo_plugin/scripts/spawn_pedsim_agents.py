@@ -23,7 +23,7 @@ def actor_poses_callback(actors):
         actor_pose = actor.pose
         # rospy.loginfo("Spawning model: actor_id = %s", actor_id)
 
-        rospy.logerr("Spawning model: actor_id = {}, ({:.2f}, {:.2f})".format(actor_id, actor_pose.position.x, actor_pose.position.y))
+        rospy.loginfo("Spawning model: actor_id = {}, ({:.2f}, {:.2f})".format(actor_id, actor_pose.position.x, actor_pose.position.y))
         model_pose = Pose(Point(x= actor_pose.position.x,
                                y= actor_pose.position.y,
                                z= actor_pose.position.z),

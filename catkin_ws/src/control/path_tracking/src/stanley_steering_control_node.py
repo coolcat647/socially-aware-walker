@@ -177,13 +177,16 @@ class StanleyControlNode(object):
     def shutdown_cb(self):
         self.pub_cmd.publish(Twist())
         rospy.loginfo("Shutdown " + rospy.get_name())
-        
+
 
 if __name__ == '__main__':
     rospy.init_node('stanley_control_node', anonymous=False)
     node = StanleyControlNode()
 
     rate = rospy.Rate(node.cmd_freq)
+
+    flag_message_published = False
+
     while not rospy.is_shutdown():
         if node.flag_path_update == True:
             node.flag_path_update = False
@@ -194,9 +197,13 @@ if __name__ == '__main__':
                 # rospy.loginfo("path updated!")
 
         if len(node.flat_path) == 0:
-            rospy.loginfo("Empty planning path, wait for new path")
+            if not flag_message_published: 
+                rospy.loginfo("Empty planning path, wait for new path")
+                flag_message_published = True
             node.pub_cmd.publish(Twist())
         else:
+            flag_message_published = False
+
             # Steering control law
             target_idx, _  = node.calc_target_index(node.robot_pose, node.flat_path)            
             total_steering_error, target_idx, heading_error = node.stanley_control(node.robot_pose, node.robot_twist, node.flat_path, target_idx)

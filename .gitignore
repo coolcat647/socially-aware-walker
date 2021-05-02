@@ -46,3 +46,6 @@ catkin_ws/src/CMakeLists.txt
 catkin_ws/.catkin_workspace
 catkin_ws/.catkin_tools
 
+# Pedsim model
+!catkin_ws/src/simulation/pedsim_ros/pedsim_gazebo_plugin/models
+

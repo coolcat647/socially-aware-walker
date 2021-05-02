@@ -7,6 +7,9 @@
     <arg name="topic" default="force" />
     <arg name="frequency_div" default="1" />
 
+    <arg name="use_only_main_force" default="true" />
+    <arg name="use_default_offset" default="true" />
+
     <group ns="$(arg robot_namespace)">
         <node pkg="dynpick_driver" name="dynpick_driver_node" type="dynpick_driver_node" >
             <param name="device" value="$(arg device)" />
@@ -17,6 +20,9 @@
             <param name="acquire_calibration" value="true"/>
         </node>
 
-        <node pkg="dynpick_driver" name="force_filtering_node" type="force_filtering_node.py" />
+        <node pkg="dynpick_driver" name="force_filtering_node" type="force_filtering_node.py" output="screen" >
+            <param name="use_only_main_force" type="bool" value="$(arg use_only_main_force)" />
+            <param name="use_default_offset" type="bool" value="$(arg use_default_offset)" />
+        </node>
     </group>
 </launch>

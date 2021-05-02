@@ -180,6 +180,7 @@ void Agent::move(double h) {
     }
   } else {
     Ped::Tagent::move(h);
+    Ped::Tagent::SetRadius(0.5);
   }
 
   if (getType() == Ped::Tagent::ELDER) {

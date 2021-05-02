@@ -145,12 +145,10 @@ bool Astar::Solver::solve_ros(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr, nav
 
     if(flag_success){
         int max_sampling_grid = (int)(robot_length_ / map_ptr_->info.resolution);
-        int old_decision = -1;
-        int cnt_sampled_grid = 0;
+        int cnt_sampled_grid = max_sampling_grid;
         while(cur_node != nullptr) {
             // printf("%d ", cur_node->decision);
-            if(old_decision == -1 || cnt_sampled_grid == max_sampling_grid) {
-                old_decision = cur_node->decision;
+            if(cnt_sampled_grid == max_sampling_grid) {
                 geometry_msgs::PoseStamped pose;
                 pose.pose.position.x = cur_node->grid.x * map_ptr_->info.resolution \
                                         + map_ptr_->info.origin.position.x;

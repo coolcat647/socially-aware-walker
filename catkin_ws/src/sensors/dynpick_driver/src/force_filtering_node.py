@@ -35,8 +35,8 @@ class ForceFilteringNode(object):
 
         self.kf.Q[:, :] *= 2.0  # process uncertainty
         
-        if rospy.get_param('~use_default_offset', True):
-            self.force_offset = np.array([-16.60148969, -13.33039515, -18.94458855, 2.96805553, 0.3066922, 0.39198671])
+        if rospy.get_param('~use_default_offset', False):
+            self.force_offset = np.array([-12.50041, -14.795424, -14.968935, 2.86582, 0.23863193, 0.0706105])
         else:
             # Calculate the offset by force averaging
             force_data_array = None
