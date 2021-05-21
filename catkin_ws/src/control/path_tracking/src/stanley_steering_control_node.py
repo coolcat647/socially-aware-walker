@@ -19,8 +19,6 @@ SPEED_PROPORTIONAL_GAIN     = 2.0   # speed proportional gain
 CROSSTRACK_ERROR_GAIN       = 5.0   # crosstrack error gain
 LENGTH_OF_ROBOT_BASE        = 0.6   # [m] Wheel base of vehicle
 WIDTH_OF_ROBOT_BASE         = 0.6
-MAX_ANGULAR_VELOCITY        = 0.4
-MAX_LINEAR_SPEED            = 0.4
 
 class StanleyControlNode(object):
     def __init__(self):
@@ -41,7 +39,7 @@ class StanleyControlNode(object):
         self.smooth_path_resolution = self.map_resolution / 2.0     # much smoother than original path
         self.cmd_freq               = rospy.get_param("~cmd_freq", 5.0)
         self.goal_tolerance         = rospy.get_param("~goal_tolerance", 0.2)
-        
+        self.robot_constraints_dict = rospy.get_param('constraints')
 
         # ROS publisher & subscriber
         self.pub_cmd = rospy.Publisher('cmd_vel', Twist, queue_size=1)
@@ -228,15 +226,19 @@ if __name__ == '__main__':
                 cmd_msg = Twist()
 
                 # Assign angular velocity command
-                cmd_msg.angular.z = np.clip(total_steering_error * dt, -MAX_ANGULAR_VELOCITY, MAX_ANGULAR_VELOCITY)
+                cmd_msg.angular.z = np.clip(total_steering_error * dt, 
+                                            -node.robot_constraints_dict["max_angular_velocity"], 
+                                            node.robot_constraints_dict["max_angular_velocity"])
                 
                 # Assign linear velocity command
                 if np.abs(total_steering_error) >= np.pi / 2:
                     target_speed = np.abs(cmd_msg.angular.z) * WIDTH_OF_ROBOT_BASE / 2
                 else:
-                    target_speed = MAX_LINEAR_SPEED
+                    target_speed = node.robot_constraints_dict["max_linear_velocity"]
                 accel_linear = node.pid_control(target_speed, node.robot_twist.linear.x)
-                cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt, np.abs(cmd_msg.angular.z) * WIDTH_OF_ROBOT_BASE / 2, MAX_LINEAR_SPEED)
+                cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt, 
+                                            np.abs(cmd_msg.angular.z) * WIDTH_OF_ROBOT_BASE / 2,
+                                            node.robot_constraints_dict["max_linear_velocity"])
                 node.pub_cmd.publish(cmd_msg)
             else:
                 rospy.loginfo("goal reached! {:.2f}".format(dis_robot2goal))

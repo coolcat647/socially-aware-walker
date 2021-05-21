@@ -90,8 +90,9 @@ class ForceFilteringNode(object):
             self.pub_force.publish(output_msg)
 
         elif self.force_data_dimension == 2:
+            self.force_offset_main = self.force_offset[[1, -1]]
             force_raw = np.array([msg.wrench.force.y, msg.wrench.torque.z], dtype=np.float32)
-            force_tmp = force_raw - self.force_offset
+            force_tmp = force_raw - self.force_offset_main
 
             # force_tmp = np.array([force_tmp[1], force_tmp[5]], dtype=np.float32)
 

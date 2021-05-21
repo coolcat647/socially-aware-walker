@@ -228,7 +228,7 @@ void AstarPathfindingNode::finalgoal_cb(const geometry_msgs::PoseStamped::ConstP
         else{
             // Publish empty path if there are no path finding solution.
             ROS_ERROR("No solution for path finding in timeout: %.1f ms", solver_timeout_ms_);
-            publish_robot_status_marker("finalgoal is not safe, skip finalgoal assignment.");
+            publish_robot_status_marker("timeout for path planning to finalgoal, skip this finalgoal assignment.");
             finalgoal_ptr_.reset();
             walkable_path_ptr_->header.stamp = ros::Time::now();
             pub_walkable_path_.publish(walkable_path_ptr_);

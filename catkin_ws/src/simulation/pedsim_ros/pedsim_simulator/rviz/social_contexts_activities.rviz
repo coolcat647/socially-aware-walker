@@ -10,8 +10,9 @@ Panels:
         - /Tracking-Visuals1/TrackedPersons1/History as line1
         - /Tracking-Visuals1/TrackedGroups1
         - /Tracking-Visuals1/TrackedGroups1/Render group IDs1
+        - /RobotModel1/Status1
       Splitter Ratio: 0.5833333134651184
-    Tree Height: 202
+    Tree Height: 349
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -149,26 +150,6 @@ Visualization Manager:
             Value: 0
       Enabled: false
       Name: Tracking-Visuals
-    - Class: rviz/Image
-      Enabled: true
-      Image Topic: /active_walker/debug_reprojection
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: raw
-      Unreliable: false
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /active_walker/trk3d_vis
-      Name: trk3d
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -184,9 +165,9 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 0
+      Max Intensity: -999999
       Min Color: 0; 0; 0
-      Min Intensity: 0
+      Min Intensity: 999999
       Name: LaserScan
       Position Transformer: XYZ
       Queue Size: 10
@@ -194,15 +175,56 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Points
-      Topic: /active_walker/scan
+      Topic: /walker/scan
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/Camera
+      Enabled: true
+      Image Rendering: background and overlay
+      Image Topic: /walker/usb_cam/image_raw
+      Name: Camera
+      Overlay Alpha: 0.5
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: true
+      Visibility:
+        Axes: true
+        Camera: true
+        Det3d: true
+        Goal_cadidates_vis: true
+        Grid: true
+        LaserScan: true
+        LocalMap: true
+        Pedsim-Visuals:
+          Value: true
+          Walls: true
+        Robot status: true
+        RobotModel: true
+        Short term goal: true
+        SmoothPath: true
+        Tracking-Visuals:
+          TrackedGroups: true
+          TrackedPersons: true
+          Value: true
+        Trk3d: true
+        Value: true
+        WalkablePath: true
+      Zoom Factor: 1
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /active_walker/obj_marker
-      Name: det3d
+      Marker Topic: /walker/trk3d_vis
+      Name: Trk3d
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /walker/obj_marker
+      Name: Det3d
       Namespaces:
         {}
       Queue Size: 100
@@ -274,6 +296,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        sensor_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -293,7 +320,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: LocalMap
-      Topic: /active_walker/local_map
+      Topic: /walker/local_map
       Unreliable: false
       Use Timestamp: false
       Value: true
@@ -317,7 +344,7 @@ Visualization Manager:
       Radius: 0.029999999329447746
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
-      Topic: /active_walker/walkable_path
+      Topic: /walker/walkable_path
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -340,21 +367,21 @@ Visualization Manager:
       Radius: 0.029999999329447746
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
-      Topic: /active_walker/smooth_path
+      Topic: /walker/smooth_path
       Unreliable: false
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /active_walker/path_vis
-      Name: MarkerArray
+      Marker Topic: /walker/path_vis
+      Name: Goal_cadidates_vis
       Namespaces:
         {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /active_walker/robot_status
-      Name: Marker
+      Marker Topic: /walker/robot_status
+      Name: Robot status
       Namespaces:
         {}
       Queue Size: 100
@@ -364,9 +391,9 @@ Visualization Manager:
       Color: 204; 41; 204
       Enabled: true
       History Length: 1
-      Name: PointStamped
+      Name: Short term goal
       Radius: 0.20000000298023224
-      Topic: /active_walker/short_term_goal
+      Topic: /walker/short_term_goal
       Unreliable: false
       Value: true
   Enabled: true
@@ -418,14 +445,14 @@ Visualization Manager:
       Yaw: 3.4385738372802734
     Saved: ~
 Window Geometry:
+  Camera:
+    collapsed: false
   Displays:
     collapsed: false
-  Height: 1052
+  Height: 1025
   Hide Left Dock: false
   Hide Right Dock: true
-  Image:
-    collapsed: false
-  QMainWindow State: 000000ff00000000fd000000040000000000000257000003c2fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df000003800000016bfb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000014d000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006501000001900000026f0000001600ffffff000000010000011f000003c2fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d000003c2000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d0065000000000000000780000002eb00fffffffb0000000800540069006d0065010000000000000450000000000000000000000523000003c200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000040000000000000257000003a7fc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df000003800000016bfb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000001e0000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006501000001870000025d0000000000000000fb0000000c00430061006d0065007200610100000223000001c10000001600ffffff000000010000011f000003c2fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d000003c2000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d0065000000000000000780000004f300fffffffb0000000800540069006d0065010000000000000450000000000000000000000523000003a700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -436,4 +463,4 @@ Window Geometry:
     collapsed: true
   Width: 1920
   X: 0
-  Y: 0
+  Y: 27

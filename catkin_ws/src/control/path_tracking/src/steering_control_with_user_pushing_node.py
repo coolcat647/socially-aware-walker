@@ -14,14 +14,12 @@ from geometry_msgs.msg import Twist, PoseStamped, Quaternion, Point, PointStampe
 from nav_msgs.msg import Path, Odometry
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from std_msgs.msg import Float32
+import message_filters
 
-
-k = 0.5 * 2  # control gain
-Kp = 1.0 * 0.2  # speed proportional gain
-dt = 0.1  # [s] time difference
-L = 0.6   # [m] Wheel base of vehicle
-MAX_ANGULAR_VELOCITY = 1.0
-TARGET_SPEED = 0.4
+SPEED_PROPORTIONAL_GAIN     = 2.0   # speed proportional gain
+CROSSTRACK_ERROR_GAIN       = 5.0 / 2   # crosstrack error gain
+LENGTH_OF_ROBOT_BASE        = 0.6   # [m] Wheel base of vehicle
+WIDTH_OF_ROBOT_BASE         = 0.6
 
 class StanleyControlNode(object):
     def __init__(self):
@@ -40,7 +38,9 @@ class StanleyControlNode(object):
         # ROS parameters
         self.map_resolution         = rospy.get_param("~map_resolution", 0.2)
         self.smooth_path_resolution = self.map_resolution / 2.0     # much smoother than original path
-        self.cmd_freq               = rospy.get_param("cmd_freq", 5.0)
+        self.cmd_freq               = rospy.get_param("~cmd_freq", 5.0)
+        self.goal_tolerance         = rospy.get_param("~goal_tolerance", 0.2)
+        self.robot_constraints_dict = rospy.get_param('constraints')
 
         # ROS publisher & subscriber
         self.pub_cmd = rospy.Publisher('cmd_vel', Twist, queue_size=1)
@@ -49,20 +49,31 @@ class StanleyControlNode(object):
         self.pub_short_term_goal = rospy.Publisher('short_term_goal', PointStamped, queue_size=1)
 
         self.sub_path = rospy.Subscriber("walkable_path", Path, self.path_cb, queue_size=1)
-        self.sub_odom = rospy.Subscriber("odom_filtered", Odometry, self.odom_cb, queue_size=1)
+        sub_user_cmd = message_filters.Subscriber("user_contributed/cmd_vel", Twist)
+        sub_odom = message_filters.Subscriber("odom_filtered", Odometry)
+        ts = message_filters.ApproximateTimeSynchronizer([sub_user_cmd, sub_odom], 10, 0.1, allow_headerless=True)
+        ts.registerCallback(self.cmd_odom_cb)
+
+        self.pub_speed = rospy.Publisher('/speed', Float32, queue_size=1)
 
         rospy.loginfo(rospy.get_name() + ' is ready.')
         
 
-    def odom_cb(self, msg):
-        self.robot_pose.x = msg.pose.pose.position.x
-        self.robot_pose.y = msg.pose.pose.position.y
-        euler_angle = euler_from_quaternion([msg.pose.pose.orientation.x, 
-                                            msg.pose.pose.orientation.y, 
-                                            msg.pose.pose.orientation.z, 
-                                            msg.pose.pose.orientation.w])
+    def cmd_odom_cb(self, user_cmd_msg, odom_msg):
+        self.robot_pose.x = odom_msg.pose.pose.position.x
+        self.robot_pose.y = odom_msg.pose.pose.position.y
+        euler_angle = euler_from_quaternion([odom_msg.pose.pose.orientation.x, 
+                                            odom_msg.pose.pose.orientation.y, 
+                                            odom_msg.pose.pose.orientation.z, 
+                                            odom_msg.pose.pose.orientation.w])
         self.robot_pose.theta = euler_angle[2]
-        self.robot_twist = msg.twist.twist
+
+        # self.robot_twist = odom_msg.twist.twist
+        self.robot_twist = user_cmd_msg
+
+        # Random noise
+        # self.robot_twist.linear.x = self.robot_twist.linear.x + (np.random.rand() - 0.5) * 0.5
+        # self.pub_speed.publish(self.robot_twist.linear.x)
 
 
     def path_cb(self, msg):
@@ -73,7 +84,6 @@ class StanleyControlNode(object):
             self.updated_flat_path = []
             self.flag_path_update = True
         elif len(msg.poses) < 3:
-            rospy.loginfo("三小")
             yaw = np.arctan2(msg.poses[0].pose.position.y - self.robot_pose.y, msg.poses[0].pose.position.x - self.robot_pose.x)
             self.updated_flat_path = [Pose2D(x=msg.poses[0].pose.position.x, y=msg.poses[0].pose.position.y, theta=yaw),]
             self.flag_path_update = True
@@ -105,16 +115,8 @@ class StanleyControlNode(object):
         self.pub_path_flat.publish(flat_path_msg)
 
 
-    def pid_control(self, target, current):
-        """
-        Proportional control for the speed.
-
-        :param target: (float)
-        :param current: (float)
-        :return: (float)
-        """
-        return Kp * (target - current)
-
+    def pid_control(self, target_value, current_value):
+        return SPEED_PROPORTIONAL_GAIN * (target_value - current_value)
 
     def stanley_control(self, robot_pose, robot_twist, target_path, last_target_idx):
         """
@@ -130,27 +132,19 @@ class StanleyControlNode(object):
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
 
-        # theta_e corrects the heading error
-        theta_e = self.normalize_angle(target_path[current_target_idx].theta - robot_pose.theta)
-
-        # theta_d corrects the cross track error
-        # theta_d = np.arctan2(k * error_front_axle, robot_twist.linear.x * np.cos(robot_twist.angular.z)) ########################## TODO: Check
-        theta_d = np.arctan2(k * error_front_axle, robot_twist.linear.x) ########################## TODO: Check
-        
-
+        # heading error
+        heading_error = self.normalize_angle(target_path[current_target_idx].theta - robot_pose.theta)
+        # crosstrack_error: is defined as the lateral distance between the heading vector and the target point as follows.
+        crosstrack_error = np.arctan2(CROSSTRACK_ERROR_GAIN * error_front_axle, robot_twist.linear.x)
         # Steering control
-        delta = theta_e + theta_d
+        total_steering_error = heading_error + crosstrack_error
+        # print("h:{:.2f}, c:{:.2f}", heading_error, crosstrack_error)
 
-        return delta, current_target_idx
+        return total_steering_error, current_target_idx, heading_error
 
 
     def normalize_angle(self, angle):
-        """
-        Normalize an angle to [-pi, pi].
-
-        :param angle: (float)
-        :return: (float) Angle in radian in [-pi, pi]
-        """
+        # Normalize an angle to [-pi, pi].
         while angle > np.pi:
             angle -= 2.0 * np.pi
 
@@ -160,19 +154,12 @@ class StanleyControlNode(object):
         return angle
 
 
-    def calc_target_index(self, robot_pose, target_path):
-        """
-        Compute index in the trajectory list of the target.
-
-        :param robot_pose: (State object)
-        :param cx: [float]
-        :param cy: [float]
-        :return: (int, float)
-        """
+    def calc_target_index(self, robot_pose, target_path):      
+        # Compute index in the trajectory list of the target.
 
         # Calc front axle position
-        fx = robot_pose.x + 2*L * np.cos(robot_pose.theta)
-        fy = robot_pose.y + 2*L * np.sin(robot_pose.theta)
+        fx = robot_pose.x + LENGTH_OF_ROBOT_BASE * np.cos(robot_pose.theta)
+        fy = robot_pose.y + LENGTH_OF_ROBOT_BASE * np.sin(robot_pose.theta)
 
         # Search nearest point index
         dx = []
@@ -195,13 +182,16 @@ class StanleyControlNode(object):
     def shutdown_cb(self):
         self.pub_cmd.publish(Twist())
         rospy.loginfo("Shutdown " + rospy.get_name())
-        
+
 
 if __name__ == '__main__':
-    rospy.init_node('stanley_control_node', anonymous=False)
+    rospy.init_node('steering_control_with_user_pushing_node', anonymous=False)
     node = StanleyControlNode()
 
     rate = rospy.Rate(node.cmd_freq)
+
+    flag_message_published = False
+
     while not rospy.is_shutdown():
         if node.flag_path_update == True:
             node.flag_path_update = False
@@ -212,13 +202,17 @@ if __name__ == '__main__':
                 # rospy.loginfo("path updated!")
 
         if len(node.flat_path) == 0:
-            rospy.loginfo("Empty planning path, wait for new path")
+            if not flag_message_published: 
+                rospy.loginfo("Empty planning path, wait for new path")
+                flag_message_published = True
             node.pub_cmd.publish(Twist())
         else:
-            target_idx, _  = node.calc_target_index(node.robot_pose, node.flat_path)
-            accel_linear = node.pid_control(TARGET_SPEED, node.robot_twist.linear.x)
-            delta_omega, target_idx = node.stanley_control(node.robot_pose, node.robot_twist, node.flat_path, target_idx)
+            flag_message_published = False
 
+            # Steering control law
+            target_idx, _  = node.calc_target_index(node.robot_pose, node.flat_path)            
+            total_steering_error, target_idx, heading_error = node.stanley_control(node.robot_pose, node.robot_twist, node.flat_path, target_idx)
+            
             # Publish tracking progress
             tracking_progress = (target_idx + 1) / len(node.flat_path)
             node.pub_tracking_progress.publish(tracking_progress)
@@ -232,12 +226,27 @@ if __name__ == '__main__':
 
             # if tracking_progress < 1.0:
             dis_robot2goal = np.hypot(node.robot_pose.x - node.flat_path[-1].x, node.robot_pose.y - node.flat_path[-1].y)
-            if dis_robot2goal > node.map_resolution :
+            # if dis_robot2goal > node.map_resolution :
+            if dis_robot2goal > node.goal_tolerance:
                 # Car command 
                 dt = 1.0 / node.cmd_freq
                 cmd_msg = Twist()
-                cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt, 0, TARGET_SPEED)
-                cmd_msg.angular.z = np.clip(delta_omega * dt, -MAX_ANGULAR_VELOCITY, MAX_ANGULAR_VELOCITY)
+
+                # Assign angular velocity command
+                cmd_msg.angular.z = np.clip(total_steering_error * dt, 
+                                            -node.robot_constraints_dict["max_angular_velocity"], 
+                                            node.robot_constraints_dict["max_angular_velocity"])
+                
+                # Assign linear velocity command
+                if np.abs(total_steering_error) >= np.pi / 2:
+                    target_speed = np.abs(cmd_msg.angular.z) * WIDTH_OF_ROBOT_BASE / 2
+                else:
+                    # target_speed = node.robot_constraints_dict["max_linear_velocity"]
+                    target_speed = node.robot_twist.linear.x
+                accel_linear = node.pid_control(target_speed, node.robot_twist.linear.x)
+                cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt, 
+                                            np.abs(cmd_msg.angular.z) * WIDTH_OF_ROBOT_BASE / 2,
+                                            node.robot_constraints_dict["max_linear_velocity"])
                 node.pub_cmd.publish(cmd_msg)
             else:
                 rospy.loginfo("goal reached! {:.2f}".format(dis_robot2goal))

@@ -1,0 +1,16 @@
+walker:
+    dynamics: {
+        mass:                       30.0,
+        moment_of_inertia:          10.0,
+        damping_xy:                 45.0,
+        damping_theta:              20.0,
+        constant_fraction_xy:       0.001,
+        constant_fraction_theta:    0.001,
+    }
+    constraints: {
+        min_enable_force:           6.0,
+        min_enable_torque:          0.8,
+        max_linear_velocity:        0.6,
+        max_angular_velocity:       0.4,
+        preferred_linear_velocity:  0.4,
+    }

@@ -16,12 +16,11 @@ from nav_msgs.msg import Odometry
 
 # The period of single-leg contacting the ground
 SINGLE_GAIT_PERIOD = 5.0
-MAX_PUSHING_FORCE_VALUE = 18.0
+MAX_PUSHING_FORCE_VALUE = 16.0 + 6
 MIN_PUSHING_FORCE_VALUE = 6.0
 UP_SLOPE_TIME_RATIO = 1 / 5
 UP_SLOPE = (MAX_PUSHING_FORCE_VALUE - MIN_PUSHING_FORCE_VALUE) / (SINGLE_GAIT_PERIOD / 2 * UP_SLOPE_TIME_RATIO)
 DOWN_SLOPE = (MIN_PUSHING_FORCE_VALUE - MAX_PUSHING_FORCE_VALUE) / (SINGLE_GAIT_PERIOD / 2 * (1.0 - UP_SLOPE_TIME_RATIO))
-rospy.logwarn("UP_SLOPE:{:.2f}, DOWN_SLOPE:{:.2f}".format(UP_SLOPE, DOWN_SLOPE))
 
 current_slope = 0.0
 simulated_force_frequency = 0.0
@@ -56,7 +55,6 @@ def trigger_cb(req):
     return resp
 
 
-
 def timer_cb(event):
     global current_slope
     global force_y_value
@@ -68,9 +66,9 @@ def timer_cb(event):
             current_slope = DOWN_SLOPE
         elif current_slope < 0 and force_y_value <= MIN_PUSHING_FORCE_VALUE:
             current_slope = UP_SLOPE
-        force_y_value += (current_slope / simulated_force_frequency)
+        force_y_value += (current_slope / simulated_force_frequency + (np.random.rand(1) - 0.5)) 
     else:
-        force_y_value = 0
+        force_y_value = (np.random.rand(1) - 0.5) 
 
     force_msg.wrench.force.y = force_y_value
     force_msg.header.frame_id = "force_sensor_link"
@@ -79,8 +77,8 @@ def timer_cb(event):
 
 
 if __name__ == '__main__':
-    rospy.init_node('simulated_pushing_action_node', anonymous=False)
-    pub_force = rospy.Publisher("/walker/force_filtered", WrenchStamped, queue_size=1)
+    rospy.init_node('pushing_action_simulation_node', anonymous=False)
+    pub_force = rospy.Publisher("force_filtered", WrenchStamped, queue_size=1)
     srv_trigger = rospy.Service('trig_pushing_action', PushingActionTrigger, trigger_cb)
 
     simulated_force_frequency = 20

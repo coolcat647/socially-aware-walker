@@ -2,6 +2,9 @@
 <launch>
     <arg name="robot_namespace" value="walker" />
 
+    <!-- Load robot constraints -->
+    <rosparam file="$(find path_tracking)/config/walker_dynamics.yaml" command="load"/>
+
     <group ns="$(arg robot_namespace)">
         <node name="path_tracking_node" pkg="path_tracking" type="stanley_steering_control_node.py" output="screen" />
     </group>

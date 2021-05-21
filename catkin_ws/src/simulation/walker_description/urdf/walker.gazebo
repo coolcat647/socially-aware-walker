@@ -101,7 +101,7 @@
     </gazebo>
 
     <!-- The ft_sensor plugin -->
-    <gazebo reference="force_sensor_joint">
+    <!-- <gazebo reference="force_sensor_joint">
         <provideFeedback>true</provideFeedback>
     </gazebo>
     <gazebo>
@@ -112,6 +112,6 @@
         <topicName>force</topicName>
         <jointName>force_sensor_joint</jointName>
         </plugin>
-    </gazebo>
+    </gazebo> -->
 
 </robot>

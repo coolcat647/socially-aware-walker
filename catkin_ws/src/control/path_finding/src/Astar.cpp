@@ -148,7 +148,7 @@ bool Astar::Solver::solve_ros(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr, nav
         int cnt_sampled_grid = max_sampling_grid;
         while(cur_node != nullptr) {
             // printf("%d ", cur_node->decision);
-            if(cnt_sampled_grid == max_sampling_grid) {
+            if(cnt_sampled_grid == max_sampling_grid || cur_node->decision == -1) {
                 geometry_msgs::PoseStamped pose;
                 pose.pose.position.x = cur_node->grid.x * map_ptr_->info.resolution \
                                         + map_ptr_->info.origin.position.x;

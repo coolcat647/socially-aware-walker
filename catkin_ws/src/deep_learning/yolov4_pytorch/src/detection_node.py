@@ -177,7 +177,7 @@ class Yolov4Node(object):
         result_img = plot_boxes_cv2(cv_image, boxes, savename=None, class_names=self.class_names, interest_classes=INTEREST_CLASSES)
         detection_msg.result_image = self.cvbridge.cv2_to_imgmsg(result_img, "bgr8")
 
-        print('return {} detection results'.format(len(boxes)))
+        # print('return {} detection results'.format(len(boxes)))
         return Detection2DTriggerResponse(result=detection_msg)
     
 
