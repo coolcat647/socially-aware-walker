@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import threading
 import numpy as np
-import matplotlib.pyplot as plt
-import sys
-import time
 import copy
-from CubicSpline import cubic_spline_planner
+from steering_control_libs import cubic_spline_planner
+from steering_control_libs.utils import calc_target_index, stanley_control, proportional_control
 
 # ROS
 import rospy
@@ -17,11 +14,11 @@ from std_msgs.msg import Float32
 import message_filters
 
 SPEED_PROPORTIONAL_GAIN     = 2.0   # speed proportional gain
-CROSSTRACK_ERROR_GAIN       = 5.0 / 2   # crosstrack error gain
-LENGTH_OF_ROBOT_BASE        = 0.6   # [m] Wheel base of vehicle
-WIDTH_OF_ROBOT_BASE         = 0.6
+CROSSTRACK_ERROR_GAIN       = 5.0   # crosstrack error gain
+ROBOT_REF_LENGTH            = 0.6   # [m] Wheel base of vehicle
+ROBOT_WHEELS_DISTANCE       = 0.6
 
-class StanleyControlNode(object):
+class SteeringControlWithPushingNode(object):
     def __init__(self):
         rospy.on_shutdown(self.shutdown_cb)
 
@@ -67,8 +64,6 @@ class StanleyControlNode(object):
                                             odom_msg.pose.pose.orientation.z, 
                                             odom_msg.pose.pose.orientation.w])
         self.robot_pose.theta = euler_angle[2]
-
-        # self.robot_twist = odom_msg.twist.twist
         self.robot_twist = user_cmd_msg
 
         # Random noise
@@ -115,70 +110,6 @@ class StanleyControlNode(object):
         self.pub_path_flat.publish(flat_path_msg)
 
 
-    def pid_control(self, target_value, current_value):
-        return SPEED_PROPORTIONAL_GAIN * (target_value - current_value)
-
-    def stanley_control(self, robot_pose, robot_twist, target_path, last_target_idx):
-        """
-        Stanley steering control.
-
-        :param robot_pose: (Pose2D)
-        :param target_path: ([Pose2D])
-        :param last_target_idx: (int)
-        :return: (float, int)
-        """
-        current_target_idx, error_front_axle = self.calc_target_index(robot_pose, target_path)
-
-        if last_target_idx >= current_target_idx:
-            current_target_idx = last_target_idx
-
-        # heading error
-        heading_error = self.normalize_angle(target_path[current_target_idx].theta - robot_pose.theta)
-        # crosstrack_error: is defined as the lateral distance between the heading vector and the target point as follows.
-        crosstrack_error = np.arctan2(CROSSTRACK_ERROR_GAIN * error_front_axle, robot_twist.linear.x)
-        # Steering control
-        total_steering_error = heading_error + crosstrack_error
-        # print("h:{:.2f}, c:{:.2f}", heading_error, crosstrack_error)
-
-        return total_steering_error, current_target_idx, heading_error
-
-
-    def normalize_angle(self, angle):
-        # Normalize an angle to [-pi, pi].
-        while angle > np.pi:
-            angle -= 2.0 * np.pi
-
-        while angle < -np.pi:
-            angle += 2.0 * np.pi
-
-        return angle
-
-
-    def calc_target_index(self, robot_pose, target_path):      
-        # Compute index in the trajectory list of the target.
-
-        # Calc front axle position
-        fx = robot_pose.x + LENGTH_OF_ROBOT_BASE * np.cos(robot_pose.theta)
-        fy = robot_pose.y + LENGTH_OF_ROBOT_BASE * np.sin(robot_pose.theta)
-
-        # Search nearest point index
-        dx = []
-        dy = []
-        for tmp_pose in target_path:
-            dx.append(fx - tmp_pose.x)
-            dy.append(fy - tmp_pose.y)
-        d = np.hypot(dx, dy)
-        target_idx = np.argmin(d)
-        # print("target_idx:", target_idx)
-
-        # Project RMS error onto front axle vector
-        front_axle_vec = [-np.cos(robot_pose.theta + np.pi / 2),
-                          -np.sin(robot_pose.theta + np.pi / 2)]
-        error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
-
-        return target_idx, error_front_axle
-
-
     def shutdown_cb(self):
         self.pub_cmd.publish(Twist())
         rospy.loginfo("Shutdown " + rospy.get_name())
@@ -186,8 +117,9 @@ class StanleyControlNode(object):
 
 if __name__ == '__main__':
     rospy.init_node('steering_control_with_user_pushing_node', anonymous=False)
-    node = StanleyControlNode()
+    node = SteeringControlWithPushingNode()
 
+    # Control rate
     rate = rospy.Rate(node.cmd_freq)
 
     flag_message_published = False
@@ -196,6 +128,7 @@ if __name__ == '__main__':
         if node.flag_path_update == True:
             node.flag_path_update = False
 
+            # Check whether the updated flat path is equal to the old path
             cmp_result = all(map(lambda x, y: x == y, node.flat_path, node.updated_flat_path))
             if not cmp_result or len(node.flat_path) != len(node.updated_flat_path):
                 node.flat_path = copy.deepcopy(node.updated_flat_path)
@@ -210,8 +143,11 @@ if __name__ == '__main__':
             flag_message_published = False
 
             # Steering control law
-            target_idx, _  = node.calc_target_index(node.robot_pose, node.flat_path)            
-            total_steering_error, target_idx, heading_error = node.stanley_control(node.robot_pose, node.robot_twist, node.flat_path, target_idx)
+            total_steering_error, target_idx = stanley_control(node.robot_pose, 
+                                                                node.robot_twist, 
+                                                                node.flat_path, 
+                                                                ROBOT_REF_LENGTH,
+                                                                CROSSTRACK_ERROR_GAIN)
             
             # Publish tracking progress
             tracking_progress = (target_idx + 1) / len(node.flat_path)
@@ -233,19 +169,19 @@ if __name__ == '__main__':
                 cmd_msg = Twist()
 
                 # Assign angular velocity command
-                cmd_msg.angular.z = np.clip(total_steering_error * dt, 
-                                            -node.robot_constraints_dict["max_angular_velocity"], 
-                                            node.robot_constraints_dict["max_angular_velocity"])
+                if node.robot_twist.linear.x > 0.1:
+                    cmd_msg.angular.z = np.clip(total_steering_error * dt, 
+                                                -node.robot_constraints_dict["max_angular_velocity"], 
+                                                node.robot_constraints_dict["max_angular_velocity"])
                 
                 # Assign linear velocity command
                 if np.abs(total_steering_error) >= np.pi / 2:
-                    target_speed = np.abs(cmd_msg.angular.z) * WIDTH_OF_ROBOT_BASE / 2
+                    target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
                 else:
-                    # target_speed = node.robot_constraints_dict["max_linear_velocity"]
                     target_speed = node.robot_twist.linear.x
-                accel_linear = node.pid_control(target_speed, node.robot_twist.linear.x)
+                accel_linear = proportional_control(target_speed, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
                 cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt, 
-                                            np.abs(cmd_msg.angular.z) * WIDTH_OF_ROBOT_BASE / 2,
+                                            np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2,
                                             node.robot_constraints_dict["max_linear_velocity"])
                 node.pub_cmd.publish(cmd_msg)
             else:

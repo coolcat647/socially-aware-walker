@@ -7,6 +7,8 @@
     <!-- Load robot constraints -->
     <rosparam file="$(find path_tracking)/config/walker_dynamics.yaml" command="load"/>
 
+    <!-- <param name="use_sim_time" type="bool" value="$(arg use_sim_time)" /> -->
+
     <group ns="$(arg robot_namespace)">
         <!-- Pushing action generator service -->
         <node name="pushing_action_simulation_node" pkg="path_tracking" type="pushing_action_simulation_node.py" output="screen" />
