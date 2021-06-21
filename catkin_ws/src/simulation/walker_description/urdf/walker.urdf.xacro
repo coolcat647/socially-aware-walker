@@ -175,7 +175,7 @@
             </geometry>
         </collision>
     </link>
-    <joint name="force_sensor_joint" type="revolute"> <!-- fixed -->
+    <joint name="force_sensor_joint" type="fixed"> <!-- revolute -->
         <origin xyz="0.16109 0 0.81585" rpy="0 0 -1.5708" />
         <parent link="base_link" />
         <child link="force_sensor_link" />

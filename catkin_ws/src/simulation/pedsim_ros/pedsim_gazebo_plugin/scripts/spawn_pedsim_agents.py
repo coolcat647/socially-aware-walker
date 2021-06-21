@@ -15,15 +15,16 @@ from pedsim_msgs.msg  import AgentStates
 global xml_file
 
 # Samliu
-import dynamic_reconfigure.client
+from std_srvs.srv import Empty
+AGENT_TYPE_LIST = ['adult', 'child', 'robot', 'elder']
+
 
 def actor_poses_callback(actors):
     for actor in actors.agent_states:
         actor_id = str( actor.id )
         actor_pose = actor.pose
-        # rospy.loginfo("Spawning model: actor_id = %s", actor_id)
 
-        rospy.loginfo("Spawning model: actor_id = {}, ({:.2f}, {:.2f})".format(actor_id, actor_pose.position.x, actor_pose.position.y))
+        rospy.loginfo("Spawning actor id:{}, location:({:.2f}, {:.2f})".format(actor_id, actor_pose.position.x, actor_pose.position.y))
         model_pose = Pose(Point(x= actor_pose.position.x,
                                y= actor_pose.position.y,
                                z= actor_pose.position.z),
@@ -32,11 +33,19 @@ def actor_poses_callback(actors):
                                     actor_pose.orientation.z,
                                     actor_pose.orientation.w) )
 
-        spawn_model(actor_id, xml_string, "", model_pose, "world")
+        # spawn_model(actor_id, xml_string, "", model_pose, "world")
+        # Samliu
+        spawn_model("actor_{}_{}".format(actor_id, AGENT_TYPE_LIST[actor.type]), xml_string, "", model_pose, "world")
 
-    # Samliu
-    client = dynamic_reconfigure.client.Client("pedsim_simulator", timeout=30)
-    client.update_configuration({"paused": True, })
+    ##### Method 1 for pause the simulation #####
+    # import dynamic_reconfigure.client
+    # client = dynamic_reconfigure.client.Client("pedsim_simulator", timeout=30)
+    # client.update_configuration({"paused": True, })
+
+    ##### Method 2 for pause the simulation #####
+    rospy.wait_for_service("/pedsim_simulator/unpause_simulation", timeout=30)
+    pause_simulation = rospy.ServiceProxy("/pedsim_simulator/pause_simulation", Empty)
+    pause_simulation()
 
     rospy.signal_shutdown("all agents have been spawned !")
 

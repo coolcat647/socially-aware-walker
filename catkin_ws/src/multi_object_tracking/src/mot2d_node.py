@@ -61,7 +61,7 @@ class MultiObjectTrackingNode(object):
         self.pub_trk3d_vis = rospy.Publisher('trk3d_vis', MarkerArray, queue_size=1)
         self.pub_trk3d_result = rospy.Publisher('trk3d_result', Trk3DArray, queue_size=1)
         self.sub_det3d = rospy.Subscriber("det3d_result", Det3DArray, self.det_result_cb, queue_size=5)
-        self.sub_odom = rospy.Subscriber("odom", Odometry, self.odom_cb, queue_size=1)
+        # self.sub_odom = rospy.Subscriber("odom", Odometry, self.odom_cb, queue_size=1)
 
         # Ego velocity init
         self.ego_velocity = Vector3()
@@ -80,13 +80,11 @@ class MultiObjectTrackingNode(object):
             (trans, rot) = self.tflistener.lookupTransform(ODOM_FRAME, msg.header.frame_id, rospy.Time())
             # print("trans:", trans, "\nrot:", rot)
             tf_laser2odom = self.tflistener.fromTranslationRotation(trans, rot)
-            # tf_odom2laser = tf.transformations.inverse_matrix(tf_laser2odom)
             
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             rospy.logwarn("Cannot get tf from {} to {}".format(ODOM_FRAME, msg.header.frame_id))
             tf_laser2odom = np.eye(4)
-            tf_odom2laser = np.eye(4)
-        
+
         dets_list = None
         info_list = None
         for idx, det in enumerate(msg.dets_list):
@@ -96,7 +94,6 @@ class MultiObjectTrackingNode(object):
                 dets_list = np.array([new_det[0], new_det[1], det.radius], dtype=np.float32)
                 info_list = np.array([det.confidence, det.class_id], dtype=np.float32)
             else:
-                new_det = np.dot(tf_laser2odom, np.array([det.x, det.y, det.z, 1.0]))
                 dets_list = np.vstack([dets_list, [new_det[0], new_det[1], det.radius]])
                 info_list = np.vstack([info_list, [det.confidence, det.class_id]])
 
@@ -113,7 +110,6 @@ class MultiObjectTrackingNode(object):
         # Skip the visualization at first callback
         if self.last_time is None:
             self.last_time = rospy.Time.now()
-            # self.last_time = time.time()
             return
 
         # saving results, loop over each tracklet           
@@ -182,25 +178,26 @@ class MultiObjectTrackingNode(object):
                 marker_array.markers.append(marker)
 
                 # Show tracking ID
-                # str_marker = Marker()
-                # str_marker.header.frame_id = ODOM_FRAME
-                # str_marker.header.stamp = rospy.Time()
-                # str_marker.ns = 'tracking_id'
-                # str_marker.id = idx
-                # str_marker.scale.z = 0.4 #The size of the text
-                # str_marker.color.b = 1.0
-                # str_marker.color.g = 1.0
-                # str_marker.color.r = 1.0
-                # str_marker.color.a = 1.0
-                # str_marker.pose.position.x = d[0]
-                # str_marker.pose.position.y = d[1]
-                # str_marker.pose.position.z = 0.0
-                # str_marker.lifetime = rospy.Duration(self.marker_lifetime)
-                # str_marker.type = Marker.TEXT_VIEW_FACING
-                # str_marker.action = Marker.ADD
-                # # str_marker.text = "{}".format(int(d[5])) # str(d[5])
+                str_marker = Marker()
+                str_marker.header.frame_id = ODOM_FRAME
+                str_marker.header.stamp = rospy.Time()
+                str_marker.ns = 'tracking_id'
+                str_marker.id = idx
+                str_marker.scale.z = 0.4 #The size of the text
+                str_marker.color.b = 1.0
+                str_marker.color.g = 1.0
+                str_marker.color.r = 1.0
+                str_marker.color.a = 1.0
+                str_marker.pose.position.x = d[0]
+                str_marker.pose.position.y = d[1]
+                str_marker.pose.position.z = 0.0
+                str_marker.lifetime = rospy.Duration(self.marker_lifetime)
+                str_marker.type = Marker.TEXT_VIEW_FACING
+                str_marker.action = Marker.ADD
+                # str_marker.text = "{}".format(int(d[5])) # str(d[5])
                 # str_marker.text = "person" + str(int(d[5]))
-                # marker_array.markers.append(str_marker)
+                str_marker.text = "{:.2f}".format(speed)
+                marker_array.markers.append(str_marker)
                 
                 # Show direction 
                 arrow_marker = copy.deepcopy(marker)
@@ -219,7 +216,7 @@ class MultiObjectTrackingNode(object):
 
         # Publish marker array
         if self.flag_trk_vis:
-            self.pub_trk3d_vis.publish(marker_array)      
+            self.pub_trk3d_vis.publish(marker_array)
 
 
     def shutdown_cb(self):

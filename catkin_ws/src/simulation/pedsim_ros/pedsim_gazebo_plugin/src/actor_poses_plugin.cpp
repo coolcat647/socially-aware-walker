@@ -57,25 +57,47 @@ namespace gazebo
                     std::string frame_id;
                     frame_id = tmp_model->GetName();
 
-                    for (uint actor =0; actor< msg->agent_states.size() ; actor++) {
-                        if(frame_id == std::to_string( msg->agent_states[actor].id)  ){
-//                            ROS_INFO_STREAM("actor_id: "<< std::to_string( msg->tracks[actor].track_id) );
-                            ignition::math::Pose3d gzb_pose;
-                            gzb_pose.Pos().Set( msg->agent_states[actor].pose.position.x,
-                                                msg->agent_states[actor].pose.position.y,
-                                                msg->agent_states[actor].pose.position.z + MODEL_OFFSET);
-                            gzb_pose.Rot().Set(msg->agent_states[actor].pose.orientation.w,
-                                               msg->agent_states[actor].pose.orientation.x,
-                                               msg->agent_states[actor].pose.orientation.y,
-                                               msg->agent_states[actor].pose.orientation.z);
+                    // for (uint actor =0; actor< msg->agent_states.size() ; actor++) {
+                    //     if(frame_id == std::to_string( msg->agent_states[actor].id)  ){
+                    //         // ROS_INFO_STREAM("actor_id: "<< std::to_string( msg->tracks[actor].track_id) );
+                    //         ignition::math::Pose3d gzb_pose;
+                    //         gzb_pose.Pos().Set( msg->agent_states[actor].pose.position.x,
+                    //                             msg->agent_states[actor].pose.position.y,
+                    //                             msg->agent_states[actor].pose.position.z + MODEL_OFFSET);
+                    //         gzb_pose.Rot().Set(msg->agent_states[actor].pose.orientation.w,
+                    //                            msg->agent_states[actor].pose.orientation.x,
+                    //                            msg->agent_states[actor].pose.orientation.y,
+                    //                            msg->agent_states[actor].pose.orientation.z);
 
-                            try{
-                                tmp_model->SetWorldPose(gzb_pose);
-                            }
-                            catch(gazebo::common::Exception gz_ex){
-                                ROS_ERROR("Error setting pose %s - %s", frame_id.c_str(), gz_ex.GetErrorStr().c_str());
-                            }
+                    //         try{
+                    //             tmp_model->SetWorldPose(gzb_pose);
+                    //         }
+                    //         catch(gazebo::common::Exception gz_ex){
+                    //             ROS_ERROR("Error setting pose %s - %s", frame_id.c_str(), gz_ex.GetErrorStr().c_str());
+                    //         }
 
+                    //     }
+                    // }
+
+
+                    // Samliu 20210617
+                    int agent_idx = -1;
+                    int ret_val = sscanf(frame_id.c_str(), "actor_%d%*s", &agent_idx);
+                    if(ret_val && agent_idx < msg->agent_states.size()) {
+                        ignition::math::Pose3d gzb_pose;
+                        gzb_pose.Pos().Set( msg->agent_states[agent_idx].pose.position.x,
+                                            msg->agent_states[agent_idx].pose.position.y,
+                                            msg->agent_states[agent_idx].pose.position.z + MODEL_OFFSET);
+                        gzb_pose.Rot().Set(msg->agent_states[agent_idx].pose.orientation.w,
+                                           msg->agent_states[agent_idx].pose.orientation.x,
+                                           msg->agent_states[agent_idx].pose.orientation.y,
+                                           msg->agent_states[agent_idx].pose.orientation.z);
+
+                        try{
+                            tmp_model->SetWorldPose(gzb_pose);
+                        }
+                        catch(gazebo::common::Exception gz_ex){
+                            ROS_ERROR("Error setting pose %s - %s", frame_id.c_str(), gz_ex.GetErrorStr().c_str());
                         }
                     }
                }
@@ -85,7 +107,7 @@ namespace gazebo
 
         // ROS helper function that processes messages
         private: void QueueThread() {
-            static const double timeout = 0.1;
+            static const double timeout = 0.2;
             while (rosNode->ok()) {
                 rosQueue.callAvailable(ros::WallDuration(timeout));
             }

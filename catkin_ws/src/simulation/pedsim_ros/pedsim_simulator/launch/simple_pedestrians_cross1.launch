@@ -27,9 +27,6 @@
     <arg name="pose_initial_theta" value="0.7"/>
   </include>
 
-  <!-- Stop agent at beginning -->
-  <node name="simulation_pause_helper" pkg="pedsim_simulator" type="simulation_pause_helper.py" />
-
   <!-- Visualizer -->
   <include file="$(find pedsim_visualizer)/launch/visualizer.launch"/>
 

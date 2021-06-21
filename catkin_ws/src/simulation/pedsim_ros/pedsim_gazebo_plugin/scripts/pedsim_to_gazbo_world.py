@@ -127,17 +127,18 @@ def generate_launch_file( pedsim_file_name ):
     launch_file =  pkg_path + "/launch/" + pedsim_file_name.split('.')[0] + ".launch" #bo_airport.xml"
     with open(launch_file, 'w') as launch:
         print >> launch, '''<launch>
+    <!-- this file is auto generated using pedsim_gazebo_plugin pkg -->
 
-        <!-- this file is auto generated using pedsim_gazebo_plugin pkg -->  
-        
-        <include file="$(find gazebo_ros)/launch/empty_world.launch">
-             <arg name="world_name" value="$(find pedsim_gazebo_plugin)/worlds/{}.world"/>
-         </include>
-         
-         <!-- this node spawn pedsim actors to gazebo once, then the plugin updates their pose -->  
-         <node pkg="pedsim_gazebo_plugin" type="spawn_pedsim_agents.py" name="spawn_pedsim_agents"  output="screen">
-         </node>
+    <arg name="use_sim_time" default="true"/>
 
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+         <arg name="world_name" value="$(find pedsim_gazebo_plugin)/worlds/{}.world"/>
+         <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    </include>
+
+    <!-- this node spawn pedsim actors to gazebo once, then the plugin updates their pose -->
+    <node pkg="pedsim_gazebo_plugin" type="spawn_pedsim_agents.py" name="spawn_pedsim_agents"  output="screen">
+    </node>
 
 </launch>
 '''.format(pedsim_file_name.split('.')[0])

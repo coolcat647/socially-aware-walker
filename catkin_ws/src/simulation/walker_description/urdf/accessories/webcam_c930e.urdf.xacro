@@ -36,7 +36,7 @@
 
         <gazebo reference="${frame}_link">
             <sensor type="camera" name="camera1">
-                <visualize>true</visualize>
+                <!-- <visualize>true</visualize> -->
                 <update_rate>${update_rate}</update_rate>
                 <camera name="head">
                     <horizontal_fov>1.432915291</horizontal_fov>

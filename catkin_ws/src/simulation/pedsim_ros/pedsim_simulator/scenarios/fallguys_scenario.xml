@@ -1,88 +1,119 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--This scenario file was created by SGDiCoP on 2014-04-16T15:14:48-->
 <scenario>
-  <!--Obstacles-->
-  <!-- stage1 -->
-  <obstacle x1="-5" y1="-5" x2="100" y2="-5"/>
-  <obstacle x1="-5" y1="5" x2="100" y2="5"/>
-  <obstacle x1="-5" y1="-5" x2="-5" y2="5"/>
-	<obstacle x1="100" y1="-5" x2="100" y2="5"/>
+    <!--Obstacles-->
+    <!-- stage1 -->
+    <obstacle x1="-5" y1="-5" x2="100" y2="-5"/>
+    <obstacle x1="-5" y1="5" x2="100" y2="5"/>
+    <obstacle x1="-5" y1="-5" x2="-5" y2="5"/>
+    <obstacle x1="100" y1="-5" x2="100" y2="5"/>
 
-  <!-- stage2 -->
-  <obstacle x1="5" y1="-5" x2="5" y2="-4"/>
-  <obstacle x1="5" y1="-2" x2="5" y2="-1"/>
-  <obstacle x1="5" y1="1" x2="5" y2="2"/>
-  <obstacle x1="5" y1="4" x2="5" y2="5"/>
+    <!-- stage2 -->
+    <obstacle x1="5" y1="-5" x2="5" y2="-4"/>
+    <obstacle x1="5" y1="-2" x2="5" y2="-1"/>
+    <obstacle x1="5" y1="1" x2="5" y2="2"/>
+    <obstacle x1="5" y1="4" x2="5" y2="5"/>
 
-  <!-- stage3 -->
-  <obstacle x1="10" y1="-3.5" x2="10" y2="-2.17"/>
-  <obstacle x1="10" y1="-0.67" x2="10" y2="0.67"/>
-  <obstacle x1="10" y1="2.17" x2="10" y2="3.5"/>
+    <!-- stage3 -->
+    <obstacle x1="10" y1="-3.5" x2="10" y2="-2.17"/>
+    <obstacle x1="10" y1="-0.67" x2="10" y2="0.67"/>
+    <obstacle x1="10" y1="2.17" x2="10" y2="3.5"/>
 
-  <!-- stage4 -->
-  <obstacle x1="15" y1="-5" x2="15" y2="-3.25"/>
-  <obstacle x1="15" y1="-2.25" x2="15" y2="-0.5"/>
-  <obstacle x1="15" y1="0.5" x2="15" y2="2.25"/>
-  <obstacle x1="15" y1="3.25" x2="15" y2="5"/>
+    <!-- stage4 -->
+    <obstacle x1="15" y1="-5" x2="15" y2="-3.25"/>
+    <obstacle x1="15" y1="-2.25" x2="15" y2="-0.5"/>
+    <obstacle x1="15" y1="0.5" x2="15" y2="2.25"/>
+    <obstacle x1="15" y1="3.25" x2="15" y2="5"/>
 
-  <!-- stage5 -->
-  <obstacle x1="20" y1="-5" x2="25" y2="-2.5"/>
-  <obstacle x1="20" y1="-2.5" x2="25" y2="0"/>
-  <obstacle x1="20" y1="0" x2="25" y2="2.5"/>
-  <obstacle x1="20" y1="2.5" x2="25" y2="5"/>
+    <!-- stage5 -->
+    <obstacle x1="20" y1="-5" x2="25" y2="-2.5"/>
+    <obstacle x1="20" y1="-2.5" x2="25" y2="0"/>
+    <obstacle x1="20" y1="0" x2="25" y2="2.5"/>
+    <obstacle x1="20" y1="2.5" x2="25" y2="5"/>
 
-  <!-- stage6 -->
-  <obstacle x1="32.5" y1="-5" x2="27.5" y2="-2.5"/>
-  <obstacle x1="32.5" y1="-2.5" x2="27.5" y2="0"/>
-  <obstacle x1="32.5" y1="0" x2="27.5" y2="2.5"/>
-  <obstacle x1="32.5" y1="2.5" x2="27.5" y2="5"/>
+    <!-- stage6 -->
+    <obstacle x1="32.5" y1="-5" x2="27.5" y2="-2.5"/>
+    <obstacle x1="32.5" y1="-2.5" x2="27.5" y2="0"/>
+    <obstacle x1="32.5" y1="0" x2="27.5" y2="2.5"/>
+    <obstacle x1="32.5" y1="2.5" x2="27.5" y2="5"/>
 
-  <!-- stage6 -->
-  <obstacle x1="32.5" y1="-5" x2="27.5" y2="-2.5"/>
-  <obstacle x1="32.5" y1="-2.5" x2="27.5" y2="0"/>
-  <obstacle x1="32.5" y1="0" x2="27.5" y2="2.5"/>
-  <obstacle x1="32.5" y1="2.5" x2="27.5" y2="5"/>
+    <!-- stage6 -->
+    <obstacle x1="32.5" y1="-5" x2="27.5" y2="-2.5"/>
+    <obstacle x1="32.5" y1="-2.5" x2="27.5" y2="0"/>
+    <obstacle x1="32.5" y1="0" x2="27.5" y2="2.5"/>
+    <obstacle x1="32.5" y1="2.5" x2="27.5" y2="5"/>
 
-  <!-- stage7 -->
-  <waypoint id="ped_wpt_corridor1_1" x="35" y="-2.5" r="2.0"/>
-  <waypoint id="ped_wpt_corridor1_2" x="45" y="-2.5" r="2.0"/>
-  <waypoint id="ped_wpt_corridor2_1" x="35" y="2.5" r="2.0"/>
-  <waypoint id="ped_wpt_corridor2_2" x="45" y="2.5" r="2.0"/>
+    <!-- stage7 -->
+    <obstacle x1="35" y1="-5" x2="35" y2="-1"/>
+    <obstacle x1="35" y1="1" x2="35" y2="5"/>
+
+    <!-- stage8 -->
+    <waypoint id="ped_wpt_corridor1_1" x="37.5" y="-2.5" r="1.0"/>
+    <waypoint id="ped_wpt_corridor1_2" x="47.5" y="-2.5" r="1.0"/>
+    <waypoint id="ped_wpt_corridor2_1" x="37.5" y="2.5" r="1.0"/>
+    <waypoint id="ped_wpt_corridor2_2" x="47.5" y="2.5" r="1.0"/>
+    <waypoint id="ped_wpt_corridor3_1" x="37.5" y="0" r="1.0"/>
+    <waypoint id="ped_wpt_corridor3_2" x="47.5" y="0" r="1.0"/>
 
     <!--AgentClusters-->
-    <agent x="35" y="-2.5 " n="4" dx="0." dy="1.0" type="3">
+    <agent x="37.5" y="-2.5 " n="3" dx="0.4" dy="1.6" type="0">
         <addwaypoint id="ped_wpt_corridor1_2"/>
         <addwaypoint id="ped_wpt_corridor1_1"/>
     </agent>
-    <agent x="45" y="2.5 " n="4" dx="0.2" dy="1.0" type="3">
+    <agent x="47.5" y="2.5 " n="3" dx="0.4" dy="1.6" type="0">
         <addwaypoint id="ped_wpt_corridor2_1"/>
         <addwaypoint id="ped_wpt_corridor2_2"/>
     </agent>
-
-  <!-- stage8 -->
-  <obstacle x1="47.5" y1="-3" x2="47.5" y2="-1"/>
-  <obstacle x1="47.5" y1="1" x2="47.5" y2="3"/>
-
-
-    <!-- <agent x="8" y="0 " n="2" dx="0.2" dy="0" type="0">
-        <addwaypoint id="ped_waypoint_1"/>
-        <addwaypoint id="ped_waypoint_2"/>
+    <agent x="47.5" y="0.0" n="3" dx="0.4" dy="1.6" type="0">
+        <addwaypoint id="ped_wpt_corridor3_1"/>
+        <addwaypoint id="ped_wpt_corridor3_2"/>
     </agent>
 
-    <agent x="8" y="-8" n="2" dx="0.2" dy="0" type="0">
-        <addwaypoint id="ped_waypoint_3"/>
-        <addwaypoint id="ped_waypoint_5"/>
+    <!-- stage9 -->
+    <obstacle x1="50" y1="-5" x2="50" y2="-1"/>
+    <obstacle x1="50" y1="1" x2="50" y2="5"/>
+
+    <!-- stage10 -->
+    <waypoint id="ped_wpt_corridor4_1" x="52.5" y="-4" r="1.0"/>
+    <waypoint id="ped_wpt_corridor4_2" x="52.5" y="4" r="1.0"/>
+    <waypoint id="ped_wpt_corridor5_1" x="55" y="-4" r="1.0"/>
+    <waypoint id="ped_wpt_corridor5_2" x="55" y="4" r="1.0"/>
+    <waypoint id="ped_wpt_corridor6_1" x="57.5" y="-4" r="1.0"/>
+    <waypoint id="ped_wpt_corridor6_2" x="57.5" y="4" r="1.0"/>
+
+    <!--AgentClusters-->
+    <agent x="52.5" y="-4 " n="1" dx="0.0" dy="1.0" type="0">
+        <addwaypoint id="ped_wpt_corridor4_2"/>
+        <addwaypoint id="ped_wpt_corridor4_1"/>
+    </agent>
+    <agent x="52.5" y="4 " n="1" dx="0.0" dy="1.0" type="0">
+        <addwaypoint id="ped_wpt_corridor4_1"/>
+        <addwaypoint id="ped_wpt_corridor4_2"/>
     </agent>
 
-    <agent x="-8" y="-8" n="2" dx="0.2" dy="0" type="0">
-        <addwaypoint id="ped_waypoint_4"/>
-        <addwaypoint id="ped_waypoint_6"/>
+    <agent x="55" y="-4 " n="1" dx="0.0" dy="1.0" type="0">
+        <addwaypoint id="ped_wpt_corridor5_2"/>
+        <addwaypoint id="ped_wpt_corridor5_1"/>
+    </agent>
+    <agent x="55" y="4 " n="1" dx="0.0" dy="1.0" type="0">
+        <addwaypoint id="ped_wpt_corridor5_1"/>
+        <addwaypoint id="ped_wpt_corridor5_2"/>
     </agent>
 
-    <agent x="8" y="8" n="2" dx="0.2" dy="0" type="0">
-        <addwaypoint id="ped_waypoint_6"/>
-        <addwaypoint id="ped_waypoint_4"/>
-    </agent> -->
+    <agent x="57.5" y="-4 " n="1" dx="0.0" dy="1.0" type="0">
+        <addwaypoint id="ped_wpt_corridor6_2"/>
+        <addwaypoint id="ped_wpt_corridor6_1"/>
+    </agent>
+    <agent x="57.5" y="4 " n="1" dx="0.0" dy="1.0" type="0">
+        <addwaypoint id="ped_wpt_corridor6_1"/>
+        <addwaypoint id="ped_wpt_corridor6_2"/>
+    </agent>
+
+    <!-- stage11 -->
+    <obstacle x1="60" y1="-5" x2="60" y2="-1"/>
+    <obstacle x1="60" y1="1" x2="60" y2="5"/>
+
+
 
     <!--Robot-->
     <agent x="0" y="0" n="1" dx="0" dy="0" type="2">

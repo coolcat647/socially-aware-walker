@@ -58,7 +58,6 @@ def stanley_control(robot_pose, robot_twist, target_path, robot_ref_length, cros
     :param robot_pose: (Pose2D)
     :param robot_twist: (Twist)
     :param target_path: ([Pose2D])
-    :param last_target_idx: (int)
     :param robot_ref_length: (float)
     :param crosstrack_error_gain: (float)
     :return: (float, int)
@@ -72,7 +71,52 @@ def stanley_control(robot_pose, robot_twist, target_path, robot_ref_length, cros
     heading_error = normalize_angle(target_path[current_target_idx].theta - robot_pose.theta)
     # crosstrack_error: is defined as the lateral distance between the heading vector and the target point as follows.
     crosstrack_error = np.arctan2(crosstrack_error_gain * error_front_axle, robot_twist.linear.x)
-    # Steering control
+    # total steering error
     total_steering_error = heading_error + crosstrack_error
+
+    return total_steering_error, current_target_idx
+
+
+# Steering control with only heading error
+def heading_control(robot_pose, robot_twist, target_path, robot_ref_length):
+    """
+    :param robot_pose: (Pose2D)
+    :param robot_twist: (Twist)
+    :param target_path: ([Pose2D])
+    :param robot_ref_length: (float)
+    :param crosstrack_error_gain: (float)
+    :return: (float, int)
+    """
+    if not isinstance(robot_pose, Pose2D) or not isinstance(robot_twist, Twist):
+        raise NotImplementedError("Variables \'robot_pose\' should be Pose2D and \'robot_twist\' should be Twist.")
+
+    current_target_idx, error_front_axle = calc_target_index(robot_pose, target_path, robot_ref_length)
+
+    # heading error
+    heading_error = normalize_angle(target_path[current_target_idx].theta - robot_pose.theta)
+
+    return heading_error, current_target_idx
+
+
+# My steering control
+def my_steering_control(robot_pose, robot_twist, target_path, robot_ref_length, crosstrack_error_gain=5.0):
+    """
+    :param robot_pose: (Pose2D)
+    :param robot_twist: (Twist)
+    :param target_path: ([Pose2D])
+    :param robot_ref_length: (float)
+    :param crosstrack_error_gain: (float)
+    :return: (float, int)
+    """
+    if not isinstance(robot_pose, Pose2D) or not isinstance(robot_twist, Twist):
+        raise NotImplementedError("Variables \'robot_pose\' should be Pose2D and \'robot_twist\' should be Twist.")
+
+    current_target_idx, error_front_axle = calc_target_index(robot_pose, target_path, robot_ref_length)
+
+    # heading error
+    heading_error = normalize_angle(target_path[current_target_idx].theta - robot_pose.theta)
+
+    # total steering error
+    total_steering_error = np.abs(robot_twist.linear.x) * heading_error * 5.0 + error_front_axle * robot_twist.linear.x * 5.0
 
     return total_steering_error, current_target_idx
