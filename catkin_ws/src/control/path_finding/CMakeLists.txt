@@ -161,7 +161,7 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_library(${PROJECT_NAME} src/Astar.cpp src/localmap_utils.cpp)
+add_library(${PROJECT_NAME} src/a_star.cpp src/localmap_utils.cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(fake_map_node src/fake_map.cpp)

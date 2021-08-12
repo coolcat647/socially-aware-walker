@@ -10,12 +10,16 @@ constexpr const T& clamp( const T& v, const T& lo, const T& hi )
 
 
 // Original Asymmetric Gaussian Filter
-void localmap_utils::apply_original_agf(nav_msgs::OccupancyGrid::Ptr localmap_ptr, int target_idx, double target_yaw, double target_speed, int peak_value) {
+void localmap_utils::apply_original_agf(nav_msgs::OccupancyGrid::Ptr localmap_ptr,
+                                        int target_idx,
+                                        double target_yaw,
+                                        double target_speed,
+                                        int peak_value) {
     int map_width = localmap_ptr->info.width;
     int map_height = localmap_ptr->info.height;
     double map_resolution = localmap_ptr->info.resolution;
 
-    int max_proxemics_range = 5;    // +- 5 m
+    int max_proxemics_range = 3;    // +- 3 m
     int kernel_size = max_proxemics_range * 2 / map_resolution;
     kernel_size = (kernel_size % 2 == 0)? kernel_size + 1 : kernel_size;
 
@@ -25,7 +29,7 @@ void localmap_utils::apply_original_agf(nav_msgs::OccupancyGrid::Ptr localmap_pt
     std::vector<std::vector<int8_t> > agf_kernel(kernel_size, std::vector<int8_t>(kernel_size, 0));
     for(int i = 0; i < kernel_size; i++){
         for(int j = 0; j < kernel_size; j++){
-            double sigma_head = std::max(target_speed, 0.5);
+            double sigma_head = std::max(target_speed * 2, 0.5);
             double sigma_side = sigma_head * 2 / 5;
             double sigma_rear = sigma_head / 2;
 
@@ -48,8 +52,8 @@ void localmap_utils::apply_original_agf(nav_msgs::OccupancyGrid::Ptr localmap_pt
             if(agf_kernel[i][j] == 0) continue;
             int op_idx = target_idx - map_width * (i - kernel_size / 2) - (j - kernel_size / 2);
 
-            //// if(localmap_ptr->data[op_idx] < 0) continue;                         // do not apply filter out of laser range
-            if(op_idx < 0 || op_idx > max_map_idx) continue;           // upper and bottom bound
+            //// if(localmap_ptr->data[op_idx] < 0) continue;  // do not apply filter out of laser range
+            if(op_idx < 0 || op_idx > max_map_idx) continue;  // upper and bottom bound
             else if(abs((op_idx % map_width) - (target_idx % map_width)) >= kernel_size / 2) continue;  // left and right bound
             else
                 localmap_ptr->data[op_idx] = clamp(agf_kernel[i][j] + localmap_ptr->data[op_idx], 0, peak_value);
@@ -59,12 +63,17 @@ void localmap_utils::apply_original_agf(nav_msgs::OccupancyGrid::Ptr localmap_pt
 
 
 // Socially-aware Asymmetric Gaussian Filter
-void localmap_utils::apply_social_agf(nav_msgs::OccupancyGrid::Ptr localmap_ptr, int target_idx, double target_yaw, double target_speed, int peak_value, bool flag_right_hand_side) {
+void localmap_utils::apply_social_agf(nav_msgs::OccupancyGrid::Ptr localmap_ptr,
+                                      int target_idx,
+                                      double target_yaw,
+                                      double target_speed,
+                                      int peak_value,
+                                      bool flag_right_hand_side) {
     int map_width = localmap_ptr->info.width;
     int map_height = localmap_ptr->info.height;
     double map_resolution = localmap_ptr->info.resolution;
 
-    int max_proxemics_range = 4;    // +- 5 m
+    int max_proxemics_range = 3;    // +- 3 m
     int kernel_size = max_proxemics_range * 2 / map_resolution;
     kernel_size = (kernel_size % 2 == 0)? kernel_size + 1 : kernel_size;
 
@@ -72,46 +81,74 @@ void localmap_utils::apply_social_agf(nav_msgs::OccupancyGrid::Ptr localmap_ptr,
 
     // Asymmetric Gaussian Filter kernel
     std::vector<std::vector<int8_t> > agf_kernel(kernel_size, std::vector<int8_t>(kernel_size, 0));
-    for(int i = 0; i < kernel_size; i++){
-        for(int j = 0; j < kernel_size; j++){
-            double sigma_head = std::max(target_speed * 2, 0.5);
-            double sigma_right = (flag_right_hand_side)? sigma_head * 3 / 5 : sigma_head / 5;
-            double sigma_left = (flag_right_hand_side)? sigma_head / 5 : sigma_head * 3 / 5;
-            double sigma_rear = sigma_head / 2;
 
-            double y = -max_proxemics_range + map_resolution * i;
-            double x = -max_proxemics_range + map_resolution * j;
-            double alpha = std::atan2(-y, -x) - target_yaw + M_PI * 0.5;
-            double alpha_normalized = std::atan2(std::sin(alpha), std::cos(alpha));
-            double sigma_front = (alpha_normalized > 0)? sigma_head : sigma_rear;
-            double alpha_side = std::atan2(std::sin(alpha + M_PI * 0.5), std::cos(alpha + M_PI * 0.5));
-            double sigma_side = (alpha_side > 0)? sigma_right : sigma_left;
+    // High walking speed
+    if(target_speed > 0.5) {
+        for(int i = 0; i < kernel_size; i++){
+            for(int j = 0; j < kernel_size; j++){
+                double sigma_head = std::max(target_speed * 2, 0.5);
+                double sigma_right = (flag_right_hand_side)? sigma_head * 2 / 5 : sigma_head / 5;
+                double sigma_left = (flag_right_hand_side)? sigma_head / 5 : sigma_head * 2 / 5;
+                double sigma_rear = sigma_head / 5;
 
-            double sin_pow2 = std::pow(std::sin(target_yaw), 2);
-            double cos_pow2 = std::pow(std::cos(target_yaw), 2);
-            double sigma_side_pow2 = std::pow(sigma_side, 2);
-            double sigma_front_pow2 = std::pow(sigma_front, 2);
-            double g_a = cos_pow2 / (2 * sigma_front_pow2) + sin_pow2 / (2 * sigma_side_pow2);
-            double g_b = std::sin(2 * target_yaw) / (4 * sigma_front_pow2) - std::sin(2 * target_yaw) / (4 * sigma_side_pow2);
-            double g_c = sin_pow2 / (2 * sigma_front_pow2) + cos_pow2 / (2 * sigma_side_pow2);
-            double z = 1.0 / std::exp(g_a * std::pow(x, 2) + 2 * g_b * x * y + g_c * std::pow(y, 2)) * peak_value;
-            agf_kernel[i][j] = (uint8_t)z;
+                double y = -max_proxemics_range + map_resolution * i;
+                double x = -max_proxemics_range + map_resolution * j;
+                double alpha = std::atan2(-y, -x) - target_yaw + M_PI * 0.5;
+                double alpha_normalized = std::atan2(std::sin(alpha), std::cos(alpha));
+                double sigma_front = (alpha_normalized > 0)? sigma_head : sigma_rear;
+                double alpha_side = std::atan2(std::sin(alpha + M_PI * 0.5), std::cos(alpha + M_PI * 0.5));
+                double sigma_side = (alpha_side > 0)? sigma_right : sigma_left;
 
-            // Apply filter
-            if(agf_kernel[i][j] == 0) continue;
-            int op_idx = target_idx - map_width * (i - kernel_size / 2) - (j - kernel_size / 2);
+                double sin_pow2 = std::pow(std::sin(target_yaw), 2);
+                double cos_pow2 = std::pow(std::cos(target_yaw), 2);
+                double sigma_side_pow2 = std::pow(sigma_side, 2);
+                double sigma_front_pow2 = std::pow(sigma_front, 2);
+                double g_a = cos_pow2 / (2 * sigma_front_pow2) + sin_pow2 / (2 * sigma_side_pow2);
+                double g_b = std::sin(2 * target_yaw) / (4 * sigma_front_pow2) - std::sin(2 * target_yaw) / (4 * sigma_side_pow2);
+                double g_c = sin_pow2 / (2 * sigma_front_pow2) + cos_pow2 / (2 * sigma_side_pow2);
+                double z = 1.0 / std::exp(g_a * std::pow(x, 2) + 2 * g_b * x * y + g_c * std::pow(y, 2)) * peak_value;
+                agf_kernel[i][j] = (uint8_t)z;
 
-            //// if(localmap_ptr->data[op_idx] < 0) continue;                         // do not apply filter out of laser range
-            if(op_idx < 0 || op_idx > max_map_idx) continue;           // upper and bottom bound
-            else if(abs((op_idx % map_width) - (target_idx % map_width)) >= kernel_size / 2) continue;  // left and right bound
-            else
-                localmap_ptr->data[op_idx] = clamp(agf_kernel[i][j] + localmap_ptr->data[op_idx], 0, peak_value);
+                // Apply filter
+                if(agf_kernel[i][j] == 0) continue;
+                int op_idx = target_idx - map_width * (i - kernel_size / 2) - (j - kernel_size / 2);
+
+                // if(localmap_ptr->data[op_idx] < 0) continue;  // do not apply filter out of laser range
+                if(op_idx < 0 || op_idx > max_map_idx) continue;   // upper and bottom bound
+                else if(abs((op_idx % map_width) - (target_idx % map_width)) >= kernel_size / 2) continue;  // left and right bound
+                else
+                    localmap_ptr->data[op_idx] = clamp(agf_kernel[i][j] + localmap_ptr->data[op_idx], 0, peak_value);
+            }
+        }
+    }else{
+        for(int i = 0; i < kernel_size; i++){
+            for(int j = 0; j < kernel_size; j++){
+                double y = -max_proxemics_range + map_resolution * i;
+                double x = -max_proxemics_range + map_resolution * j;
+                double g_a = 2.0;
+                double g_c = 2.0;
+                double z = 1.0 / std::exp(g_a * std::pow(x, 2) + g_c * std::pow(y, 2)) * peak_value;
+                agf_kernel[i][j] = (uint8_t)z;
+
+                // Apply filter
+                if(agf_kernel[i][j] == 0) continue;
+                int op_idx = target_idx - map_width * (i - kernel_size / 2) - (j - kernel_size / 2);
+
+                // if(localmap_ptr->data[op_idx] < 0) continue;  // do not apply filter out of laser range
+                if(op_idx < 0 || op_idx > max_map_idx) continue;  // upper and bottom bound
+                else if(abs((op_idx % map_width) - (target_idx % map_width)) >= kernel_size / 2) continue;  // left and right bound
+                else
+                    localmap_ptr->data[op_idx] = clamp(agf_kernel[i][j] + localmap_ptr->data[op_idx], 0, peak_value);
+            }
         }
     }
 }
 
 
-void localmap_utils::apply_butterworth_filter(nav_msgs::OccupancyGrid::Ptr localmap_ptr, std::vector<std::vector<int8_t> > &inflation_kernel, int target_idx, int peak_value) {
+void localmap_utils::apply_butterworth_filter(nav_msgs::OccupancyGrid::Ptr localmap_ptr,
+                                              std::vector<std::vector<int8_t> > &inflation_kernel,
+                                              int target_idx,
+                                              int peak_value) {
     int map_width = localmap_ptr->info.width;
     int map_height = localmap_ptr->info.height;
 
@@ -129,10 +166,10 @@ void localmap_utils::apply_butterworth_filter(nav_msgs::OccupancyGrid::Ptr local
             int op_idx = target_idx + x + map_width * y;
             int8_t op_kernel_val = inflation_kernel[y + bound][x + bound];
 
-            // ROS_WARN("idx: %d, %d", y + bound, x + bound);
-            // if(localmap_ptr->data[op_idx] < 0) continue;                                 // do not apply filter out of laser range
-            if(op_kernel_val == 0 || localmap_ptr->data[op_idx] >= op_kernel_val) continue;
-            else if(op_idx < 0 || op_idx > max_map_idx) continue;           // upper and bottom bound
+            // if(localmap_ptr->data[op_idx] < 0) continue;  // do not apply filter out of laser range
+            // if(op_kernel_val == 0 || localmap_ptr->data[op_idx] >= op_kernel_val) continue;
+            if(op_kernel_val == 0) continue;
+            else if(op_idx < 0 || op_idx > max_map_idx) continue;  // upper and bottom bound
             else if(abs((op_idx % map_width) - (target_idx % map_width)) >= bound) continue;  // left and right bound
             else{
                 int tmp_val = op_kernel_val + localmap_ptr->data[op_idx];
@@ -144,7 +181,11 @@ void localmap_utils::apply_butterworth_filter(nav_msgs::OccupancyGrid::Ptr local
 }
 
 
-void localmap_utils::butterworth_filter_generate(std::vector<std::vector<int8_t> > &inflation_kernel, double filter_radius, int filter_order, double map_resolution, int peak_value) {
+void localmap_utils::butterworth_filter_generate(std::vector<std::vector<int8_t> > &inflation_kernel,
+                                                 double filter_radius,
+                                                 int filter_order,
+                                                 double map_resolution,
+                                                 int peak_value) {
     double kernel_range = filter_radius * 8;
     // std::cout << "Filter kernel: " << std::endl;
     for(double y = -kernel_range / 2 ; y <= kernel_range / 2 * 1.00000001; y += map_resolution){
@@ -169,7 +210,10 @@ void localmap_utils::butterworth_filter_generate(std::vector<std::vector<int8_t>
     ROS_INFO_STREAM("Inflation kernel size: (" << inflation_kernel.size() << ", " << inflation_kernel[0].size() << ")");
 }
 
-void localmap_utils::read_footprint_from_yaml(ros::NodeHandle nh, std::string footprint_topic_name, geometry_msgs::PolygonStamped::Ptr footprint_ptr) {
+
+void localmap_utils::read_footprint_from_yaml(ros::NodeHandle nh,
+                                              std::string footprint_topic_name,
+                                              geometry_msgs::PolygonStamped::Ptr footprint_ptr) {
     XmlRpc::XmlRpcValue footprint_xmlrpc;
     nh.getParam(footprint_topic_name, footprint_xmlrpc);
     if(footprint_xmlrpc.getType() == XmlRpc::XmlRpcValue::TypeString &&

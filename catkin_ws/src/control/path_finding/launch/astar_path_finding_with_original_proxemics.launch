@@ -10,7 +10,7 @@
                                             1 ->right hand side socially-aware agf; \
                                             2 ->left hand side socially-aware agf"/>
 
-    <arg name="solver_timeout_ms" default="200.0" />
+    <arg name="solver_timeout_ms" default="40.0" />
     <arg name="subgoal_timer_interval" default="0.25" />
 
     <group ns="$(arg robot_namespace)">
@@ -30,6 +30,7 @@
         <node name="path_finding_node" pkg="path_finding" type="path_finding_node" required="true" output="screen">
             <param name="solver_timeout_ms" type="double" value="$(arg solver_timeout_ms)" />
             <param name="subgoal_timer_interval" type="double" value="$(arg subgoal_timer_interval)" />
+            <param name="path_start_offsetx" type="double" value="0.4" />
         </node>
     </group>
 

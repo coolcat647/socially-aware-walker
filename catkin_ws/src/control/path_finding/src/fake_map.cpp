@@ -14,7 +14,7 @@
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 
-#include "Astar.hpp"
+#include "a_star.hpp"
  
 using namespace std;
 
@@ -38,7 +38,7 @@ public:
     nav_msgs::MapMetaData mapinfo_;
     nav_msgs::OccupancyGrid map_msg_;
 
-    Astar::Solver solver_;
+    astar::Solver solver_;
 };
 
 FakeMapNode::FakeMapNode(){
@@ -117,7 +117,7 @@ void FakeMapNode::timer_cb(const ros::TimerEvent& event){
 
     nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr(new nav_msgs::OccupancyGrid(map_msg_));
 
-    bool flag_success = solver_.solve_ros(map_msg_ptr, walkable_path_ptr, 0, mapinfo_.width * mapinfo_.height -1, 10.0);
+    bool flag_success = solver_.FindPathByHashmap(map_msg_ptr, walkable_path_ptr, 0, mapinfo_.width * mapinfo_.height -1, 10.0);
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
 

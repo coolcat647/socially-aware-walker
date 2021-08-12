@@ -14,7 +14,8 @@ from std_msgs.msg import Float32
 import message_filters
 
 SPEED_PROPORTIONAL_GAIN     = 2.0   # speed proportional gain
-CROSSTRACK_ERROR_GAIN       = 5.0   # crosstrack error gain
+CROSSTRACK_ERROR_GAIN       = 2.5   # crosstrack error gain
+
 ROBOT_REF_LENGTH            = 0.6   # [m] Wheel base of vehicle
 ROBOT_WHEELS_DISTANCE       = 0.6
 
@@ -65,6 +66,7 @@ class SteeringControlWithPushingNode(object):
                                             odom_msg.pose.pose.orientation.w])
         self.robot_pose.theta = euler_angle[2]
         self.robot_twist = user_cmd_msg
+        self.robot_twist.angular.z = odom_msg.twist.twist.angular.z
 
         # Random noise
         # self.robot_twist.linear.x = self.robot_twist.linear.x + (np.random.rand() - 0.5) * 0.5
@@ -169,8 +171,14 @@ if __name__ == '__main__':
                 cmd_msg = Twist()
 
                 # Assign angular velocity command
+                '''
+                Notice:
+                    total_steering_error = -(theta - theta_desired)
+                    theta_dot_dot = -k2 * theta_dot + k3 * total_steering_error
+                '''
                 if node.robot_twist.linear.x > 0.1:
-                    cmd_msg.angular.z = np.clip(total_steering_error * dt, 
+                    accel_angular = -node.robot_twist.angular.z * 4 + total_steering_error * 1
+                    cmd_msg.angular.z = np.clip(node.robot_twist.angular.z + accel_angular * dt,
                                                 -node.robot_constraints_dict["max_angular_velocity"], 
                                                 node.robot_constraints_dict["max_angular_velocity"])
                 
@@ -188,6 +196,7 @@ if __name__ == '__main__':
                 rospy.loginfo("goal reached! {:.2f}".format(dis_robot2goal))
                 node.pub_cmd.publish(Twist())
                 node.pub_tracking_progress.publish(1.0)
+                rospy.sleep(1.0)
 
         rate.sleep()
 

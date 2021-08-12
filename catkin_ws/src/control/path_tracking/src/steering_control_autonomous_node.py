@@ -3,7 +3,7 @@
 import numpy as np
 import copy
 from steering_control_libs import cubic_spline_planner
-from steering_control_libs.utils import calc_target_index, stanley_control, proportional_control
+from steering_control_libs.utils import calc_target_index, stanley_control, proportional_control, my_steering_control
 
 # ROS
 import rospy
@@ -13,7 +13,8 @@ from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from std_msgs.msg import Float32
 
 SPEED_PROPORTIONAL_GAIN     = 2.0   # speed proportional gain
-CROSSTRACK_ERROR_GAIN       = 5.0   # crosstrack error gain
+CROSSTRACK_ERROR_GAIN       = 2.5   # crosstrack error gain
+
 ROBOT_REF_LENGTH            = 0.6   
 ROBOT_WHEELS_DISTANCE       = 0.6   # [m] Wheel base of vehicle
 
@@ -140,9 +141,14 @@ if __name__ == '__main__':
             flag_message_published = False
 
             # Steering control law    
-            total_steering_error, target_idx = stanley_control(node.robot_pose, 
-                                                                node.robot_twist, 
-                                                                node.flat_path, 
+            # total_steering_error, target_idx = stanley_control(node.robot_pose,
+            #                                                     node.robot_twist,
+            #                                                     node.flat_path,
+            #                                                     ROBOT_REF_LENGTH,
+            #                                                     CROSSTRACK_ERROR_GAIN)
+            total_steering_error, target_idx = my_steering_control(node.robot_pose,
+                                                                node.robot_twist,
+                                                                node.flat_path,
                                                                 ROBOT_REF_LENGTH,
                                                                 CROSSTRACK_ERROR_GAIN)
             
@@ -166,12 +172,19 @@ if __name__ == '__main__':
                 cmd_msg = Twist()
 
                 # Assign angular velocity command
-                cmd_msg.angular.z = np.clip(total_steering_error * dt, 
+                '''
+                Notice:
+                    total_steering_error = -(theta - theta_desired)
+                    theta_dot_dot = -k2 * theta_dot + k3 * total_steering_error
+                '''
+                accel_angular = -node.robot_twist.angular.z * 4 + total_steering_error * 1
+                cmd_msg.angular.z = np.clip(node.robot_twist.angular.z + accel_angular * dt,
                                             -node.robot_constraints_dict["max_angular_velocity"], 
                                             node.robot_constraints_dict["max_angular_velocity"])
                 
                 # Assign linear velocity command
-                if np.abs(total_steering_error) >= np.pi / 2:
+                # if np.abs(total_steering_error) >= np.pi / 2:
+                if False:
                     target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
                 else:
                     target_speed = node.robot_constraints_dict["max_linear_velocity"]
@@ -184,6 +197,7 @@ if __name__ == '__main__':
                 rospy.loginfo("goal reached! {:.2f}".format(dis_robot2goal))
                 node.pub_cmd.publish(Twist())
                 node.pub_tracking_progress.publish(1.0)
+                rospy.sleep(1.0)
 
         rate.sleep()
 

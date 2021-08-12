@@ -19,7 +19,7 @@
 #include "tf/transform_datatypes.h"
 
 // Custom library
-#include "Astar.hpp"
+#include "a_star.hpp"
 
 
 static const double kMaxLateralDisRobot2TrackedPt = 0.6;
@@ -95,6 +95,8 @@ public:
     bool flag_infinity_traval_;
 
     geometry_msgs::PoseStamped::ConstPtr finalgoal_ptr_;
+
+    astar::Solver path_solver_;
 };
 
 
@@ -162,6 +164,8 @@ AstarPathfindingNode::AstarPathfindingNode(ros::NodeHandle nh, ros::NodeHandle p
     flag_planning_busy_ = false;
     timer_ = nh_.createTimer(ros::Duration(subgoal_timer_interval_), &AstarPathfindingNode::timer_cb, this);
 
+    path_solver_ = astar::Solver(nh_, false, kThresObstacleDangerCost, 0.6, 0.6);
+
     ROS_INFO_STREAM(ros::this_node::getName() << " is ready.");
 }
 
@@ -194,12 +198,14 @@ void AstarPathfindingNode::finalgoal_cb(const geometry_msgs::PoseStamped::ConstP
         ros::Duration(1.0).sleep();
     }
 
-    if(localmap_ptr_) {
+    // Check if robot footprint is safe
+    if(localmap_ptr_ && is_footprint_safe(localmap_ptr_, footprint_ptr_)) {
         geometry_msgs::Point subgoal_pt = generate_sub_goal(localmap_ptr_, goal_msg_ptr, tf_base2odom);
+        // subgoal_pt.x = 8.0;
+        // subgoal_pt.y = 4.5;
         // A* path planning
         walkable_path_ptr_ = nav_msgs::Path::Ptr(new nav_msgs::Path());
         walkable_path_ptr_->header.frame_id = path_frame_id_;
-        Astar::Solver solver;
         // base_link coordinate to map grid
         double map_resolution = localmap_ptr_->info.resolution;
         double map_origin_x = localmap_ptr_->info.origin.position.x;
@@ -214,7 +220,10 @@ void AstarPathfindingNode::finalgoal_cb(const geometry_msgs::PoseStamped::ConstP
         int map_y = std::round((subgoal_pt.y - map_origin_y) / map_resolution);
         int target_idx = map_y * map_width + map_x;
 
-        bool flag_success = solver.solve_ros(localmap_ptr_, walkable_path_ptr_, origin_idx, target_idx, solver_timeout_ms_);
+        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+        bool flag_success = path_solver_.FindPathByHashmap(localmap_ptr_, walkable_path_ptr_, origin_idx, target_idx, solver_timeout_ms_);
+        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
         if(flag_success){
             // Convert path from base_link coordinate to odom coordinate
             for(std::vector<geometry_msgs::PoseStamped>::iterator it = walkable_path_ptr_->poses.begin() ; it != walkable_path_ptr_->poses.end(); ++it) {
@@ -235,8 +244,8 @@ void AstarPathfindingNode::finalgoal_cb(const geometry_msgs::PoseStamped::ConstP
         }
     }
     else {
-        ROS_WARN("Empty localmap, skip finalgoal assignment");
-        publish_robot_status_marker("Empty localmap, skip finalgoal assignment.");
+        ROS_WARN("Empty localmap or unsafe footprint");
+        publish_robot_status_marker("Empty localmap or unsafe footprint, skip finalgoal assignment.");
     }
 
     flag_planning_busy_ = false;
@@ -388,7 +397,7 @@ bool AstarPathfindingNode::is_path_deprecated(nav_msgs::Path::Ptr path_ptr) {
         return true;
     }
 
-    if(ros::Time::now() - path_ptr->header.stamp > ros::Duration(20.0)){
+    if(ros::Time::now() - path_ptr->header.stamp > ros::Duration(5.0)){
         return true;
     }else {
         return false;
@@ -712,7 +721,7 @@ void AstarPathfindingNode::timer_cb(const ros::TimerEvent&){
             // A* path planning
             walkable_path_ptr_ = nav_msgs::Path::Ptr(new nav_msgs::Path());
             walkable_path_ptr_->header.frame_id = path_frame_id_;
-            Astar::Solver solver(kThresObstacleDangerCost, 0.6, 0.6);
+
             // coordinate to map grid
             // Trick: start plan from the grid which is in front of robot
             int origin_idx = std::round((-map_origin_y + path_start_offsety_) / map_resolution) * map_width + 
@@ -721,7 +730,7 @@ void AstarPathfindingNode::timer_cb(const ros::TimerEvent&){
             int map_y = std::round((subgoal_pt.y - map_origin_y) / map_resolution);
             int target_idx = map_y * map_width + map_x;
 
-            bool flag_success = solver.solve_ros(localmap_ptr_, walkable_path_ptr_, origin_idx, target_idx, solver_timeout_ms_);
+            bool flag_success = path_solver_.FindPathByHashmap(localmap_ptr_, walkable_path_ptr_, origin_idx, target_idx, solver_timeout_ms_);
             if(flag_success){
                 // Convert path from base_link coordinate to odom coordinate
                 for(std::vector<geometry_msgs::PoseStamped>::iterator it = walkable_path_ptr_->poses.begin() ; it != walkable_path_ptr_->poses.end(); ++it) {
