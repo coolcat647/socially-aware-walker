@@ -62,9 +62,28 @@ QList<Agent*> AgentCluster::dissolve() {
 
     double randomizedX = position.x;
     double randomizedY = position.y;
-    // handle dx=0 or dy=0 cases
-    if (distribution.width() != 0) randomizedX += randomX(RNG());
-    if (distribution.height() != 0) randomizedY += randomY(RNG());
+    // handle dx!=0 or dy!=0 cases
+    if (distribution.width() != 0 && distribution.height() != 0) {
+      bool flag_collision;
+      double distance_threshold = std::min(std::min(distribution.width(), distribution.height()) / 2,
+                                           0.5);
+      // Check if collision occur, re-generate agent spawn position
+      do{
+        randomizedX = position.x + randomX(RNG()) * 2;
+        randomizedY = position.y + randomY(RNG()) * 2;
+        flag_collision = false;
+        for(auto agent : agents) {
+          double distance = std::hypot(randomizedX - agent->getx(),
+                                       randomizedY - agent->gety());
+          if(distance < distance_threshold) { flag_collision = true; break;}
+        }
+      }while(flag_collision);
+    }else{
+      // Original pedsim code
+      if (distribution.width() != 0) randomizedX += randomX(RNG());
+      if (distribution.height() != 0) randomizedY += randomY(RNG());
+    }
+
     a->setPosition(randomizedX, randomizedY);
     a->setType(agentType);
 

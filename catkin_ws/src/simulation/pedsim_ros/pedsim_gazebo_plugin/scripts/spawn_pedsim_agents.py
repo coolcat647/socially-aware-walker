@@ -50,8 +50,6 @@ def actor_poses_callback(actors):
     rospy.signal_shutdown("all agents have been spawned !")
 
 
-
-
 if __name__ == '__main__':
 
     rospy.init_node("spawn_pedsim_agents")

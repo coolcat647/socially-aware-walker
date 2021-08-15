@@ -147,8 +147,8 @@ def generate_launch_file( pedsim_file_name ):
 
       
 if __name__ == "__main__": 
-    # pedsim_file_name = raw_input(">> enter pedsim scenaria name: file_name.xml \n")
-    pedsim_file_name = "fallguys_scenario.xml"
+    pedsim_file_name = raw_input(">> enter pedsim scenaria name: file_name.xml \n")
+    # pedsim_file_name = "fallguys_scenario.xml"
 
     # genrate gazebo wolrd 
     generate_gzb_world( pedsim_file_name )     

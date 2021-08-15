@@ -130,7 +130,7 @@ def plot_boxes_cv2(img, boxes, savename=None, class_names=None, color=None, inte
             if not (class_names[cls_id] in interest_classes):
                 continue
                 
-            print('%s: %f' % (class_names[cls_id], cls_conf))
+            # print('%s: %f' % (class_names[cls_id], cls_conf))
             classes = len(class_names)
             offset = cls_id * 123457 % classes
             red = get_color(2, offset, classes)

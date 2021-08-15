@@ -50,6 +50,9 @@ Agent::Agent() {
   stateMachine = new AgentStateMachine(this);
   // group
   group = nullptr;
+
+  // samliu 20210814
+  last_position_ = Ped::Tvector(0, 0, 0);
 }
 
 Agent::~Agent() {
@@ -179,8 +182,8 @@ void Agent::move(double h) {
       Ped::Tagent::move(h);
     }
   } else {
-    Ped::Tagent::move(h);
     Ped::Tagent::SetRadius(0.5);
+    Ped::Tagent::move(h);
   }
 
   if (getType() == Ped::Tagent::ELDER) {
@@ -288,6 +291,9 @@ void Agent::enableAllForces() {
 void Agent::setPosition(double xIn, double yIn) {
   // call super class' method
   Ped::Tagent::setPosition(xIn, yIn);
+
+  // samliu20210814
+  SaveInitPosition(xIn, yIn);
 
   // inform users
   emit positionChanged(xIn, yIn);

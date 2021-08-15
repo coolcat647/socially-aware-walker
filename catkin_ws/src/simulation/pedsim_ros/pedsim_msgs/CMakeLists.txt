@@ -33,6 +33,9 @@ add_message_files( DIRECTORY msg
   SocialActivities.msg
   Waypoint.msg
   Waypoints.msg
+  
+  # samliu 20210814
+  GymAgentInfo.msg
 )
 
 # generate the messages

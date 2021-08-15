@@ -568,3 +568,17 @@ void Scene::moveAllAgents() {
 }
 
 void Scene::cleanupScene() { Ped::Tscene::cleanup(); }
+
+
+void Scene::removeAllWaypoint() {
+  foreach(const auto& key, waypoints.keys()) {
+    foreach (AgentCluster* cluster, agentClusters){
+      Waypoint* wp = waypoints[key];
+      cluster->removeWaypoint(wp);
+      waypoints.remove(key);
+      emit waypointRemoved(wp->getId());  // inform users
+      Ped::Tscene::removeWaypoint(wp);
+    }
+  }
+  waypoints.clear();
+}

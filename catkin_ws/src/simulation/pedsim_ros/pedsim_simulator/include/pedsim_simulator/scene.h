@@ -150,6 +150,8 @@ class Scene : public QObject, protected Ped::Tscene {
 
   virtual std::set<const Ped::Tagent*> getNeighbors(double x, double y,
                                                     double maxDist);
+  // samliu20210814
+  void removeAllWaypoint();
 
   // obstacle cell locations
   std::vector<Location> obstacle_cells_;

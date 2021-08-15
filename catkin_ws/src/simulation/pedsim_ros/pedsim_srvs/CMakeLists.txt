@@ -24,6 +24,9 @@ add_service_files( DIRECTORY srv
   GetAgentState.srv
   SetAllAgentsState.srv
   GetAllAgentsState.srv
+
+  # samliu 20210814
+  GymReset.srv
 )
 
 generate_messages(DEPENDENCIES ${MESSAGE_DEPENDENCIES})

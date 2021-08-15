@@ -116,9 +116,7 @@
 
 
     <!--Robot-->
-    <agent x="0" y="0" n="1" dx="0" dy="0" type="2">
-        <!-- <addwaypoint id="robot_start"/>
-        <addwaypoint id="robot_goal"/> -->
-    </agent>
+    <!-- <agent x="0" y="0" n="1" dx="0" dy="0" type="2">
+    </agent> -->
 
 </scenario>

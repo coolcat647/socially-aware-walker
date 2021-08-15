@@ -87,6 +87,8 @@ bool Simulator::initializeSimulation() {
       "pause_simulation", &Simulator::onPauseSimulation, this);
   srv_unpause_simulation_ = nh_.advertiseService(
       "unpause_simulation", &Simulator::onUnpauseSimulation, this);
+  srv_gym_reset_ = nh_.advertiseService(
+      "gym_reset", &Simulator::GymResetCb, this);
 
   // setup TF listener and other pointers
   transform_listener_.reset(new tf::TransformListener());
@@ -199,6 +201,58 @@ bool Simulator::onPauseSimulation(std_srvs::Empty::Request& request,
 bool Simulator::onUnpauseSimulation(std_srvs::Empty::Request& request,
                                     std_srvs::Empty::Response& response) {
   paused_ = false;
+  return true;
+}
+
+bool Simulator::GymResetCb(pedsim_srvs::GymReset::Request& request,
+                           pedsim_srvs::GymReset::Response& response) {
+  QList<Agent*> scene_agents = SCENE.getAgents();
+  if(request.agents_list.size() != scene_agents.size()){
+    ROS_ERROR("The number of current agents and request agents is not matched");
+    response.success = false;
+    return false;
+  }
+
+  SCENE.removeAllWaypoint();
+  uint8_t idx_req_agent = 0;
+  for(auto req_agent : request.agents_list){
+    // SOP
+    // 1. Let agent arrive waypoint --> 2. Remove all waypoints -->
+    // 3. Add new waypoint          --> 4. Update agent state
+    Ped::Twaypoint* cur_wp_ptr1 = scene_agents[idx_req_agent]->getCurrentWaypoint();
+    scene_agents[idx_req_agent]->setPosition(cur_wp_ptr1->getx(), cur_wp_ptr1->gety());
+    scene_agents[idx_req_agent]->removeAllWaypoint();
+
+    uint8_t idx_wp = 0;
+    for(auto wp : req_agent.waypoints_list){
+      // Weird thing 2: I cannot create "Waypoint" directly. Just create "AreaWaypoint"
+      //                then convert to "Waypoint" pointer.
+      Ped::Tvector wp_xy(wp.x, wp.y);
+      QString wp_name = QString::fromStdString("gym_wp_" +
+                                               std::to_string(idx_req_agent) +
+                                               "_" +
+                                               std::to_string(idx_wp));
+      AreaWaypoint* area_wp = new AreaWaypoint(wp_name, wp.x, wp.y, 0.5);
+      Waypoint* wp_ptr = dynamic_cast<Waypoint*>(area_wp);
+      SCENE.addWaypoint(wp_ptr);
+      scene_agents[idx_req_agent]->addWaypoint(wp_ptr);
+      scene_agents[idx_req_agent]->updateState();
+      idx_wp++;
+    }
+    scene_agents[idx_req_agent]->setPosition(req_agent.init_pose2d.x,
+                                            req_agent.init_pose2d.y);
+    idx_req_agent++;
+  }
+
+  // Pause simulation
+  publishAgents();
+  publishGroups();
+  publishRobotPosition();
+  publishObstacles();
+  publishWaypoints();
+  paused_ = true;
+  
+  response.success = true;
   return true;
 }
 

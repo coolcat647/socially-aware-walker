@@ -77,7 +77,6 @@ class Agent : public ScenarioElement, public Ped::Tagent {
   bool setWaypoints(const QList<Waypoint*>& waypointsIn);
   bool addWaypoint(Waypoint* waypointIn);
   bool removeWaypoint(Waypoint* waypointIn);
-
   Ped::Twaypoint* getCurrentDestination() const;
   bool needNewDestination() const;
 
@@ -123,6 +122,11 @@ class Agent : public ScenarioElement, public Ped::Tagent {
   void setY(double yIn);
   void setType(Ped::Tagent::AgentType typeIn);
 
+  // samliu 20210814
+  inline void RestoreInitPosition(void) {setPosition(last_position_.x, last_position_.y);}
+  inline void SaveInitPosition(double xIn, double yIn) {last_position_.x = xIn; last_position_.y = yIn;}
+  inline void removeAllWaypoint() { destinations.clear(); }
+
   // → VisibleScenarioElement Overrides/Overloads
  public:
   virtual QPointF getVisiblePosition() const;
@@ -147,6 +151,9 @@ class Agent : public ScenarioElement, public Ped::Tagent {
 
   // → waypoint planner
   WaypointPlanner* waypointplanner;
+
+  // samliu 20210814
+  Ped::Tvector last_position_;
 };
 
 #endif
