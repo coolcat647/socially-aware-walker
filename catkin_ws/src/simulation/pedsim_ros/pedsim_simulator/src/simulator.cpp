@@ -194,19 +194,27 @@ void Simulator::reconfigureCB(pedsim_simulator::PedsimSimulatorConfig& config,
 
 bool Simulator::onPauseSimulation(std_srvs::Empty::Request& request,
                                   std_srvs::Empty::Response& response) {
+  ROS_INFO("Pause simulation!");
   paused_ = true;
   return true;
 }
 
 bool Simulator::onUnpauseSimulation(std_srvs::Empty::Request& request,
                                     std_srvs::Empty::Response& response) {
+  ROS_INFO("Unpause imulation!");
   paused_ = false;
   return true;
 }
 
 bool Simulator::GymResetCb(pedsim_srvs::GymReset::Request& request,
                            pedsim_srvs::GymReset::Response& response) {
-  QList<Agent*> scene_agents = SCENE.getAgents();
+  // Collect all agents into a list except the robot agent.
+  QList<Agent*> scene_agents;
+  for(auto const & tmp_agent_ptr : SCENE.getAgents())
+    if (tmp_agent_ptr->getType() != Ped::Tagent::ROBOT)
+      scene_agents.push_back(tmp_agent_ptr);
+
+  // Check if the number of current agents and request agents is matched.
   if(request.agents_list.size() != scene_agents.size()){
     ROS_ERROR("The number of current agents and request agents is not matched");
     response.success = false;
@@ -215,16 +223,16 @@ bool Simulator::GymResetCb(pedsim_srvs::GymReset::Request& request,
 
   SCENE.removeAllWaypoint();
   uint8_t idx_req_agent = 0;
-  for(auto req_agent : request.agents_list){
+  for(auto const & req_agent : request.agents_list){
     // SOP
     // 1. Let agent arrive waypoint --> 2. Remove all waypoints -->
-    // 3. Add new waypoint          --> 4. Update agent state
+    // 3. Add new waypoint          --> 4. Update agent state --> Done
     Ped::Twaypoint* cur_wp_ptr1 = scene_agents[idx_req_agent]->getCurrentWaypoint();
     scene_agents[idx_req_agent]->setPosition(cur_wp_ptr1->getx(), cur_wp_ptr1->gety());
     scene_agents[idx_req_agent]->removeAllWaypoint();
 
     uint8_t idx_wp = 0;
-    for(auto wp : req_agent.waypoints_list){
+    for(auto const & wp : req_agent.waypoints_list){
       // Weird thing 2: I cannot create "Waypoint" directly. Just create "AreaWaypoint"
       //                then convert to "Waypoint" pointer.
       Ped::Tvector wp_xy(wp.x, wp.y);
