@@ -23,10 +23,10 @@ if __name__ == '__main__':
         theta = np.random.rand() * np.pi * 2
         init_pose2d = Pose2D(x=np.cos(theta) * moving_distance,
                              y=np.sin(theta) * moving_distance,
-                             theta=theta)
+                             theta=theta - np.pi)
         wp1 = Pose2D(x=np.cos(theta - np.pi) * moving_distance,
                      y=np.sin(theta - np.pi) * moving_distance,
-                     theta=-init_pose2d.theta)
+                     theta=theta - np.pi)
         while True:
             flag_collision = False
             for other_wp in all_wp_list:
@@ -38,10 +38,10 @@ if __name__ == '__main__':
                 theta = np.random.rand() * np.pi * 2
                 init_pose2d = Pose2D(x=np.cos(theta) * moving_distance,
                                      y=np.sin(theta) * moving_distance,
-                                     theta=theta)
+                                     theta=theta - np.pi)
                 wp1 = Pose2D(x=np.cos(theta - np.pi) * moving_distance,
                              y=np.sin(theta - np.pi) * moving_distance,
-                             theta=-init_pose2d.theta)
+                             theta=theta - np.pi)
         all_wp_list.append(wp1)
 
 

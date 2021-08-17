@@ -249,6 +249,9 @@ bool Simulator::GymResetCb(pedsim_srvs::GymReset::Request& request,
     }
     scene_agents[idx_req_agent]->setPosition(req_agent.init_pose2d.x,
                                             req_agent.init_pose2d.y);
+    // Set agent direction toward the goal
+    scene_agents[idx_req_agent]->setvx(std::cos(req_agent.init_pose2d.theta) * 0.1);
+    scene_agents[idx_req_agent]->setvy(std::sin(req_agent.init_pose2d.theta) * 0.1);
     idx_req_agent++;
   }
 
