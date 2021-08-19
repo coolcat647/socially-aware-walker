@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="robot_namespace" value="walker" />
+
+    <!-- Load robot constraints -->
+    <rosparam file="$(find path_tracking)/config/walker_dynamics.yaml" command="load"/>
+
+    <group ns="$(arg robot_namespace)">
+        <node name="path_tracking_node" pkg="path_tracking" type="steering_control_only_heading_error.py" output="screen" />
+    </group>
+</launch>
