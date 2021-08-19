@@ -74,7 +74,7 @@ void Solver::AddCostTextToMarkerArray(visualization_msgs::MarkerArray& mrk_array
                                       Grid2D grid,
                                       float cost) {
   visualization_msgs::Marker mrk;
-  mrk.header.frame_id = "base_link";
+  mrk.header.frame_id = map_ptr_->header.frame_id;
   mrk.ns = "grid_marker";
   mrk.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
   mrk.action = visualization_msgs::Marker::ADD;
