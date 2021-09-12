@@ -11,6 +11,6 @@ walker:
         min_enable_force:           6.0,
         min_enable_torque:          0.8,
         max_linear_velocity:        0.5,
-        max_angular_velocity:       0.4,
+        max_angular_velocity:       0.5,
         preferred_linear_velocity:  0.4,
     }

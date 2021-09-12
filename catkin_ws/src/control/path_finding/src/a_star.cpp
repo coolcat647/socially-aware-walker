@@ -192,7 +192,7 @@ bool Solver::FindPathByHashmap(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr,
           close_hashmap_.find(tmp_node) != close_hashmap_.end())
         continue;                       
 
-      float g_cost = (i < 4)? cur_node->g_val + 1.0f : cur_node->g_val + 1.4f;
+      float g_cost = (i < 4)? cur_node->g_val + 1.0f : cur_node->g_val + 1.414f;
 
       auto hashmap_iter = open_hashmap_.find(tmp_node);
       if (hashmap_iter == open_hashmap_.end()) {
@@ -200,7 +200,7 @@ bool Solver::FindPathByHashmap(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr,
         Node* successor_ptr = new Node(tmp_grid, cur_node);
         successor_ptr->g_val = g_cost;
         successor_ptr->h_val = GetHeuristic_(successor_ptr->grid, *goal_grid_ptr_) +
-                                GetPotentialCost(tmp_grid);
+                                GetPotentialCost(tmp_grid) / 10;
         successor_ptr->decision = i;
 
         // Add successor node to open set
@@ -345,7 +345,7 @@ bool Solver::FindPathByHeap(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr,
       if(successor_ptr == nullptr){
         successor_ptr = new Node(tmp_grid, cur_node);       // Expand a new node from current node
         successor_ptr->g_val = g_cost;
-        successor_ptr->h_val = GetHeuristic_(successor_ptr->grid, goal) + GetPotentialCost(tmp_grid) / 2;  // Calc the heuristic value
+        successor_ptr->h_val = GetHeuristic_(successor_ptr->grid, goal) + GetPotentialCost(tmp_grid) / 10;  // Calc the heuristic value
 
         successor_ptr->decision = i;
         open_set.push_back(successor_ptr);

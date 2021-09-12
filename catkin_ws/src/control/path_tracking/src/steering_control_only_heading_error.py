@@ -141,7 +141,14 @@ if __name__ == '__main__':
             if not flag_message_published: 
                 rospy.loginfo("Empty planning path, wait for new path")
                 flag_message_published = True
-            node.pub_cmd.publish(Twist())
+            # Stop the robot
+            cmd_msg = Twist()
+            dt = 1.0 / node.cmd_freq
+            accel_linear = proportional_control(0, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
+            cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
+                                        0.0,
+                                        node.robot_constraints_dict["max_linear_velocity"])
+            node.pub_cmd.publish(cmd_msg)
         else:
             flag_message_published = False
 
@@ -177,7 +184,7 @@ if __name__ == '__main__':
                     theta_dot_dot = -k2 * theta_dot + k3 * total_steering_error
                 '''
                 accel_angular = -node.robot_twist.angular.z * HEADING_ERROR_DOT_GAIN + total_steering_error * HEADING_ERROR_GAIN
-                cmd_msg.angular.z = np.clip(node.robot_twist.angular.z + accel_angular * dt, 
+                cmd_msg.angular.z = np.clip(node.robot_twist.angular.z + accel_angular * dt,
                                             -node.robot_constraints_dict["max_angular_velocity"], 
                                             node.robot_constraints_dict["max_angular_velocity"])
                 
@@ -187,15 +194,20 @@ if __name__ == '__main__':
                 else:
                     target_speed = node.robot_constraints_dict["max_linear_velocity"]
                 accel_linear = proportional_control(target_speed, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
-                cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt, 
+                cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
                                             np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2,
                                             node.robot_constraints_dict["max_linear_velocity"])
                 node.pub_cmd.publish(cmd_msg)
             else:
                 rospy.loginfo("goal reached! {:.2f}".format(dis_robot2goal))
-                node.pub_cmd.publish(Twist())
+                # Stop the robot
+                cmd_msg = Twist()
+                accel_linear = proportional_control(0, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
+                cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
+                                            0.0,
+                                            node.robot_constraints_dict["max_linear_velocity"])
+                node.pub_cmd.publish(cmd_msg)
                 node.pub_tracking_progress.publish(1.0)
-                rospy.sleep(1.0)
 
         rate.sleep()
 

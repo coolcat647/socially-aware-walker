@@ -121,6 +121,7 @@ if __name__ == '__main__':
     rate = rospy.Rate(node.cmd_freq)
 
     flag_message_published = False
+    flag_high_steering_error = False
 
     while not rospy.is_shutdown():
         if node.flag_path_update == True:
@@ -136,7 +137,14 @@ if __name__ == '__main__':
             if not flag_message_published: 
                 rospy.loginfo("Empty planning path, wait for new path")
                 flag_message_published = True
-            node.pub_cmd.publish(Twist())
+            # Stop the robot
+            cmd_msg = Twist()
+            dt = 1.0 / node.cmd_freq
+            accel_linear = proportional_control(0, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
+            cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
+                                        0.0,
+                                        node.robot_constraints_dict["max_linear_velocity"])
+            node.pub_cmd.publish(cmd_msg)
         else:
             flag_message_published = False
 
@@ -177,27 +185,36 @@ if __name__ == '__main__':
                     total_steering_error = -(theta - theta_desired)
                     theta_dot_dot = -k2 * theta_dot + k3 * total_steering_error
                 '''
-                accel_angular = -node.robot_twist.angular.z * 4 + total_steering_error * 1
+                accel_angular = -node.robot_twist.angular.z * 1 + total_steering_error * 1
                 cmd_msg.angular.z = np.clip(node.robot_twist.angular.z + accel_angular * dt,
                                             -node.robot_constraints_dict["max_angular_velocity"], 
                                             node.robot_constraints_dict["max_angular_velocity"])
                 
                 # Assign linear velocity command
-                # if np.abs(total_steering_error) >= np.pi / 2:
-                if False:
+                if np.abs(total_steering_error) >= np.pi / 4 and not flag_high_steering_error:
+                    flag_high_steering_error = True
+                    target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
+                elif np.abs(total_steering_error) >= np.pi / 8 and flag_high_steering_error:
+                    flag_high_steering_error = True
                     target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
                 else:
+                    flag_high_steering_error = False
                     target_speed = node.robot_constraints_dict["max_linear_velocity"]
                 accel_linear = proportional_control(target_speed, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
-                cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt, 
+                cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
                                             np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2,
                                             node.robot_constraints_dict["max_linear_velocity"])
                 node.pub_cmd.publish(cmd_msg)
             else:
                 rospy.loginfo("goal reached! {:.2f}".format(dis_robot2goal))
-                node.pub_cmd.publish(Twist())
-                node.pub_tracking_progress.publish(1.0)
-                rospy.sleep(1.0)
 
+                # Stop the robot
+                cmd_msg = Twist()
+                accel_linear = proportional_control(0, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
+                cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
+                                            0.0,
+                                            node.robot_constraints_dict["max_linear_velocity"])
+                node.pub_cmd.publish(cmd_msg)
+                node.pub_tracking_progress.publish(1.0)
         rate.sleep()
 
