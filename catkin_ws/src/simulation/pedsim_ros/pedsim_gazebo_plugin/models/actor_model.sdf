@@ -45,14 +45,14 @@
         </mesh>
       </geometry>
       <!-- To reduce the computations, cancel the stiffness configuration of agents -->
-      <!-- <surface>
+      <surface>
         <contact>
           <ode>
-            <kp>1</kp>
+            <kp>0</kp>
             <kd>1</kd>
           </ode>
         </contact>
-      </surface> -->
+      </surface>
     </collision>
 
     <visual name="visual">

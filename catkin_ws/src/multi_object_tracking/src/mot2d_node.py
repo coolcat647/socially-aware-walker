@@ -134,13 +134,7 @@ class MultiObjectTrackingNode(object):
             # vx, vy = np.array([d[3], d[4]]) / delta_t - np.array([self.ego_velocity.x, self.ego_velocity.y])
             vx, vy = np.array([d[3], d[4]]) / delta_t 
             speed = np.hypot(vx, vy)       # Note: reconstruct speed by multipling the sampling rate
-
-            # yaw = np.arctan2(vy, vx)
-            if speed > 0.5:
-                yaw = np.arctan2(vy, vx)
-            else:
-                euler = tf.transformations.euler_from_quaternion(rot)
-                yaw = euler[2]
+            yaw = np.arctan2(vy, vx)
 
             # Custom ROS message
             trk3d_msg = Trk3D()

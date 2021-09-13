@@ -5,6 +5,8 @@ import logging
 from crowd_nav.policy.cadrl import mlp
 from crowd_nav.policy.multi_human_rl import MultiHumanRL
 
+# 20210601 samliu
+import rospy
 
 class ValueNetwork(nn.Module):
     def __init__(self, input_dim, self_state_dim, mlp1_dims, mlp2_dims, mlp3_dims, attention_dims, with_global_state,
@@ -83,7 +85,7 @@ class SARL(MultiHumanRL):
         self.multiagent_training = config.getboolean('sarl', 'multiagent_training')
         if self.with_om:
             self.name = 'OM-SARL'
-        logging.info('Policy: {} {} global state'.format(self.name, 'w/' if with_global_state else 'w/o'))
+        rospy.loginfo('Policy: {} {} global state'.format(self.name, 'w/' if with_global_state else 'w/o'))
 
     def get_attention_weights(self):
         return self.model.attention_weights

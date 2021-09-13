@@ -338,7 +338,7 @@ void Simulator::publishRobotPosition() {
 
   robot_location.pose.pose.position.x = robot_->getx();
   robot_location.pose.pose.position.y = robot_->gety();
-  if (hypot(robot_->getvx(), robot_->getvy()) < 0.05) {
+  if (std::hypot(robot_->getvx(), robot_->getvy()) < 0.05) {
     robot_location.pose.pose.orientation = last_robot_orientation_;
   } else {
     robot_location.pose.pose.orientation =

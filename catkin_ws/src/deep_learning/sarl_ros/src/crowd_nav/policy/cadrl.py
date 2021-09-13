@@ -7,6 +7,9 @@ from crowd_sim.envs.policy.policy import Policy
 from crowd_sim.envs.utils.action import ActionRot, ActionXY
 from crowd_sim.envs.utils.state import ObservableState, FullState
 
+# 20210601 samliu
+import rospy
+
 
 def mlp(input_dim, mlp_dims, last_relu=False):
     layers = []
@@ -59,7 +62,7 @@ class CADRL(Policy):
         mlp_dims = [int(x) for x in config.get('cadrl', 'mlp_dims').split(', ')]
         self.model = ValueNetwork(self.joint_state_dim, mlp_dims)
         self.multiagent_training = config.getboolean('cadrl', 'multiagent_training')
-        logging.info('Policy: CADRL without occupancy map')
+        rospy.loginfo('Policy: CADRL without occupancy map')
 
     def set_common_parameters(self, config):
         self.gamma = config.getfloat('rl', 'gamma')

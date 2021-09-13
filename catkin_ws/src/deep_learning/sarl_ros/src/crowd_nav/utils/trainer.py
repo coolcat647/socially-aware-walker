@@ -4,6 +4,9 @@ import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
+# 20210601 samliu
+import rospy
+
 
 class Trainer(object):
     def __init__(self, model, memory, device, batch_size):
@@ -19,7 +22,7 @@ class Trainer(object):
         self.optimizer = None
 
     def set_learning_rate(self, learning_rate):
-        logging.info('Current learning rate: %f', learning_rate)
+        rospy.loginfo('Current learning rate: %f', learning_rate)
         self.optimizer = optim.SGD(self.model.parameters(), lr=learning_rate, momentum=0.9)
 
     def optimize_epoch(self, num_epochs):

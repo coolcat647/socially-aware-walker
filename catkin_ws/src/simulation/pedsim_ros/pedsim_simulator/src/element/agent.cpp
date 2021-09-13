@@ -182,8 +182,15 @@ void Agent::move(double h) {
       Ped::Tagent::move(h);
     }
   } else {
-    Ped::Tagent::SetRadius(0.5);
-    Ped::Tagent::move(h);
+    // Ped::Tagent::SetRadius(0.4);
+    // Ped::Tagent::move(h);
+
+    // Modify for the gym environment 20210913
+    Ped::Tagent::SetRadius(0.4);
+    if(destinations.size() <= 1 && needNewDestination())
+      Ped::Tagent::move(0);
+    else
+      Ped::Tagent::move(h);
   }
 
   if (getType() == Ped::Tagent::ELDER) {

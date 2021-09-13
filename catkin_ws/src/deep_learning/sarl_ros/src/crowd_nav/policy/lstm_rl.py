@@ -5,6 +5,9 @@ import logging
 from crowd_nav.policy.cadrl import mlp
 from crowd_nav.policy.multi_human_rl import MultiHumanRL
 
+# 20210601 samliu
+import rospy
+
 
 class ValueNetwork1(nn.Module):
     def __init__(self, input_dim, self_state_dim, mlp_dims, lstm_hidden_dim):
@@ -84,7 +87,7 @@ class LstmRL(MultiHumanRL):
         else:
             self.model = ValueNetwork1(self.input_dim(), self.self_state_dim, mlp_dims, global_state_dim)
         self.multiagent_training = config.getboolean('lstm_rl', 'multiagent_training')
-        logging.info('Policy: {}LSTM-RL {} pairwise interaction module'.format(
+        rospy.loginfo('Policy: {}LSTM-RL {} pairwise interaction module'.format(
             'OM-' if self.with_om else '', 'w/' if with_interaction_module else 'w/o'))
 
     def predict(self, state):

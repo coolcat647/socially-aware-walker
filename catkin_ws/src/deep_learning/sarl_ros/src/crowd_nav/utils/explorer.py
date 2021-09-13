@@ -3,6 +3,9 @@ import copy
 import torch
 from crowd_sim.envs.utils.info import *
 
+# 20210601 samliu
+import rospy
+
 
 class Explorer(object):
     def __init__(self, env, robot, device, memory=None, gamma=None, target_policy=None):
@@ -77,17 +80,17 @@ class Explorer(object):
         avg_nav_time = sum(success_times) / len(success_times) if success_times else self.env.time_limit
 
         extra_info = '' if episode is None else 'in episode {} '.format(episode)
-        logging.info('{:<5} {}has success rate: {:.2f}, collision rate: {:.2f}, nav time: {:.2f}, total reward: {:.4f}'.
+        rospy.loginfo('{:<5} {}has success rate: {:.2f}, collision rate: {:.2f}, nav time: {:.2f}, total reward: {:.4f}'.
                      format(phase.upper(), extra_info, success_rate, collision_rate, avg_nav_time,
                             average(cumulative_rewards)))
         if phase in ['val', 'test']:
             num_step = sum(success_times + collision_times + timeout_times) / self.robot.time_step
-            logging.info('Frequency of being in danger: %.2f and average min separate distance in danger: %.2f',
+            rospy.loginfo('Frequency of being in danger: %.2f and average min separate distance in danger: %.2f',
                          too_close / num_step, average(min_dist))
 
         if print_failure:
-            logging.info('Collision cases: ' + ' '.join([str(x) for x in collision_cases]))
-            logging.info('Timeout cases: ' + ' '.join([str(x) for x in timeout_cases]))
+            rospy.loginfo('Collision cases: ' + ' '.join([str(x) for x in collision_cases]))
+            rospy.loginfo('Timeout cases: ' + ' '.join([str(x) for x in timeout_cases]))
 
     def update_memory(self, states, actions, rewards, imitation_learning=False):
         if self.memory is None or self.gamma is None:

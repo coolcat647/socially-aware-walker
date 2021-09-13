@@ -15,20 +15,20 @@
 #include <nav_msgs/Path.h>
 
 #include "a_star.hpp"
- 
-using namespace std;
 
-static const string FRAME_ID = "base_link";
-static const string COLOR_RED = "\e[0;31m";
-static const string COLOR_GREEN = "\e[0;32m";
-static const string COLOR_YELLOW = "\e[0;33m"; 
-static const string COLOR_NC = "\e[0m";
+static const std::string FRAME_ID = "base_link";
+static const std::string COLOR_RED = "\e[0;31m";
+static const std::string COLOR_GREEN = "\e[0;32m";
+static const std::string COLOR_YELLOW = "\e[0;33m"; 
+static const std::string COLOR_NC = "\e[0m";
+
+static const int kThresObstacleDangerCost = 80;
 
 class FakeMapNode {
 public:
     FakeMapNode();
     void timer_cb(const ros::TimerEvent& event);
-    void gauss_filter(vector<int8_t> &vec, int width, int height, int index, int kernel_size, int peak_value);
+    void gauss_filter(std::vector<int8_t> &vec, int width, int height, int index, int kernel_size, int peak_value);
     // ~FakeMapNode();
     ros::NodeHandle nh_;                            // Private node handler
     ros::Timer timer_;
@@ -54,15 +54,18 @@ FakeMapNode::FakeMapNode(){
     mapinfo_.origin.orientation.w = 1.0;
     
     map_msg_.header.stamp = ros::Time::now();
-    map_msg_.header.frame_id = "map";
+    map_msg_.header.frame_id = FRAME_ID;
     map_msg_.info = mapinfo_;
     std::vector<int8_t> tmp_v(mapinfo_.width * mapinfo_.height, 0);
     map_msg_.data = tmp_v;
 
+    solver_ = astar::Solver(nh_, true, kThresObstacleDangerCost, 0.6, 0.6);
+
     timer_ = nh_.createTimer(ros::Duration(1.0), &FakeMapNode::timer_cb, this);
+    ROS_INFO_STREAM(ros::this_node::getName() << " is ready.");
 }
 
-void FakeMapNode::gauss_filter(vector<int8_t> &vec, int width, int height, int idx, int kernel_size, int peak_value) { 
+void FakeMapNode::gauss_filter(std::vector<int8_t> &vec, int width, int height, int idx, int kernel_size, int peak_value) { 
     // Intialising standard deviation to 1.0 
     double sigma = 1.0; 
     double r, s = 2.0 * sigma * sigma;     
@@ -125,7 +128,7 @@ void FakeMapNode::timer_cb(const ros::TimerEvent& event){
 }
 
 void sigint_cb(int sig) {
-    cout << "\nNode name: " << ros::this_node::getName() << " is shutdown." << endl;
+    std::cout << "\nNode name: " << ros::this_node::getName() << " is shutdown." << std::endl;
     // All the default sigint handler does is call shutdown()
     ros::shutdown();
 }

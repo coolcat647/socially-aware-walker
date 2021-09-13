@@ -124,7 +124,7 @@ void Scan2ObservationNode::convert_scan_to_observations(walker_msgs::Trk3DArray:
                                                         PointCloudXYZPtr cloud_ptr_baseframe,
                                                         tf::StampedTransform tf_base2odom) {
     if(!cloud_ptr_baseframe || cloud_ptr_baseframe->points.size() < 1){
-        ROS_WARN("Skip empty scan");
+        // ROS_WARN("Skip empty scan");
         return;
     }
 
