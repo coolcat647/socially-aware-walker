@@ -188,7 +188,7 @@ void Agent::move(double h) {
     // Modify for the gym environment 20210913
     Ped::Tagent::SetRadius(0.4);
     if(destinations.size() <= 1 && needNewDestination())
-      Ped::Tagent::move(0);
+      Ped::Tagent::move(h / 5);
     else
       Ped::Tagent::move(h);
   }

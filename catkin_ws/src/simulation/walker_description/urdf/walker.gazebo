@@ -101,6 +101,21 @@
         </plugin>
     </gazebo>
 
+    <gazebo reference="base_link">
+        <sensor name="bumper_sensor" type="contact">
+            <always_on>true</always_on>
+            <contact>
+                <collision>base_link_collision</collision>
+            </contact>
+            <plugin name="gazebo_ros_bumper" filename="libgazebo_ros_bumper.so">
+                <robotNamespace>/walker</robotNamespace>
+                <updateRate>10</updateRate>
+                <bumperTopicName>bumper</bumperTopicName>
+                <frameName>/base_link</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+
     <!-- The ft_sensor plugin -->
     <!-- <gazebo reference="force_sensor_joint">
         <provideFeedback>true</provideFeedback>

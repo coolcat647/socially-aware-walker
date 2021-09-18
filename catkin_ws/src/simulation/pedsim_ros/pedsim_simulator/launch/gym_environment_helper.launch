@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="robot_namespace" default="walker" />
+
+    <group ns="$(arg robot_namespace)">
+        <!-- Gym agent and robot synchronizer -->
+        <!-- Func: trigger the agents to start navigation by sending /move_base_simple/goal topic -->
+        <node name="gym_robot_synchronizer" pkg="pedsim_simulator" type="gym_robot_synchronizer.py" />
+
+        <!-- Gym agent state recorder -->
+        <!-- Func: record all agent and robot pose information and export to the csvfile -->
+        <node name="gym_agent_state_recorder" pkg="pedsim_simulator" type="gym_agent_state_recorder.py" output="screen" />
+
+    </group>
+</launch>

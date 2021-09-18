@@ -48,11 +48,16 @@
       <surface>
         <contact>
           <ode>
-            <kp>0</kp>
+            <kp>9999</kp>
             <kd>1</kd>
           </ode>
         </contact>
       </surface>
+      <!-- <surface>
+        <contact>
+          <collide_without_contact>true</collide_without_contact>
+        </contact>
+      </surface> -->
     </collision>
 
     <visual name="visual">
