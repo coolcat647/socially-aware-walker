@@ -28,6 +28,7 @@ namespace localmap_utils {
   void read_footprint_from_yaml(ros::NodeHandle nh, std::string footprint_topic_name, geometry_msgs::PolygonStamped::Ptr footprint_ptr);
   double getNumberFromXMLRPC(XmlRpc::XmlRpcValue& value, const std::string& full_param_name);
   void GetLineCells(int x0, int x1, int y0, int y1, std::vector<std::pair<int, int> >& pts);
+  void GetFillCells(std::vector<std::pair<int, int> >& pts);
   std::vector<std::pair<int, int> > GetFootprintCells(geometry_msgs::PolygonStamped::ConstPtr &footprint_ptr,
                                                       const nav_msgs::OccupancyGrid::ConstPtr &map_msg_ptr);
 }

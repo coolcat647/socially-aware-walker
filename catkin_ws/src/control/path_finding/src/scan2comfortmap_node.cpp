@@ -201,10 +201,10 @@ void Scan2LocalmapNode::trk3d_cb(const walker_msgs::Trk3DArray::ConstPtr &msg_pt
             distance_list.push_back(std::hypot(cloud_transformed->points[j].x - grid_real_x, cloud_transformed->points[j].y - grid_real_y));
         }
         if(is_behind_obstacle) continue;
-        double closest_distance = *min_element(distance_list.begin(), distance_list.end());
+        double closest_distance = *(std::min_element(distance_list.begin(), distance_list.end()));
         double comfort_value = (closest_distance <= 1.2)? (100.0 / (1 + std::exp(-2.0 * closest_distance)) - 50.0): 
                                                         (210.0 / (1 + std::exp(-0.5 * (closest_distance + 0.4))) - 103.0);
-        localmap_ptr_->data[i] = (comfort_value < 80)? 80 - (int8_t)comfort_value: 0;
+        localmap_ptr_->data[i] = (comfort_value < 80)? 105 - (int8_t)comfort_value: 0;
     }
 
     // Proxemics generation
@@ -296,6 +296,7 @@ void Scan2LocalmapNode::scan_cb(const sensor_msgs::LaserScan &laser_msg) {
 
         bool is_behind_obstacle = false;
         std::vector<double> distance_list;
+        distance_list.push_back(100.0);     // Dummy obstacle to deal with empty localmap problem
         for(int j = 0; j < cloud_transformed->points.size(); j++){
             double obstacle_angle = std::atan2(cloud_transformed->points[j].y, cloud_transformed->points[j].x);
             double obstacle_distance = std::hypot(cloud_transformed->points[j].x, cloud_transformed->points[j].y);
@@ -306,10 +307,10 @@ void Scan2LocalmapNode::scan_cb(const sensor_msgs::LaserScan &laser_msg) {
             distance_list.push_back(std::hypot(cloud_transformed->points[j].x - grid_real_x, cloud_transformed->points[j].y - grid_real_y));
         }
         if(is_behind_obstacle) continue;
-        double closest_distance = *min_element(distance_list.begin(), distance_list.end());
+        double closest_distance = *(std::min_element(distance_list.begin(), distance_list.end()));
         double comfort_value = (closest_distance <= 1.2)? (100.0 / (1 + std::exp(-2.0 * closest_distance)) - 50.0): 
                                                         (210.0 / (1 + std::exp(-0.5 * (closest_distance + 0.4))) - 103.0);
-        localmap_ptr_->data[i] = (comfort_value < 80)? 80 - (int8_t)comfort_value: 0;
+        localmap_ptr_->data[i] = (comfort_value < 80)? 105 - (int8_t)comfort_value: 0;
     }
 
     // Publish localmap

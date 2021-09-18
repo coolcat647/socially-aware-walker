@@ -241,7 +241,7 @@ void Scan2LocalmapNode::trk3d_cb(const walker_msgs::Trk3DArray::ConstPtr &msg_pt
             localmap_utils::apply_butterworth_filter(localmap_ptr_, inflation_kernel_, idx, 100);
         }
     }
-    
+
     // Publish localmap
     ros::Time now = ros::Time(0);
     localmap_ptr_->header.stamp = now;

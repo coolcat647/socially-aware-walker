@@ -200,7 +200,7 @@ bool Solver::FindPathByHashmap(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr,
         Node* successor_ptr = new Node(tmp_grid, cur_node);
         successor_ptr->g_val = g_cost;
         successor_ptr->h_val = GetHeuristic_(successor_ptr->grid, *goal_grid_ptr_) +
-                                GetPotentialCost(tmp_grid) / 10;
+                                GetPotentialCost(tmp_grid) / 10.0;
         successor_ptr->decision = i;
 
         // Add successor node to open set
@@ -345,7 +345,7 @@ bool Solver::FindPathByHeap(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr,
       if(successor_ptr == nullptr){
         successor_ptr = new Node(tmp_grid, cur_node);       // Expand a new node from current node
         successor_ptr->g_val = g_cost;
-        successor_ptr->h_val = GetHeuristic_(successor_ptr->grid, goal) + GetPotentialCost(tmp_grid) / 10;  // Calc the heuristic value
+        successor_ptr->h_val = GetHeuristic_(successor_ptr->grid, goal) + GetPotentialCost(tmp_grid) / 10.0;  // Calc the heuristic value
 
         successor_ptr->decision = i;
         open_set.push_back(successor_ptr);
@@ -414,7 +414,7 @@ bool Solver::IsCollision(Grid2D grid) {
 
   // Check collision
   int map_idx = grid.y * width + (grid.x % width);
-  if (map_ptr_->data[map_idx] >= max_danger_cost_)
+  if (map_ptr_->data[map_idx] >= max_danger_cost_ || map_ptr_->data[map_idx] == -1)
     return true;
   else
     return false;

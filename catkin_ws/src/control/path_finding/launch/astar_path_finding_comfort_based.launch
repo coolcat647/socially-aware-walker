@@ -14,6 +14,9 @@
     <arg name="subgoal_timer_interval" default="0.25" />
 
     <group ns="$(arg robot_namespace)">
+        <!-- Navigation approach parameter -->
+        <param name="navi_approach" type="str" value="ComfortBasedAstar" />
+
         <!-- Robot footprint parameters -->
         <rosparam file="$(find path_finding)/cfg/footprint.yaml" />
 

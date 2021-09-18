@@ -27,36 +27,62 @@ void localmap_utils::apply_original_agf(nav_msgs::OccupancyGrid::Ptr localmap_pt
 
   // Asymmetric Gaussian Filter kernel
   std::vector<std::vector<int8_t> > agf_kernel(kernel_size, std::vector<int8_t>(kernel_size, 0));
-  for(int i = 0; i < kernel_size; i++){
-    for(int j = 0; j < kernel_size; j++){
-      double sigma_head = std::max(target_speed * 2, 0.5);
-      double sigma_side = sigma_head * 2 / 5;
-      double sigma_rear = sigma_head / 2;
 
-      double y = -max_proxemics_range + map_resolution * i;
-      double x = -max_proxemics_range + map_resolution * j;
-      double alpha = std::atan2(-y, -x) - target_yaw + M_PI * 0.5;
-      double alpha_normalized = std::atan2(std::sin(alpha), std::cos(alpha));
-      double sigma_front = (alpha_normalized > 0)? sigma_head : sigma_rear;
-      double sin_pow2 = std::pow(std::sin(target_yaw), 2);
-      double cos_pow2 = std::pow(std::cos(target_yaw), 2);
-      double sigma_side_pow2 = std::pow(sigma_side, 2);
-      double sigma_front_pow2 = std::pow(sigma_front, 2);
-      double g_a = cos_pow2 / (2 * sigma_front_pow2) + sin_pow2 / (2 * sigma_side_pow2);
-      double g_b = std::sin(2 * target_yaw) / (4 * sigma_front_pow2) - std::sin(2 * target_yaw) / (4 * sigma_side_pow2);
-      double g_c = sin_pow2 / (2 * sigma_front_pow2) + cos_pow2 / (2 * sigma_side_pow2);
-      double z = 1.0 / std::exp(g_a * std::pow(x, 2) + 2 * g_b * x * y + g_c * std::pow(y, 2)) * peak_value;
-      agf_kernel[i][j] = (uint8_t)z;
 
-      // Apply filter
-      if(agf_kernel[i][j] == 0) continue;
-      int op_idx = target_idx - map_width * (i - kernel_size / 2) - (j - kernel_size / 2);
+  // High walking speed
+  if(target_speed > 0.5) {
+    for(int i = 0; i < kernel_size; i++){
+      for(int j = 0; j < kernel_size; j++){
+        double sigma_head = std::max(target_speed * 2, 0.5);
+        double sigma_side = sigma_head * 2 / 5;
+        double sigma_rear = sigma_head / 2;
 
-      //// if(localmap_ptr->data[op_idx] < 0) continue;  // do not apply filter out of laser range
-      if(op_idx < 0 || op_idx > max_map_idx) continue;  // upper and bottom bound
-      else if(abs((op_idx % map_width) - (target_idx % map_width)) >= kernel_size / 2) continue;  // left and right bound
-      else
-        localmap_ptr->data[op_idx] = clamp(agf_kernel[i][j] + localmap_ptr->data[op_idx], 0, peak_value);
+        double y = -max_proxemics_range + map_resolution * i;
+        double x = -max_proxemics_range + map_resolution * j;
+        double alpha = std::atan2(-y, -x) - target_yaw + M_PI * 0.5;
+        double alpha_normalized = std::atan2(std::sin(alpha), std::cos(alpha));
+        double sigma_front = (alpha_normalized > 0)? sigma_head : sigma_rear;
+        double sin_pow2 = std::pow(std::sin(target_yaw), 2);
+        double cos_pow2 = std::pow(std::cos(target_yaw), 2);
+        double sigma_side_pow2 = std::pow(sigma_side, 2);
+        double sigma_front_pow2 = std::pow(sigma_front, 2);
+        double g_a = cos_pow2 / (2 * sigma_front_pow2) + sin_pow2 / (2 * sigma_side_pow2);
+        double g_b = std::sin(2 * target_yaw) / (4 * sigma_front_pow2) - std::sin(2 * target_yaw) / (4 * sigma_side_pow2);
+        double g_c = sin_pow2 / (2 * sigma_front_pow2) + cos_pow2 / (2 * sigma_side_pow2);
+        double z = 1.0 / std::exp(g_a * std::pow(x, 2) + 2 * g_b * x * y + g_c * std::pow(y, 2)) * peak_value;
+        agf_kernel[i][j] = (uint8_t)z;
+
+        // Apply filter
+        if(agf_kernel[i][j] == 0) continue;
+        int op_idx = target_idx - map_width * (i - kernel_size / 2) - (j - kernel_size / 2);
+
+        //// if(localmap_ptr->data[op_idx] < 0) continue;  // do not apply filter out of laser range
+        if(op_idx < 0 || op_idx > max_map_idx) continue;  // upper and bottom bound
+        else if(abs((op_idx % map_width) - (target_idx % map_width)) >= kernel_size / 2) continue;  // left and right bound
+        else
+          localmap_ptr->data[op_idx] = clamp(agf_kernel[i][j] + localmap_ptr->data[op_idx], 0, peak_value);
+      }
+    }
+  }else{
+    for(int i = 0; i < kernel_size; i++){
+      for(int j = 0; j < kernel_size; j++){
+        double y = -max_proxemics_range + map_resolution * i;
+        double x = -max_proxemics_range + map_resolution * j;
+        double g_a = 2.0;
+        double g_c = 2.0;
+        double z = 1.0 / std::exp(g_a * std::pow(x, 2) + g_c * std::pow(y, 2)) * peak_value;
+        agf_kernel[i][j] = (uint8_t)z;
+
+        // Apply filter
+        if(agf_kernel[i][j] == 0) continue;
+        int op_idx = target_idx - map_width * (i - kernel_size / 2) - (j - kernel_size / 2);
+
+        // if(localmap_ptr->data[op_idx] < 0) continue;  // do not apply filter out of laser range
+        if(op_idx < 0 || op_idx > max_map_idx) continue;  // upper and bottom bound
+        else if(abs((op_idx % map_width) - (target_idx % map_width)) >= kernel_size / 2) continue;  // left and right bound
+        else
+          localmap_ptr->data[op_idx] = clamp(agf_kernel[i][j] + localmap_ptr->data[op_idx], 0, peak_value);
+      }
     }
   }
 }
@@ -83,7 +109,7 @@ void localmap_utils::apply_social_agf(nav_msgs::OccupancyGrid::Ptr localmap_ptr,
   std::vector<std::vector<int8_t> > agf_kernel(kernel_size, std::vector<int8_t>(kernel_size, 0));
 
   // High walking speed
-  if(target_speed > 0.25) {
+  if(target_speed > 0.5) {
     for(int i = 0; i < kernel_size; i++){
       for(int j = 0; j < kernel_size; j++){
         double sigma_head = std::max(target_speed * 2, 0.5);
@@ -331,25 +357,91 @@ std::vector<std::pair<int, int> > localmap_utils::GetFootprintCells(
 
   std::vector<std::pair<int, int> > footprint_cells;
 
-  //pre-compute cos and sin values
   unsigned int x0, y0, x1, y1;
   unsigned int last_index = footprint_ptr->polygon.points.size() - 1;
 
   for (unsigned int i = 0; i < last_index; ++i) {
   //find the cell coordinates of the first segment point
-  x0 = std::round(footprint_ptr->polygon.points[i].x - map_origin_x) / map_resolution;
-  y0 = std::round(footprint_ptr->polygon.points[i].y - map_origin_y) / map_resolution;
-  x1 = std::round(footprint_ptr->polygon.points[i + 1].x - map_origin_x) / map_resolution;
-  y1 = std::round(footprint_ptr->polygon.points[i + 1].y - map_origin_y) / map_resolution;
+  x0 = std::round((footprint_ptr->polygon.points[i].x - map_origin_x) / map_resolution);
+  y0 = std::round((footprint_ptr->polygon.points[i].y - map_origin_y) / map_resolution);
+  x1 = std::round((footprint_ptr->polygon.points[i + 1].x - map_origin_x) / map_resolution);
+  y1 = std::round((footprint_ptr->polygon.points[i + 1].y - map_origin_y) / map_resolution);
   GetLineCells(x0, x1, y0, y1, footprint_cells);
   }
 
   //we need to close the loop, so we also have to raytrace from the last pt to first pt
-  x0 = std::round(footprint_ptr->polygon.points[last_index].x - map_origin_x) / map_resolution;
-  y0 = std::round(footprint_ptr->polygon.points[last_index].y - map_origin_y) / map_resolution;
-  x1 = std::round(footprint_ptr->polygon.points[0].x - map_origin_x) / map_resolution;
-  y1 = std::round(footprint_ptr->polygon.points[0].y - map_origin_y) / map_resolution;
+  x0 = std::round((footprint_ptr->polygon.points[last_index].x - map_origin_x) / map_resolution);
+  y0 = std::round((footprint_ptr->polygon.points[last_index].y - map_origin_y) / map_resolution);
+  x1 = std::round((footprint_ptr->polygon.points[0].x - map_origin_x) / map_resolution);
+  y1 = std::round((footprint_ptr->polygon.points[0].y - map_origin_y) / map_resolution);
   GetLineCells(x0, x1, y0, y1, footprint_cells);
 
+  GetFillCells(footprint_cells);
+
   return footprint_cells;
+}
+
+
+void localmap_utils::GetFillCells(std::vector<std::pair<int, int> >& pts){
+  //quick bubble sort to sort pts by x
+  std::pair<int, int> pt;
+  unsigned int i = 0;
+  while (i < pts.size() - 1) {
+    if (pts[i].first > pts[i + 1].first) {
+      auto tmp = pts[i];
+      pts[i] = pts[i + 1];
+      pts[i + 1] = tmp;
+      if(i > 0) {
+        --i;
+      }
+    }else if((pts[i].first == pts[i + 1].first) && (pts[i].second == pts[i + 1].second)) {
+      pts.erase(pts.begin() + i + 1);
+    } else {
+      ++i;
+    }
+  }
+
+  i = 0;
+  std::pair<int, int> min_pt;
+  std::pair<int, int> max_pt;
+  int min_x = pts[0].first;
+  int max_x = pts[pts.size() -1].first;
+  //walk through each column and mark cells inside the footprint
+  for (int x = min_x; x <= max_x; ++x) {
+    if (i >= pts.size() - 1) {
+      break;
+    }
+    if (pts[i].second < pts[i + 1].second) {
+      min_pt = pts[i];
+      max_pt = pts[i + 1];
+    } else {
+      min_pt = pts[i + 1];
+      max_pt = pts[i];
+    }
+
+    i += 2;
+    while (i < pts.size() && pts[i].first == x) {
+      if(pts[i].second < min_pt.second) {
+        min_pt = pts[i];
+      } else if(pts[i].second > max_pt.second) {
+        max_pt = pts[i];
+      }
+      ++i;
+    }
+
+    //loop though cells in the column
+    for (unsigned int y = min_pt.second; y < max_pt.second; ++y) {
+      pt.first = x;
+      pt.second = y;
+      pts.push_back(pt);
+    }
+  }
+
+  // printf("{ ");
+  // for(auto& tmp_pt : pts){
+  //   // printf("[%d, %d] ", tmp_pt.first, tmp_pt.second);
+  //   printf("%d, ", tmp_pt.first + tmp_pt.second * 200);
+  // }
+  // printf("};\n");
+  // exit(-1);
 }
