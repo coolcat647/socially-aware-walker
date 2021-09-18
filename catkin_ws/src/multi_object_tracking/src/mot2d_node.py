@@ -118,11 +118,10 @@ class MultiObjectTrackingNode(object):
 
         time_now = rospy.Time.now()
         delta_t = (time_now - self.last_time).to_sec()
-        if delta_t < (1 / self.desired_trk_rate):
-            small_time = (1 / self.desired_trk_rate - delta_t) * 0.75
+        if delta_t < (1.0 / self.desired_trk_rate):
+            small_time = (1.0 / self.desired_trk_rate - delta_t) * 0.8
             delta_t += small_time
             rospy.sleep(small_time)
-
         # sys.stdout.write("{:.4f} s \r".format(delta_t))
         # sys.stdout.flush()
         self.last_time = time_now
@@ -172,26 +171,26 @@ class MultiObjectTrackingNode(object):
                 marker_array.markers.append(marker)
 
                 # Show tracking ID
-                str_marker = Marker()
-                str_marker.header.frame_id = ODOM_FRAME
-                str_marker.header.stamp = rospy.Time()
-                str_marker.ns = 'tracking_id'
-                str_marker.id = idx
-                str_marker.scale.z = 0.4 #The size of the text
-                str_marker.color.b = 1.0
-                str_marker.color.g = 1.0
-                str_marker.color.r = 1.0
-                str_marker.color.a = 1.0
-                str_marker.pose.position.x = d[0]
-                str_marker.pose.position.y = d[1]
-                str_marker.pose.position.z = 0.0
-                str_marker.lifetime = rospy.Duration(self.marker_lifetime)
-                str_marker.type = Marker.TEXT_VIEW_FACING
-                str_marker.action = Marker.ADD
-                # str_marker.text = "{}".format(int(d[5])) # str(d[5])
-                # str_marker.text = "person" + str(int(d[5]))
-                str_marker.text = "{:.2f}".format(speed)
-                marker_array.markers.append(str_marker)
+                # str_marker = Marker()
+                # str_marker.header.frame_id = ODOM_FRAME
+                # str_marker.header.stamp = rospy.Time()
+                # str_marker.ns = 'tracking_id'
+                # str_marker.id = idx
+                # str_marker.scale.z = 0.4 #The size of the text
+                # str_marker.color.b = 1.0
+                # str_marker.color.g = 1.0
+                # str_marker.color.r = 1.0
+                # str_marker.color.a = 1.0
+                # str_marker.pose.position.x = d[0]
+                # str_marker.pose.position.y = d[1]
+                # str_marker.pose.position.z = 0.0
+                # str_marker.lifetime = rospy.Duration(self.marker_lifetime)
+                # str_marker.type = Marker.TEXT_VIEW_FACING
+                # str_marker.action = Marker.ADD
+                # # str_marker.text = "{}".format(int(d[5])) # str(d[5])
+                # # str_marker.text = "person" + str(int(d[5]))
+                # str_marker.text = "{:.2f}".format(speed)
+                # marker_array.markers.append(str_marker)
                 
                 # Show direction 
                 arrow_marker = copy.deepcopy(marker)

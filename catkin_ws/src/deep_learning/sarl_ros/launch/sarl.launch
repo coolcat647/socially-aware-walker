@@ -2,7 +2,7 @@
 <launch>
 
     <arg name="flag_only_static" default="true" />
-    <arg name="static_obstacle_radius" default="0.6" />
+    <arg name="static_obstacle_radius" default="0.5" />
     <arg name="dynamic_obstacle_radius" default="0.4" />
     <arg name="base_frameid" value="base_link" />
     <arg name="odom_frameid" value="odom" />
@@ -24,6 +24,8 @@
 
         <node name="sarl_node" pkg="sarl_ros" type="sarl_node.py" required="true" output="screen"
             args="--policy $(arg policy) --model_dir $(find sarl_ros)/models/$(arg model_dir)">
+            <param name="static_obstacle_radius" type="double" value="$(arg static_obstacle_radius)" />
+            <param name="dynamic_obstacle_radius" type="double" value="$(arg dynamic_obstacle_radius)" />
             <param name="cmd_freq" type="double" value="$(arg cmd_freq)" />
             <param name="goal_tolerance" type="double" value="$(arg goal_tolerance)" />
         </node>

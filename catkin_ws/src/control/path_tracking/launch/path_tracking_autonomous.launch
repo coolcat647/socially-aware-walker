@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <arg name="robot_namespace" value="walker" />
+    <arg name="goal_tolerance" default="0.4" />
 
     <!-- Load robot constraints -->
     <rosparam file="$(find path_tracking)/config/walker_dynamics.yaml" command="load"/>
 
     <group ns="$(arg robot_namespace)">
-        <node name="path_tracking_node" pkg="path_tracking" type="steering_control_autonomous_node.py" output="screen" />
+        <node name="path_tracking_node" pkg="path_tracking" type="steering_control_autonomous_node.py" output="screen">
+            <param name="goal_tolerance" type="double" value="$(arg goal_tolerance)" />
+        </node>
     </group>
 </launch>
