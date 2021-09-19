@@ -157,14 +157,17 @@ void Scan2ObservationNode::convert_scan_to_observations(walker_msgs::Trk3DArray:
         center = (min_point.getVector3fMap() + max_point.getVector3fMap()) / 2.0;
 
         tf::Vector3 vec_baseframe(center[0], center[1], 0.0);
-        tf::Vector3 vec_odom = tf_base2odom * vec_baseframe;
-        walker_msgs::Trk3D obj_info;
-        obj_info.x = vec_odom.getX();
-        obj_info.y = vec_odom.getY();
-        obj_info.vx = 0.0;
-        obj_info.vy = 0.0;
-        obj_info.radius = static_obstacle_radius_;
-        observation_msg_ptr->trks_list.push_back(obj_info);
+        // Ignore the distant obstacles
+        if(vec_baseframe.length() <= 3.0) {
+            tf::Vector3 vec_odom = tf_base2odom * vec_baseframe;
+            walker_msgs::Trk3D obj_info;
+            obj_info.x = vec_odom.getX();
+            obj_info.y = vec_odom.getY();
+            obj_info.vx = 0.0;
+            obj_info.vy = 0.0;
+            obj_info.radius = static_obstacle_radius_;
+            observation_msg_ptr->trks_list.push_back(obj_info);
+        }
     }
 }
 

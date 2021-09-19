@@ -25,7 +25,7 @@
 
 
 static const double kMaxLateralDisRobot2TrackedPt = 0.6;
-static const double kThresPercentageOfArrival = 0.7; // 0.99
+static const double kThresPercentageOfArrival = 0.6; // 0.99
 static const int kThresObstacleDangerCost = 80;
 static const double kDeprecatedPathTimeSec = 3.0;
 

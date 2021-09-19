@@ -31,9 +31,8 @@ from crowd_sim.envs.utils.human import Human
 
 MAX_ANGULAR_VELOCITY    = 0.5
 MAX_LINEAR_VELOCITY     = 0.5
-ROBOT_RADIUS            = 0.4
+ROBOT_RADIUS            = 0.6
 ROBOT_WHEELS_DISTANCE   = 0.6
-ROBOT_EXTENDED_SAFETY_DISTANCE  = 0.2
 
 
 def normalize_angle(theta):
@@ -112,11 +111,11 @@ class CrowdNavNode(object):
         # set safety space for ORCA in non-cooperative simulation
         if isinstance(self.robot.policy, ORCA):
             if self.robot.visible:
-                self.robot.policy.safety_space = ROBOT_EXTENDED_SAFETY_DISTANCE
+                self.robot.policy.safety_space = 0.0
             else:
                 # because invisible case breaks the reciprocal assumption
                 # adding some safety space improves ORCA performance. Tune this value based on your need.
-                self.robot.policy.safety_space = ROBOT_EXTENDED_SAFETY_DISTANCE
+                self.robot.policy.safety_space = 0.0
             # logging.info('ORCA agent buffer: %f', self.robot.policy.safety_space)
             rospy.loginfo('ORCA agent buffer: %f', self.robot.policy.safety_space)
 
@@ -248,20 +247,18 @@ class CrowdNavNode(object):
             # print("\nsarl_start_matrix\n", sarl_start_matrix)
             # print("\nrobot_goal_matrix\n", robot_goal_matrix)
             # print("\nsarl_goal_matrix\n", sarl_goal_matrix)
-            if isinstance(self.robot.policy, ORCA):
-                self.robot.set(px=sarl_start_matrix[0, 2], py=sarl_start_matrix[1, 2],
-                               gx=sarl_goal_matrix[0, 2], gy=sarl_goal_matrix[1, 2],
-                               vx=0.0, vy=0.0,
-                               theta=np.arctan2(sarl_start_matrix[1, 0], sarl_start_matrix[0, 0]),
-                               radius=ROBOT_RADIUS,
-                               v_pref=MAX_LINEAR_VELOCITY)
-            else:
-                self.robot.set(px=sarl_start_matrix[0, 2], py=sarl_start_matrix[1, 2],
-                               gx=sarl_goal_matrix[0, 2], gy=sarl_goal_matrix[1, 2],
-                               vx=0.0, vy=0.0,
-                               theta=np.arctan2(sarl_start_matrix[1, 0], sarl_start_matrix[0, 0]),
-                               radius=ROBOT_RADIUS + ROBOT_EXTENDED_SAFETY_DISTANCE,
-                               v_pref=MAX_LINEAR_VELOCITY)
+
+            # Trick for arrival condition --> also can modify the library directly
+            if not isinstance(self.robot.policy, ORCA):
+                sarl_start_matrix[1, 2] += 0.5
+
+            self.robot.set(px=sarl_start_matrix[0, 2], py=sarl_start_matrix[1, 2],
+                           gx=sarl_goal_matrix[0, 2], gy=sarl_goal_matrix[1, 2],
+                           vx=0.0, vy=0.0,
+                           theta=np.arctan2(sarl_start_matrix[1, 0], sarl_start_matrix[0, 0]),
+                           radius=ROBOT_RADIUS,
+                           v_pref=MAX_LINEAR_VELOCITY)
+
             # USE RAW COORDINATE
             # self.robot.set(px=self.robot_state[0], py=self.robot_state[1],
             #                gx=msg.pose.position.x, gy=msg.pose.position.y,

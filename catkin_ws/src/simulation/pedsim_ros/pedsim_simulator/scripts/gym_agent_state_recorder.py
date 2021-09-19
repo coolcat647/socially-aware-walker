@@ -94,7 +94,7 @@ class GymAgentStateRecorder(object):
 
         # Collect all agents position
         robot_pose = Pose2D()
-        agent_pose_list = [Pose2D(), ] * self.num_agents
+        agent_pose_list = [Pose2D() for i in range(self.num_agents)]
         for idx, model_name in enumerate(states_msg.name):
             if model_name == ROBOT_GAZEBO_MODEL_NAME:
                 robot_pose.x = states_msg.pose[idx].position.x

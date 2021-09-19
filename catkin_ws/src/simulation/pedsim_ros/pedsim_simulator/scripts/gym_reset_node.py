@@ -43,7 +43,6 @@ if __name__ == '__main__':
         exit(-1)
 
     if args.use_testcase:
-        rospy.loginfo("Use csv testcase.")
         # Find csv file
         rospack = rospkg.RosPack()
         gym_config_filepath = os.path.join(rospack.get_path("pedsim_simulator"),
@@ -83,7 +82,6 @@ if __name__ == '__main__':
         gym_reset(req)    
 
     else:
-        rospy.loginfo("Use random testcase.")
         # Set ROS parameter: testcase
         rospy.set_param('/walker/testcase', 0)
 
