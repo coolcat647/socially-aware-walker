@@ -43,6 +43,7 @@ if __name__ == '__main__':
         exit(-1)
 
     if args.use_testcase:
+        rospy.loginfo("Use csv testcase.")
         # Find csv file
         rospack = rospkg.RosPack()
         gym_config_filepath = os.path.join(rospack.get_path("pedsim_simulator"),
@@ -65,7 +66,7 @@ if __name__ == '__main__':
             # print(testcase_dict)
 
         # Set ROS parameter: testcase
-        rospy.set_param('testcase', args.testcase)
+        rospy.set_param('/walker/testcase', args.testcase)
 
         req = GymResetRequest()
         for idx in range(args.num_agents):
@@ -82,8 +83,9 @@ if __name__ == '__main__':
         gym_reset(req)    
 
     else:
+        rospy.loginfo("Use random testcase.")
         # Set ROS parameter: testcase
-        rospy.set_param('testcase', 0)
+        rospy.set_param('/walker/testcase', 0)
 
         # Randomly generate human's position and waypoint
         all_wp_list = []

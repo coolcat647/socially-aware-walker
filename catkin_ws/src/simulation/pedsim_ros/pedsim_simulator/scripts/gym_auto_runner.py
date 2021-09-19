@@ -65,6 +65,9 @@ if __name__ == '__main__':
     # ROS Service Client
     rospy.wait_for_service("/gazebo/reset_world", timeout=1)
     gz_reset_pose = rospy.ServiceProxy("/gazebo/reset_world", Empty)
+    rospy.wait_for_service("/pedsim_simulator/pause_simulation", timeout=1)
+    pause_simulation = rospy.ServiceProxy("/pedsim_simulator/pause_simulation", Empty)
+    pause_simulation(EmptyRequest())
     rospy.wait_for_service("walker/cancel_navigation", timeout=1)
     cancel_navigation = rospy.ServiceProxy("walker/cancel_navigation", Empty)
     cancel_navigation(EmptyRequest())
