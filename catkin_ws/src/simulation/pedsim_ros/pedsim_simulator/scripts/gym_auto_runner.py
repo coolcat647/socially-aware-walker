@@ -59,7 +59,6 @@ if __name__ == '__main__':
     # For auto rviz reset
     sim_mouse = PyMouse()
 
-
     # ROS Publisher
     pub_goal = rospy.Publisher("/move_base_simple/goal", PoseStamped, queue_size=1)
 
@@ -78,7 +77,9 @@ if __name__ == '__main__':
         progress_bar.set_description("Process gym case {}".format(idx + 1))
         gz_reset_pose(EmptyRequest())
         rospy.sleep(1.0)
-        sim_mouse.click(1020, 1070, 1)
+        sim_mouse.click(int(sim_mouse.screen_size()[0] / 2 + 30),
+                        int(sim_mouse.screen_size()[1] - 10),
+                        1)
 
         cmd_str = "rosrun pedsim_simulator gym_reset_node.py --num_agents {} --use_testcase --testcase {}".format(NUM_AGENTS, idx + 1)
         os.system(cmd_str)
@@ -104,8 +105,8 @@ if __name__ == '__main__':
             flag_arrival = False
             failure_message = "timeout"
 
+        cancel_navigation(EmptyRequest())
         if flag_arrival == False:
-            cancel_navigation(EmptyRequest())
             testcase = rospy.get_param("/walker/testcase") if rospy.has_param("/walker/testcase") else 0
             rospy.logwarn("Task failed: {} -- {}".format(testcase, failure_message))
         rospy.sleep(1.5)

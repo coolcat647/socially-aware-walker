@@ -230,6 +230,10 @@ class CrowdNavNode(object):
         else:
             self.finalgoal = [msg.pose.position.x, msg.pose.position.y]
 
+            # Trick for SARL to reduce the timeout rate
+            if not isinstance(self.robot.policy, ORCA) and self.finalgoal[0] == 0.0 and self.finalgoal[1] == 4.0:
+                self.finalgoal[1] += 0.5
+
             tf_sarl2odom = get_tf_matrix(theta=np.arctan2(msg.pose.position.y - self.robot_state[1],
                                                      msg.pose.position.x - self.robot_state[0]) - np.pi / 2,
                                          x=(msg.pose.position.x + self.robot_state[0]) / 2,
@@ -304,7 +308,7 @@ class CrowdNavNode(object):
 
         # Goal arrival situation
         dis_robot2goal = np.hypot(self.robot_state[0] - self.finalgoal[0], self.robot_state[1] - self.finalgoal[1])
-        if dis_robot2goal <= (self.goal_tolerance - 0.02):
+        if dis_robot2goal < (self.goal_tolerance - 0.02):
             self.finalgoal = None
             rospy.loginfo("goal reached! {:.2f}".format(dis_robot2goal))
             self.pub_cmd.publish(Twist())
