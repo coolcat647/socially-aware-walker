@@ -14,8 +14,17 @@ RUN sudo apt-get update && \
 
 RUN pip3 install --user empy \
                         numba \
-                        filterpy
+                        filterpy \
+                        gym==0.18.0 \
+                        cython==0.29.23 \
+                        PyUserInput
 
+RUN mkdir ~/installations && \
+    cd ~/installations && \
+    git clone https://github.com/sybrenstuvel/Python-RVO2 && \
+    cd Python-RVO2 && \
+    python3 setup.py install --user
+RUN pip3 install --user torch==1.6.0+cu101 torchvision==0.7.0+cu101 -f https://download.pytorch.org/whl/torch_stable.html
 
 # Commands below run as the developer user
 # USER $USERNAME

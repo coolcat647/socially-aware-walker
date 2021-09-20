@@ -12,6 +12,7 @@ from std_msgs.msg import Bool
 from std_srvs.srv import Empty, EmptyRequest
 from nav_msgs.msg import Odometry
 
+NUM_AGENTS = 8
 NUM_CASES = 200
 TIME_LIMIT_IN_SEC = 35.0 + 1.0
 
@@ -79,7 +80,7 @@ if __name__ == '__main__':
         rospy.sleep(1.0)
         sim_mouse.click(1020, 1070, 1)
 
-        cmd_str = "rosrun pedsim_simulator gym_reset_node.py --use_testcase --testcase {}".format(idx + 1)
+        cmd_str = "rosrun pedsim_simulator gym_reset_node.py --num_agents {} --use_testcase --testcase {}".format(NUM_AGENTS, idx + 1)
         os.system(cmd_str)
         rospy.sleep(1.0)
         

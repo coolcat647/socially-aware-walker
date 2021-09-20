@@ -134,6 +134,10 @@ class Agent(object):
             self.vx = action.v * np.cos(self.theta)
             self.vy = action.v * np.sin(self.theta)
 
+    # def reached_destination(self):
+    #     return norm(np.array(self.get_position()) - np.array(self.get_goal_position())) < self.radius
+
+    # Samliu 20210920
     def reached_destination(self):
-        return norm(np.array(self.get_position()) - np.array(self.get_goal_position())) < self.radius
+        return norm(np.array(self.get_position()) - np.array(self.get_goal_position())) < 0.4
 

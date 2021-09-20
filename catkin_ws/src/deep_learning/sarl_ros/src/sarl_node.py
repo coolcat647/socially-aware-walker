@@ -31,7 +31,7 @@ from crowd_sim.envs.utils.human import Human
 
 MAX_ANGULAR_VELOCITY    = 0.5
 MAX_LINEAR_VELOCITY     = 0.5
-ROBOT_RADIUS            = 0.6
+ROBOT_RADIUS            = 0.7   # need to be consistent  with footprint approach
 ROBOT_WHEELS_DISTANCE   = 0.6
 
 
@@ -247,10 +247,6 @@ class CrowdNavNode(object):
             # print("\nsarl_start_matrix\n", sarl_start_matrix)
             # print("\nrobot_goal_matrix\n", robot_goal_matrix)
             # print("\nsarl_goal_matrix\n", sarl_goal_matrix)
-
-            # Trick for arrival condition --> also can modify the library directly
-            if not isinstance(self.robot.policy, ORCA):
-                sarl_start_matrix[1, 2] += 0.5
 
             self.robot.set(px=sarl_start_matrix[0, 2], py=sarl_start_matrix[1, 2],
                            gx=sarl_goal_matrix[0, 2], gy=sarl_goal_matrix[1, 2],
