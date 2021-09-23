@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- Inertia matrices -->
+    <xacro:include filename="$(find walker_description)/urdf/macros.xacro" />
+
+    <!-- Gazebo YDLiDAR G4 plugin -->
+    <xacro:macro name="estop" params="frame:=etsop" >
+        <link name="${frame}_button1">
+            <inertial>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <mass value="0.1" />
+                <cylinder_inertia m="0.1" r="0.012" h="0.012" />
+            </inertial>
+            <visual name='${frame}_button1_visual'>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <cylinder length="0.012" radius="0.012"/>
+                </geometry>
+                <material name="">
+                    <color rgba="0.6 0.6 0.6 1" />
+                </material>
+            </visual>
+            <collision name='collision'>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>  
+                    <cylinder length="0.012" radius="0.012"/>
+                </geometry>
+            </collision>
+        </link>
+        <gazebo reference="${frame}_button1">
+            <material>Gazebo/White</material>
+        </gazebo>
+
+        <link name="${frame}_button2">
+            <inertial>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <mass value="0.1" />
+                <cylinder_inertia m="0.1" r="0.015" h="0.015" />
+            </inertial>
+            <visual name='${frame}_button2_visual'>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <cylinder length="0.015" radius="0.015"/>
+                </geometry>
+                <material name="">
+                    <color rgba="0.9569 0.2196 0 1" />
+                </material>
+            </visual>
+            <collision name='collision'>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>  
+                    <cylinder length="0.015" radius="0.015"/>
+                </geometry>
+            </collision>
+        </link>
+        <gazebo reference="${frame}_button2">
+            <material>Gazebo/Red</material>
+        </gazebo>
+
+        <joint name="${frame}_button2_joint" type="fixed">
+            <origin xyz="0 0 0.015" rpy="0 0 0" />
+            <parent link="${frame}_button1" />
+            <child link="${frame}_button2" />
+        </joint>
+
+
+        <joint name="${frame}_button1_joint" type="fixed">
+            <origin xyz="0 0 0.012" rpy="0 0 0" />
+            <parent link="${frame}_topbase" />
+            <child link="${frame}_button1" />
+            <axis xyz="0 0 0" />
+        </joint>
+
+        <link name="${frame}_base">
+            <inertial>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <mass value="0.1" />
+                <box_inertia m="0.1" x="0.05" y="0.05" z="0.02"/>
+            </inertial>
+            <visual name='${frame}_base_visual'>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.05 0.05 0.02" />
+                </geometry>
+                <material name="">
+                    <color rgba="0.2 0.2 0.2 1" />
+                </material>
+            </visual>
+            <collision name='collision'>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>  
+                    <box size="0.05 0.05 0.02" />
+                </geometry>
+            </collision>
+        </link>
+        <gazebo reference="${frame}_base">
+            <material>Gazebo/DarkGrey</material>
+        </gazebo>
+        
+        <link name="${frame}_topbase">
+            <inertial>
+                <origin xyz="0.0 0 0" rpy="0 0 0" />
+                <mass value="0.1" />
+                <box_inertia m="0.1" x="0.05" y="0.05" z="0.02"/>
+            </inertial>
+            <visual name='${frame}_topbase_visual'>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.05 0.05 0.02" />
+                </geometry>
+                <material name="">
+                    <color rgba="0.964 0.69 0.141 1" />
+                </material>
+            </visual>
+            <collision name='collision'>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>  
+                    <box size="0.05 0.05 0.02" />
+                </geometry>
+            </collision>
+        </link>
+        <gazebo reference="${frame}_topbase">
+            <material>Gazebo/Orange</material>
+        </gazebo>
+        <joint name="${frame}_base_joint" type="fixed">
+            <origin xyz="0 0 0.02" rpy="0 0 0" />
+            <parent link="${frame}_base" />
+            <child link="${frame}_topbase" />
+            <axis xyz="0 0 0" />
+        </joint>
+
+        
+        
+
+    </xacro:macro>
+
+    
+    
+</robot>

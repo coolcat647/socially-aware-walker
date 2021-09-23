@@ -480,9 +480,9 @@ geometry_msgs::Point PathFindingNode::generate_subgoal(const nav_msgs::Occupancy
   mkr_subgoal_candidate_.points.clear(); 
 
   // Calculate the distance from base_link to finalgoal
-  tf::Vector3 vec_goal_odom_frame;
-  tf::pointMsgToTF(finalgoal_ptr->pose.position, vec_goal_odom_frame);
-  tf::Vector3 vec_goal_baseframe = tf_odom2base * vec_goal_odom_frame;
+  tf::Vector3 vec_goal_odomframe;
+  tf::pointMsgToTF(finalgoal_ptr->pose.position, vec_goal_odomframe);
+  tf::Vector3 vec_goal_baseframe = tf_odom2base * vec_goal_odomframe;
   double dis_base2goal = std::hypot(vec_goal_baseframe.getX(), vec_goal_baseframe.getY());
 
   int tmp_goal_mapx = int((vec_goal_baseframe.getX() - map_origin_x) / map_resolution);
@@ -495,38 +495,40 @@ geometry_msgs::Point PathFindingNode::generate_subgoal(const nav_msgs::Occupancy
 
     // Sub-goal candidates
     std::vector<double> candidate_score_list;
-    int candidate_j_list[15] = {0};
-    double prefer_subgoal_distance = 8.0;
-    double distance_resolution = 0.6; // map_resolution * 2;
-    for(int i = 16; i >= 2; i--) {
-      double theta_from_yaxis = M_PI / 18 * i;
-      int max_distance_idx = std::round(prefer_subgoal_distance / distance_resolution);
-      double tmp_dis;
-      double obstacle_cost;
-      double max_j_score = 0.0;
-      for(int j = 3; j <= max_distance_idx; j++) {
-        tmp_dis = distance_resolution * j;
-        int map_x = std::round((tmp_dis * std::sin(theta_from_yaxis) - map_origin_x + path_start_offsetx_) / map_resolution);
-        int map_y = std::round((tmp_dis * std::cos(theta_from_yaxis) - map_origin_y + path_start_offsety_) / map_resolution);
+    int candidate_j_list[19] = {0};
+    double max_subgoal_distance = 8.0;
+    double step_distance = 0.6;
+    double min_j_score = 0.0;
+    for(int i = 2; i <= 16; i++) {
+      double theta = M_PI / 18 * i;
+      double candidate_distance;
+      for(int j = 2; (step_distance * j) < max_subgoal_distance; j++) {
+        candidate_distance = step_distance * j;
+        tf::Vector3 candidate_pt(path_start_offsetx_ + candidate_distance * std::sin(theta),
+                                 path_start_offsety_ - candidate_distance * std::cos(theta),
+                                 0.0);
+        int map_x = std::round((candidate_pt.getX() - map_origin_x) / map_resolution);
+        int map_y = std::round((candidate_pt.getY() - map_origin_y) / map_resolution);
         int idx = map_y * map_width + map_x;
-        obstacle_cost = get_local_max_cost(map_msg_ptr, idx);
-        if(obstacle_cost > kThresObstacleDangerCost || map_msg_ptr->data[idx] == -1) {
-          tmp_dis -= distance_resolution * 3;
+        double obstacle_cost = get_local_max_cost(map_msg_ptr, idx);
+        if(obstacle_cost >= kThresObstacleDangerCost || map_msg_ptr->data[idx] == -1){
+          candidate_j_list[i] = j - 2;
           break;
         }
-        double dis_subgoal2finalgoal = std::hypot(tmp_dis * std::sin(theta_from_yaxis) + path_start_offsetx_ - vec_goal_baseframe.getX(),
-                          tmp_dis * std::cos(theta_from_yaxis) + path_start_offsety_ - vec_goal_baseframe.getY());
         // Calculate candidate score
-        double score = (1.0 - obstacle_cost / 100.0) +
-                (1.0 - dis_subgoal2finalgoal / dis_base2goal / 2);
+        double dis_candidate2goal = vec_goal_baseframe.distance(candidate_pt);
+        // double score = (1.0 - obstacle_cost / 100.0) + (1.0 - dis_candidate2goal / dis_base2goal);
+        double score = (obstacle_cost / 100.0) + (dis_candidate2goal / dis_base2goal);
+
         // Find the max score among the candidates in same direction
-        if(score > max_j_score){
-          max_j_score = score;
-          candidate_j_list[16 - i] = j;
+        if(score > min_j_score){
+          min_j_score = score;
+          candidate_j_list[i] = j;
         }
       }
-      tmp_dis = distance_resolution * candidate_j_list[16 - i];
-      candidate_score_list.push_back(max_j_score);
+      candidate_distance = step_distance * candidate_j_list[i];
+      printf("%.2f, ", candidate_distance);
+      candidate_score_list.push_back(min_j_score);
   
       // Visualization
       geometry_msgs::Point pt;
@@ -534,8 +536,8 @@ geometry_msgs::Point PathFindingNode::generate_subgoal(const nav_msgs::Occupancy
       pt.y = path_start_offsety_;
       mkr_subgoal_candidate_.points.push_back(pt);  // Origin point
       mkr_subgoal_candidate_.id = i;
-      pt.x += tmp_dis * std::sin(theta_from_yaxis);
-      pt.y += tmp_dis * std::cos(theta_from_yaxis);
+      pt.x += candidate_distance * std::sin(theta);
+      pt.y -= candidate_distance * std::cos(theta);
       mkr_subgoal_candidate_.points.push_back(pt);
   
       // candidate score
@@ -555,7 +557,7 @@ geometry_msgs::Point PathFindingNode::generate_subgoal(const nav_msgs::Occupancy
       mkr_candidate_score.color.r = 1.0;
       mkr_candidate_score.color.g = 1.0;
       mkr_candidate_score.color.b = 1.0;
-      mkr_candidate_score.text = std::to_string(max_j_score);
+      mkr_candidate_score.text = std::to_string(min_j_score);
       mkr_candidate_score.lifetime = ros::Duration(8.0);
       mrk_array.markers.push_back(mkr_candidate_score);  
   
@@ -564,13 +566,13 @@ geometry_msgs::Point PathFindingNode::generate_subgoal(const nav_msgs::Occupancy
     mrk_array.markers.push_back(mkr_subgoal_candidate_);  
 
     // Find the farthest walkable space
-    int index = argmax(candidate_score_list.begin(), candidate_score_list.end());
+    int index = argmin(candidate_score_list.begin(), candidate_score_list.end());
     geometry_msgs::Point subgoal_pt = mkr_subgoal_candidate_.points[index * 2 + 1];
 
-    tf::Vector3 vec_base_frame;
-    tf::pointMsgToTF(subgoal_pt, vec_base_frame);
-    tf::Vector3 vec_odom_frame = tf_base2odom * vec_base_frame;
-    tf::pointTFToMsg(vec_odom_frame, mrk_subgoal_.pose.position);
+    tf::Vector3 vec_baseframe;
+    tf::pointMsgToTF(subgoal_pt, vec_baseframe);
+    tf::Vector3 vec_odomframe = tf_base2odom * vec_baseframe;
+    tf::pointTFToMsg(vec_odomframe, mrk_subgoal_.pose.position);
 
     // Publish visualization marker array
     mrk_subgoal_.header.stamp = ros::Time();

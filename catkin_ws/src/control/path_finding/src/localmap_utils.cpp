@@ -30,10 +30,10 @@ void localmap_utils::apply_original_agf(nav_msgs::OccupancyGrid::Ptr localmap_pt
 
 
   // High walking speed
-  if(target_speed > 0.5) {
+  if(target_speed > 0.25) {
     for(int i = 0; i < kernel_size; i++){
       for(int j = 0; j < kernel_size; j++){
-        double sigma_head = std::max(target_speed * 2, 0.5);
+        double sigma_head = std::max(target_speed * 2, 1.0);
         double sigma_side = sigma_head * 2 / 5;
         double sigma_rear = sigma_head / 2;
 
@@ -68,8 +68,8 @@ void localmap_utils::apply_original_agf(nav_msgs::OccupancyGrid::Ptr localmap_pt
       for(int j = 0; j < kernel_size; j++){
         double y = -max_proxemics_range + map_resolution * i;
         double x = -max_proxemics_range + map_resolution * j;
-        double g_a = 2.0;
-        double g_c = 2.0;
+        double g_a = 1.0;
+        double g_c = 1.0;
         double z = 1.0 / std::exp(g_a * std::pow(x, 2) + g_c * std::pow(y, 2)) * peak_value;
         agf_kernel[i][j] = (uint8_t)z;
 
@@ -109,13 +109,13 @@ void localmap_utils::apply_social_agf(nav_msgs::OccupancyGrid::Ptr localmap_ptr,
   std::vector<std::vector<int8_t> > agf_kernel(kernel_size, std::vector<int8_t>(kernel_size, 0));
 
   // High walking speed
-  if(target_speed > 0.5) {
+  if(target_speed > 0.25) {
     for(int i = 0; i < kernel_size; i++){
       for(int j = 0; j < kernel_size; j++){
-        double sigma_head = std::max(target_speed * 2, 0.5);
-        double sigma_right = (flag_right_hand_side)? sigma_head * 3 / 5 : sigma_head / 5;
-        double sigma_left = (flag_right_hand_side)? sigma_head / 5 : sigma_head * 3 / 5;
-        double sigma_rear = sigma_head / 5;
+        double sigma_head = std::max(target_speed * 2, 1.0);
+        double sigma_right = (flag_right_hand_side)? sigma_head * 3 / 5 : sigma_head * 2 / 7;
+        double sigma_left = (flag_right_hand_side)? sigma_head * 2 / 7 : sigma_head * 3 / 5;
+        double sigma_rear = sigma_head * 2 / 7;
 
         double y = -max_proxemics_range + map_resolution * i;
         double x = -max_proxemics_range + map_resolution * j;
@@ -151,8 +151,8 @@ void localmap_utils::apply_social_agf(nav_msgs::OccupancyGrid::Ptr localmap_ptr,
       for(int j = 0; j < kernel_size; j++){
         double y = -max_proxemics_range + map_resolution * i;
         double x = -max_proxemics_range + map_resolution * j;
-        double g_a = 2.0;
-        double g_c = 2.0;
+        double g_a = 1.0;
+        double g_c = 1.0;
         double z = 1.0 / std::exp(g_a * std::pow(x, 2) + g_c * std::pow(y, 2)) * peak_value;
         agf_kernel[i][j] = (uint8_t)z;
 

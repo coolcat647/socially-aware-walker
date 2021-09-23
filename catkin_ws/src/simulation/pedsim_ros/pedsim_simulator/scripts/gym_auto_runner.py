@@ -95,7 +95,6 @@ if __name__ == '__main__':
         flag_arrival = True
         failure_message = ""
         try:
-            # flag_arrival_msg = rospy.wait_for_message("/walker/flag_arrival", Bool, timeout=TIME_LIMIT_IN_SEC)
             flag_arrival_msg = my_wait_for_message("/walker/flag_arrival", Bool, timeout=TIME_LIMIT_IN_SEC)
 
             if flag_arrival_msg.data == False: 

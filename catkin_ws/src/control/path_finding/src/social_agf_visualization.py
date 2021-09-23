@@ -53,9 +53,68 @@ y_axis.set_visible(False)
 plt.box(False)
 
 resolution = 0.2
-speed = 0.5
+
 x_middle, y_middle = (0.0, 0.0)
 
+
+# Symmetric Gausian Function
+def calc_sgf(x, y, x_middle, y_middle):
+    g_a = 1.0
+    g_c = 1.0
+    z = 1 / np.exp(g_a * np.power(x_middle - x, 2) + 2 * g_b * (x_middle - x) * (y_middle - y) + g_c * np.power(y_middle - y, 2))
+    return z
+
+# Original Asymmetric Gausian Function
+def calc_original_agf(x, y, x_middle, y_middle, speed, theta):
+    sigma_head = np.max([speed * 2, 1.0])
+    sigma_side = sigma_head * 2 / 3
+    sigma_rear = sigma_head / 2
+    alpha = np.arctan2(y - y_middle, x - x_middle) - theta + np.pi * 0.5
+    alpha_normalized = np.arctan2(np.sin(alpha), np.cos(alpha))
+    sigma_front = (alpha_normalized > np.zeros(alpha_normalized.shape)) * sigma_head + (alpha_normalized <= np.zeros(alpha_normalized.shape)) * sigma_rear
+    g_a = np.power(np.cos(theta), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.sin(theta), 2) / (2 * np.power(sigma_side, 2))
+    g_b = np.sin(2 * theta) / (4 * np.power(sigma_front, 2)) - np.sin(2 * theta) / (4 * np.power(sigma_side, 2))
+    g_c = np.power(np.sin(theta), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.cos(theta), 2) / (2 * np.power(sigma_side, 2))
+    z = 1 / np.exp(g_a * np.power(x_middle - x, 2) + 2 * g_b * (x_middle - x) * (y_middle - y) + g_c * np.power(y_middle - y, 2))
+    return z
+
+# Socially Aware Asymmetric Gausian Function
+def calc_social_agf(x, y, x_middle, y_middle, speed, theta):
+    sigma_head = np.max([speed * 2, 1.0])
+    alpha = np.arctan2(y - y_middle, x - x_middle) - theta + np.pi * 0.5
+    alpha_normalized = np.arctan2(np.sin(alpha), np.cos(alpha))
+
+    sigma_rear = sigma_head * 2 / 7
+    sigma_front = (alpha_normalized > np.zeros(alpha_normalized.shape)) * sigma_head + (alpha_normalized <= np.zeros(alpha_normalized.shape)) * sigma_rear
+    sigma_right = sigma_head * 3 / 5
+    sigma_left = sigma_head * 2 / 7
+    alpha_side = np.arctan2(np.sin(alpha + np.pi * 0.5), np.cos(alpha + np.pi * 0.5))
+    sigma_side = ((alpha_side) > np.zeros(alpha_side.shape)) * sigma_right + ((alpha_side) <= np.zeros(alpha_side.shape)) * sigma_left
+
+    g_a = np.power(np.cos(theta), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.sin(theta), 2) / (2 * np.power(sigma_side, 2))
+    g_b = np.sin(2 * theta) / (4 * np.power(sigma_front, 2)) - np.sin(2 * theta) / (4 * np.power(sigma_side, 2))
+    g_c = np.power(np.sin(theta), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.cos(theta), 2) / (2 * np.power(sigma_side, 2))
+    z = 1 / np.exp(g_a * np.power(x_middle - x, 2) + 2 * g_b * (x_middle - x) * (y_middle - y) + g_c * np.power(y_middle - y, 2))
+    z = np.clip(z, 1e-9, 1)
+    return z
+
+
+def plot_human_circle(ax, x=0.0, y=0.0, speed=0.0, theta=0.0, use_legend=False):
+    human_radius = 0.4
+    circle1 = plt.Circle((x, y), human_radius, color='black', fill=False, alpha=0.4)
+    ax.add_patch(circle1)
+    if speed != 0.0:
+        circle2 = plt.Circle((x + speed * 0.5 * np.cos(theta), 0 + speed * 0.5 * np.sin(theta)), human_radius, color='black', fill=False, alpha=1.0)
+        ax.add_patch(circle2)
+
+    if use_legend:
+        # plt.legend([circle], ["Assumed human circle"], fontsize=8, bbox_to_anchor=(0.5, 1.0), loc='upper left')
+        plt.legend([circle1, circle2], ["Human at 0 sec", "Human at 0.5 secs"], fontsize=8)
+
+
+'''
+    Display 3D social AGF
+'''
 def show_social_agf():
     fig.set_size_inches(8, 8)
     figure = plt.gca()
@@ -65,25 +124,11 @@ def show_social_agf():
     y_axis.set_visible(False)
     plt.cla()
 
+    speed = 0.5
     yaw = np.pi * 7 / 4
     t = np.arange(-4, 4 + resolution, resolution)
     x, y = np.meshgrid(t, t)
-    sigma_head = np.max([speed, 0.5])
-    sigma_right = sigma_head * 3 / 5
-    sigma_left = sigma_head * 1 / 5
-    sigma_rear = sigma_head / 2
-    alpha = np.arctan2(y_middle - y, x_middle - x) - yaw - np.pi * 0.5
-    alpha_normalized = np.arctan2(np.sin(alpha), np.cos(alpha))
-    sigma_front = (alpha_normalized > np.zeros(alpha_normalized.shape)) * sigma_head + (alpha_normalized <= np.zeros(alpha_normalized.shape)) * sigma_rear
-        
-    alpha_side = np.arctan2(np.sin(alpha + np.pi * 0.5), np.cos(alpha + np.pi * 0.5))
-    sigma_side = ((alpha_side) > np.zeros(alpha_side.shape)) * sigma_right + ((alpha_side) <= np.zeros(alpha_side.shape)) * sigma_left
-
-    g_a = np.power(np.cos(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.sin(yaw), 2) / (2 * np.power(sigma_side, 2))
-    g_b = np.sin(2 * yaw) / (4 * np.power(sigma_front, 2)) - np.sin(2 * yaw) / (4 * np.power(sigma_side, 2))
-    g_c = np.power(np.sin(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.cos(yaw), 2) / (2 * np.power(sigma_side, 2))
-    z = 1 / np.exp(g_a * np.power(x_middle - x, 2) + 2 * g_b * (x_middle - x) * (y_middle - y) + g_c * np.power(y_middle - y, 2))
-    z = np.clip(z, 1e-9, 1)
+    z = calc_social_agf(x, y, x_middle, y_middle, speed, yaw)
 
     ax = Axes3D(fig)
     ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.get_cmap('rainbow'))
@@ -99,7 +144,7 @@ def show_social_agf():
 '''
     Animation direction
 '''
-def show_animation_direction():
+def show_animation_direction(x, y, x_middle, y_middle):
     for yaw in np.arange(0.0, np.pi * 2, np.pi / 4):
         plt.cla()
         
@@ -111,17 +156,7 @@ def show_animation_direction():
         x, y = np.meshgrid(t, t)
 
         # Original AGF
-        sigma_head = np.max([speed, 0.5])
-        sigma_side = sigma_head * 2 / 3
-        sigma_rear = sigma_head / 2
-        alpha = np.arctan2(y_middle - y, x_middle - x) - yaw - np.pi * 0.5
-        alpha_normalized = np.arctan2(np.sin(alpha), np.cos(alpha))
-        sigma_front = (alpha_normalized > np.zeros(alpha_normalized.shape)) * sigma_head + (alpha_normalized <= np.zeros(alpha_normalized.shape)) * sigma_rear
-        
-        g_a = np.power(np.cos(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.sin(yaw), 2) / (2 * np.power(sigma_side, 2))
-        g_b = np.sin(2 * yaw) / (4 * np.power(sigma_front, 2)) - np.sin(2 * yaw) / (4 * np.power(sigma_side, 2))
-        g_c = np.power(np.sin(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.cos(yaw), 2) / (2 * np.power(sigma_side, 2))
-        z = 1 / np.exp(g_a * np.power(x_middle - x, 2) + 2 * g_b * (x_middle - x) * (y_middle - y) + g_c * np.power(y_middle - y, 2))
+        z = calc_original_agf(x, y, x_middle, y_middle, speed, yaw)
 
         ax = fig.add_subplot(1, 2, 1, projection='3d')
         ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.get_cmap('rainbow'))
@@ -134,16 +169,7 @@ def show_animation_direction():
 
         
         # Socially-aware AGF
-        sigma_right = sigma_head * 3 / 5
-        sigma_left = sigma_head * 1 / 5
-        alpha_side = np.arctan2(np.sin(alpha + np.pi * 0.5), np.cos(alpha + np.pi * 0.5))
-        sigma_side = ((alpha_side) > np.zeros(alpha_side.shape)) * sigma_right + ((alpha_side) <= np.zeros(alpha_side.shape)) * sigma_left
-
-        g_a = np.power(np.cos(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.sin(yaw), 2) / (2 * np.power(sigma_side, 2))
-        g_b = np.sin(2 * yaw) / (4 * np.power(sigma_front, 2)) - np.sin(2 * yaw) / (4 * np.power(sigma_side, 2))
-        g_c = np.power(np.sin(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.cos(yaw), 2) / (2 * np.power(sigma_side, 2))
-        z = 1 / np.exp(g_a * np.power(x_middle - x, 2) + 2 * g_b * (x_middle - x) * (y_middle - y) + g_c * np.power(y_middle - y, 2))
-        z = np.clip(z, 1e-9, 1)
+        z = calc_social_agf(x, y, x_middle, y_middle, speed, yaw)
 
         ax = fig.add_subplot(1, 2, 2, projection='3d')
         ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.get_cmap('rainbow'))
@@ -158,13 +184,19 @@ def show_animation_direction():
 
         plt.pause(0.1)
     plt.show()
+    g_a = 1.0
+    g_c = 1.0
+    z = 1 / np.exp(g_a * np.power(x_middle - x, 2) + g_c * np.power(y_middle - y, 2))
 
 
+'''
+    Display comparison between AGF and Social AGF
+'''
 def show_comparison(flag_display_3d=False):
     resolution = 0.1
 
     SPEED_RANGE = 2
-    XY_LIMIT_RANGE = 4
+    XY_LIMIT_RANGE = 3.5
     fig.set_size_inches(8, SPEED_RANGE * 3)
 
     for cnt_plot in range(SPEED_RANGE):
@@ -175,18 +207,7 @@ def show_comparison(flag_display_3d=False):
         x, y = np.meshgrid(t, t)
 
         # Original AGF
-        sigma_head = np.max([speed * 2, 1.0])
-        sigma_side = sigma_head * 2 / 3
-        sigma_rear = sigma_head / 2
-        # sigma_rear = sigma_head / 2 * (2.0 - np.min([speed, 1.5])) / 1.5
-        alpha = np.arctan2(y - y_middle, x - x_middle) - yaw + np.pi * 0.5
-        alpha_normalized = np.arctan2(np.sin(alpha), np.cos(alpha))
-        sigma_front = (alpha_normalized > np.zeros(alpha_normalized.shape)) * sigma_head + (alpha_normalized <= np.zeros(alpha_normalized.shape)) * sigma_rear
-        
-        g_a = np.power(np.cos(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.sin(yaw), 2) / (2 * np.power(sigma_side, 2))
-        g_b = np.sin(2 * yaw) / (4 * np.power(sigma_front, 2)) - np.sin(2 * yaw) / (4 * np.power(sigma_side, 2))
-        g_c = np.power(np.sin(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.cos(yaw), 2) / (2 * np.power(sigma_side, 2))
-        z = 1 / np.exp(g_a * np.power(x_middle - x, 2) + 2 * g_b * (x_middle - x) * (y_middle - y) + g_c * np.power(y_middle - y, 2))
+        z = calc_original_agf(x, y, x_middle, y_middle, speed, yaw)
 
         # Measure the minimum safe distance
         val_xy_cross0_8 = 0
@@ -196,7 +217,6 @@ def show_comparison(flag_display_3d=False):
             if z[idx_y, idx_x] < 0.8:
                 val_xy_cross0_8 = val_xy - resolution
                 break
-
         # Plot 3D
         if flag_display_3d:
             ax = fig.add_subplot(SPEED_RANGE, 2, 1 + cnt_plot * 2, projection='3d')
@@ -210,38 +230,30 @@ def show_comparison(flag_display_3d=False):
             ax.text2D(0.60, 0.55, "{:.2f} m".format(np.hypot(val_xy_cross0_8, -val_xy_cross0_8)), transform=ax.transAxes)
             ax.set_xticks(np.linspace(-XY_LIMIT_RANGE, XY_LIMIT_RANGE, 5))
             ax.set_yticks(np.linspace(-XY_LIMIT_RANGE, XY_LIMIT_RANGE, 5))
-
         # Plot 2D
         else:
             ax = fig.add_subplot(SPEED_RANGE, 2, 1 + cnt_plot * 2)
             ax.grid("on")
-            plt_contour = ax.contour(x, y, z, levels=np.linspace(0, 1, 6), cmap='jet')
+            plt.gca().set_aspect("equal")
+            plt_contour = ax.contour(x, y, z, levels=np.linspace(0, 1, 6), cmap='jet', alpha=0.75)
             # fig.colorbar(plt_contour, ax=ax)
             ax.plot([x_middle, val_xy_cross0_8], [y_middle, -val_xy_cross0_8], linestyle="--", color="black")
             ax.text(0.6, 0.6, "{:.2f} m".format(np.hypot(val_xy_cross0_8, -val_xy_cross0_8)))
-
+            plot_human_circle(ax, x=0, y=0, speed=speed, theta=yaw)
 
         ax.scatter(x_middle, y_middle, 1.1, marker='o', c='red')
         # ax.set_xlabel("x", fontsize=12, fontweight='bold')
         # ax.set_ylabel("y", fontsize=12, fontweight='bold')
         # ax.set_zlabel("z", fontsize=12, fontweight='bold')
         if speed <= 0.5:
-            ax.set_title("AGF, $v_{target}\leq$" + "{:.1f} m/s".format(0.5))
+            ax.set_title("Original AGF, " + "{:.2f}".format(0.25) + "$\leq v_{human}\leq$" + "{:.1f} m/s".format(0.5), fontsize=11)
         else:
-            ax.set_title("AGF, $v_{target}$=" + "{:.1f} m/s".format(speed))
+            ax.set_title("Original AGF, $v_{human}$=" + "{:.1f} m/s".format(speed), fontsize=11)
 
         
-        # Socially-aware AGF
-        sigma_right = sigma_head * 3 / 5
-        sigma_left = sigma_head * 1 / 5
-        alpha_side = np.arctan2(np.sin(alpha + np.pi * 0.5), np.cos(alpha + np.pi * 0.5))
-        sigma_side = ((alpha_side) > np.zeros(alpha_side.shape)) * sigma_right + ((alpha_side) <= np.zeros(alpha_side.shape)) * sigma_left
 
-        g_a = np.power(np.cos(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.sin(yaw), 2) / (2 * np.power(sigma_side, 2))
-        g_b = np.sin(2 * yaw) / (4 * np.power(sigma_front, 2)) - np.sin(2 * yaw) / (4 * np.power(sigma_side, 2))
-        g_c = np.power(np.sin(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.cos(yaw), 2) / (2 * np.power(sigma_side, 2))
-        z = 1 / np.exp(g_a * np.power(x_middle - x, 2) + 2 * g_b * (x_middle - x) * (y_middle - y) + g_c * np.power(y_middle - y, 2))
-        z = np.clip(z, 1e-9, 1)
+        # Socially-aware AGF
+        z = calc_social_agf(x, y, x_middle, y_middle, speed, yaw)
 
         # Measure the minimum safe distance
         val_xy_cross0_8 = 0
@@ -252,14 +264,13 @@ def show_comparison(flag_display_3d=False):
                 val_xy_cross0_8 = val_xy - resolution
                 # print("{:.2f}, {:.2f}".format(z[idx_y, idx_x], z[int((-val_xy_cross0_8 - (-XY_LIMIT_RANGE)) / resolution), int((val_xy_cross0_8 - (-XY_LIMIT_RANGE)) / resolution)]))
                 break
-
         # Plot 3D
         if flag_display_3d:
             ax = fig.add_subplot(SPEED_RANGE, 2, 2 + cnt_plot * 2, projection='3d')
             ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.get_cmap('rainbow'))
             plt_contour = ax.contour(x, y, z, levels=np.linspace(0, 1, 6), offset=1.1, cmap='rainbow')
             if cnt_plot == SPEED_RANGE - 1:
-                fig.colorbar(plt_contour, ax=ax, fraction=0.02, pad=0.06, aspect=20)
+                fig.colorbar(plt_contour, ax=ax, fraction=0.02, pad=0.15, aspect=20)
             ax.arrow3D(x_middle, y_middle, 1.1,
                    val_xy_cross0_8, -val_xy_cross0_8, 0.0,
                    mutation_scale=8,
@@ -268,16 +279,19 @@ def show_comparison(flag_display_3d=False):
             ax.text2D(0.6, 0.6, "{:.2f} m".format(np.hypot(val_xy_cross0_8, -val_xy_cross0_8)), transform=ax.transAxes)
             ax.set_xticks(np.linspace(-XY_LIMIT_RANGE, XY_LIMIT_RANGE, 5))
             ax.set_yticks(np.linspace(-XY_LIMIT_RANGE, XY_LIMIT_RANGE, 5))
-
         # Plot 2D
         else:
             ax = fig.add_subplot(SPEED_RANGE, 2, 2 + cnt_plot * 2)
             ax.grid("on")
-            plt_contour = ax.contour(x, y, z, levels=np.linspace(0, 1, 6), cmap='jet')
+            plt_contour = ax.contour(x, y, z, levels=np.linspace(0, 1, 6), cmap='jet', alpha=0.75)
+            ax.plot([x_middle, val_xy_cross0_8], [y_middle, -val_xy_cross0_8], linestyle="--", color="black")
+            plt.gca().set_aspect("equal")
+            ax.text(0.6, 0.6, "{:.2f} m".format(np.hypot(val_xy_cross0_8, -val_xy_cross0_8)))
             if cnt_plot == SPEED_RANGE - 1:
                 fig.colorbar(plt_contour, ax=ax)
-            ax.plot([x_middle, val_xy_cross0_8], [y_middle, -val_xy_cross0_8], linestyle="--", color="black")
-            ax.text(0.6, 0.6, "{:.2f} m".format(np.hypot(val_xy_cross0_8, -val_xy_cross0_8)))
+                plot_human_circle(ax, x=0, y=0, speed=speed, theta=yaw, use_legend=True)
+            else:
+                plot_human_circle(ax, x=0, y=0, speed=speed, theta=yaw)
 
         ax.scatter(x_middle, y_middle, 1.1, marker='o', c='red')
         if cnt_plot == SPEED_RANGE - 1:
@@ -286,9 +300,9 @@ def show_comparison(flag_display_3d=False):
             if flag_display_3d:
                 ax.set_zlabel("z", fontsize=12, fontweight='bold',labelpad=1)
         if speed <= 0.5:
-            ax.set_title("Our proposed method, $v_{target}\leq$" + "{:.1f} m/s".format(0.5))
+            ax.set_title("Socially aware AGF, " + "{:.2f}".format(0.25) + "$\leq v_{human}\leq$" + "{:.1f} m/s".format(0.5), fontsize=11)
         else:
-            ax.set_title("Our proposed method, $v_{target}$=" + "{:.1f} m/s".format(speed))
+            ax.set_title("Socially aware AGF, $v_{human}$=" + "{:.1f} m/s".format(speed), fontsize=11)
 
         
         
@@ -300,9 +314,12 @@ def show_comparison(flag_display_3d=False):
         #     ax.axes.zaxis.set_ticklabels([])
 
         if flag_display_3d:
-            plt.subplots_adjust(left=0.0, bottom=0.05, right=0.95, top=0.95, wspace=0.0, hspace=0.15)
+            fig.tight_layout()
+            plt.subplots_adjust(left=-0.04, wspace=-0.05, bottom=0.08, right=0.85)
+            # plt.subplots_adjust(left=-0.04, bottom=0.05, right=0.9, top=0.95, wspace=-0.0, hspace=0.25)
         else:
             fig.tight_layout()
+            plt.subplots_adjust(wspace=-0.1, right=0.9)
 
 
         
@@ -326,17 +343,7 @@ def show_animation_speed():
         x, y = np.meshgrid(t, t)
 
         # Original AGF
-        sigma_head = np.max([speed, 0.5])
-        sigma_side = sigma_head * 2 / 3
-        sigma_rear = sigma_head / 2 * (2.0 - np.min([speed, 1.5])) / 1.5
-        alpha = np.arctan2(y_middle - y, x_middle - x) - yaw - np.pi * 0.5
-        alpha_normalized = np.arctan2(np.sin(alpha), np.cos(alpha))
-        sigma_front = (alpha_normalized > np.zeros(alpha_normalized.shape)) * sigma_head + (alpha_normalized <= np.zeros(alpha_normalized.shape)) * sigma_rear
-        
-        g_a = np.power(np.cos(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.sin(yaw), 2) / (2 * np.power(sigma_side, 2))
-        g_b = np.sin(2 * yaw) / (4 * np.power(sigma_front, 2)) - np.sin(2 * yaw) / (4 * np.power(sigma_side, 2))
-        g_c = np.power(np.sin(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.cos(yaw), 2) / (2 * np.power(sigma_side, 2))
-        z = 1 / np.exp(g_a * np.power(x_middle - x, 2) + 2 * g_b * (x_middle - x) * (y_middle - y) + g_c * np.power(y_middle - y, 2))
+        z = calc_original_agf(x, y, x_middle, y_middle, speed, yaw)
 
         ax = fig.add_subplot(1, 2, 1, projection='3d')
         ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.get_cmap('rainbow'))
@@ -345,20 +352,11 @@ def show_animation_speed():
         ax.set_xlabel("x", fontsize=12, fontweight='bold')
         ax.set_ylabel("y", fontsize=12, fontweight='bold')
         ax.set_zlabel("z", fontsize=12, fontweight='bold')
-        ax.set_title("AGF, $v_{target}$=" + "{:.1f} m/s".format(speed))
+        ax.set_title("AGF, $v_{human}$=" + "{:.1f} m/s".format(speed))
 
         
         # Socially-aware AGF
-        sigma_right = sigma_head * 3 / 5
-        sigma_left = sigma_head * 1 / 5
-        alpha_side = np.arctan2(np.sin(alpha + np.pi * 0.5), np.cos(alpha + np.pi * 0.5))
-        sigma_side = ((alpha_side) > np.zeros(alpha_side.shape)) * sigma_right + ((alpha_side) <= np.zeros(alpha_side.shape)) * sigma_left
-
-        g_a = np.power(np.cos(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.sin(yaw), 2) / (2 * np.power(sigma_side, 2))
-        g_b = np.sin(2 * yaw) / (4 * np.power(sigma_front, 2)) - np.sin(2 * yaw) / (4 * np.power(sigma_side, 2))
-        g_c = np.power(np.sin(yaw), 2) / (2 * np.power(sigma_front, 2)) + np.power(np.cos(yaw), 2) / (2 * np.power(sigma_side, 2))
-        z = 1 / np.exp(g_a * np.power(x_middle - x, 2) + 2 * g_b * (x_middle - x) * (y_middle - y) + g_c * np.power(y_middle - y, 2))
-        z = np.clip(z, 1e-9, 1)
+        z = calc_social_agf(x, y, x_middle, y_middle, speed, yaw)
 
         ax = fig.add_subplot(1, 2, 2, projection='3d')
         ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.get_cmap('rainbow'))
@@ -367,8 +365,7 @@ def show_animation_speed():
         ax.set_xlabel("x", fontsize=12, fontweight='bold')
         ax.set_ylabel("y", fontsize=12, fontweight='bold')
         ax.set_zlabel("z", fontsize=12, fontweight='bold')
-        ax.set_title("Our proposed method, $v_{target}$=" + "{:.1f} m/s".format(speed))
-        fig.tight_layout()
+        ax.set_title("Our proposed method, $v_{human}$=" + "{:.1f} m/s".format(speed))
         # plt.subplots_adjust(left=None, bottom=None, right=None, top=0.5, wspace=0.01, hspace=None)
 
         plt.pause(0.1)

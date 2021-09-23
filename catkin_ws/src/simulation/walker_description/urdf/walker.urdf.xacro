@@ -6,6 +6,7 @@
     <!-- Included URDF/XACRO Files -->
     <xacro:include filename="$(find walker_description)/urdf/accessories/webcam_c930e.urdf.xacro"/>
     <xacro:include filename="$(find walker_description)/urdf/accessories/ydlidar_g4.urdf.xacro" />
+    <xacro:include filename="$(find walker_description)/urdf/accessories/estop.urdf.xacro" />
 
     <!-- Gazebo plugin -->
     <xacro:include filename="$(find walker_description)/urdf/walker.gazebo" />
@@ -333,5 +334,14 @@
         <parent link="base_link"/>
         <child link="sensor_mount_link"/>
     </joint>
+
+    <!-- E-stop -->
+    <estop frame="estop" />
+    <joint name="estop_joint1" type="fixed">
+        <origin xyz="0.161 0 0.905" rpy="0 0 0" />
+        <parent link="base_link" />
+        <child link="estop_base" />
+    </joint>
+
 
 </robot>
