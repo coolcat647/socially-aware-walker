@@ -3,11 +3,11 @@
 import numpy as np
 import copy
 from steering_control_libs import cubic_spline_planner
-from steering_control_libs.utils import calc_target_index, stanley_control, proportional_control
+from steering_control_libs.utils import calc_target_index, stanley_control, proportional_control, my_steering_control
 
 # ROS
 import rospy
-from geometry_msgs.msg import Twist, PoseStamped, Quaternion, Point, PointStamped, Pose2D
+from geometry_msgs.msg import Twist, PoseStamped, Quaternion, Point, PointStamped, Pose2D, Wrench, WrenchStamped
 from nav_msgs.msg import Path, Odometry
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from std_msgs.msg import Float32
@@ -36,9 +36,10 @@ class SteeringControlWithPushingNode(object):
         # ROS parameters
         self.map_resolution         = rospy.get_param("~map_resolution", 0.2)
         self.smooth_path_resolution = self.map_resolution / 2.0     # much smoother than original path
-        self.cmd_freq               = rospy.get_param("~cmd_freq", 5.0)
+        self.cmd_freq               = rospy.get_param("~cmd_freq", 10.0)
         self.goal_tolerance         = rospy.get_param("~goal_tolerance", 0.2)
         self.robot_constraints_dict = rospy.get_param('constraints')
+        self.robot_dynamics_dict    = rospy.get_param('dynamics')
 
         # ROS publisher & subscriber
         self.pub_cmd = rospy.Publisher('cmd_vel', Twist, queue_size=1)
@@ -47,17 +48,23 @@ class SteeringControlWithPushingNode(object):
         self.pub_short_term_goal = rospy.Publisher('short_term_goal', PointStamped, queue_size=1)
 
         self.sub_path = rospy.Subscriber("walkable_path", Path, self.path_cb, queue_size=1)
-        sub_user_cmd = message_filters.Subscriber("user_contributed/cmd_vel", Twist)
+        sub_user_force = message_filters.Subscriber("force_filtered", WrenchStamped)
+        # sub_user_cmd = message_filters.Subscriber("user_contributed/cmd_vel", Twist)
         sub_odom = message_filters.Subscriber("odom_filtered", Odometry)
-        ts = message_filters.ApproximateTimeSynchronizer([sub_user_cmd, sub_odom], 10, 0.1, allow_headerless=True)
+        # ts = message_filters.ApproximateTimeSynchronizer([sub_user_cmd, sub_odom], 10, 0.1, allow_headerless=True)
+        ts = message_filters.ApproximateTimeSynchronizer([sub_user_force, sub_odom], 10, 0.1, allow_headerless=True)
         ts.registerCallback(self.cmd_odom_cb)
 
         self.pub_speed = rospy.Publisher('/speed', Float32, queue_size=1)
 
-        rospy.loginfo(rospy.get_name() + ' is ready.')
-        
+        self.user_force_msg = Wrench()
+        self.last_v = 0
+        self.last_w = 0
 
-    def cmd_odom_cb(self, user_cmd_msg, odom_msg):
+        rospy.loginfo(rospy.get_name() + ' is ready.')
+    
+
+    def cmd_odom_cb(self, user_force_msg, odom_msg):
         self.robot_pose.x = odom_msg.pose.pose.position.x
         self.robot_pose.y = odom_msg.pose.pose.position.y
         euler_angle = euler_from_quaternion([odom_msg.pose.pose.orientation.x, 
@@ -65,8 +72,20 @@ class SteeringControlWithPushingNode(object):
                                             odom_msg.pose.pose.orientation.z, 
                                             odom_msg.pose.pose.orientation.w])
         self.robot_pose.theta = euler_angle[2]
-        self.robot_twist = user_cmd_msg
-        self.robot_twist.angular.z = odom_msg.twist.twist.angular.z
+        self.robot_twist = odom_msg.twist.twist
+        # self.robot_twist.angular.z = odom_msg.twist.twist.angular.z
+        self.user_force_msg = user_force_msg.wrench
+
+    # def cmd_odom_cb(self, user_cmd_msg, odom_msg):
+    #     self.robot_pose.x = odom_msg.pose.pose.position.x
+    #     self.robot_pose.y = odom_msg.pose.pose.position.y
+    #     euler_angle = euler_from_quaternion([odom_msg.pose.pose.orientation.x, 
+    #                                         odom_msg.pose.pose.orientation.y, 
+    #                                         odom_msg.pose.pose.orientation.z, 
+    #                                         odom_msg.pose.pose.orientation.w])
+    #     self.robot_pose.theta = euler_angle[2]
+    #     self.robot_twist = user_cmd_msg
+    #     self.robot_twist.angular.z = odom_msg.twist.twist.angular.z
 
         # Random noise
         # self.robot_twist.linear.x = self.robot_twist.linear.x + (np.random.rand() - 0.5) * 0.5
@@ -125,6 +144,7 @@ if __name__ == '__main__':
     rate = rospy.Rate(node.cmd_freq)
 
     flag_message_published = False
+    flag_high_steering_error = False
 
     while not rospy.is_shutdown():
         if node.flag_path_update == True:
@@ -148,13 +168,19 @@ if __name__ == '__main__':
                                         0.0,
                                         node.robot_constraints_dict["max_linear_velocity"])
             node.pub_cmd.publish(cmd_msg)
+
         else:
             flag_message_published = False
 
             # Steering control law
-            total_steering_error, target_idx = stanley_control(node.robot_pose, 
-                                                                node.robot_twist, 
-                                                                node.flat_path, 
+            # total_steering_error, target_idx = stanley_control(node.robot_pose, 
+            #                                                     node.robot_twist, 
+            #                                                     node.flat_path, 
+            #                                                     ROBOT_REF_LENGTH,
+            #                                                     CROSSTRACK_ERROR_GAIN)
+            total_steering_error, target_idx = my_steering_control(node.robot_pose,
+                                                                node.robot_twist,
+                                                                node.flat_path,
                                                                 ROBOT_REF_LENGTH,
                                                                 CROSSTRACK_ERROR_GAIN)
             
@@ -171,7 +197,9 @@ if __name__ == '__main__':
 
             # if tracking_progress < 1.0:
             dis_robot2goal = np.hypot(node.robot_pose.x - node.flat_path[-1].x, node.robot_pose.y - node.flat_path[-1].y)
-            # if dis_robot2goal > node.map_resolution :
+            
+            now_time = rospy.Time().now()
+
             if dis_robot2goal > node.goal_tolerance:
                 # Car command 
                 dt = 1.0 / node.cmd_freq
@@ -190,15 +218,54 @@ if __name__ == '__main__':
                                                 node.robot_constraints_dict["max_angular_velocity"])
                 
                 # Assign linear velocity command
-                if np.abs(total_steering_error) >= np.pi / 2:
-                    target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
-                else:
-                    target_speed = node.robot_twist.linear.x
+
+                ##############################
+
+                force_y = node.user_force_msg.force.y if np.abs(node.user_force_msg.force.y) > node.robot_constraints_dict["min_enable_force"] else 0.0
+                total_mass = node.robot_dynamics_dict["mass"] + (-node.user_force_msg.force.z / 9.8)       # Newton -> kg
+
+                x_t = np.abs(total_steering_error) * 2 / np.pi
+                inhibition_force = (force_y / total_mass) * (1 / (1 + np.exp(-x_t * 10 + 5)))
+                v_dot = force_y / total_mass - \
+                        node.last_v * node.robot_dynamics_dict["damping_xy"] / total_mass - \
+                        node.robot_dynamics_dict["constant_fraction_xy"] - \
+                        inhibition_force
+                # next_v = np.clip(node.last_v + v_dot * dt, 0.0, node.robot_constraints_dict["max_linear_velocity"])
+                next_v = node.last_v + v_dot * dt
+                # print("e: {:.2f} degs".format(total_steering_error * 180 / np.pi))
+                print("x_t: {:.2f} inh_force: {:.2f}".format(x_t, inhibition_force))
+                ##############################
+                # if np.abs(total_steering_error) >= np.pi / 2:
+                #     target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
+                # else:
+                #     target_speed = node.last_v
+
+                # if np.abs(total_steering_error) >= np.pi / 4 and not flag_high_steering_error:
+                #     flag_high_steering_error = True
+                #     target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
+                # elif np.abs(total_steering_error) >= np.pi / 8 and flag_high_steering_error:
+                #     flag_high_steering_error = True
+                #     target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
+                # else:
+                #     flag_high_steering_error = False
+                #     target_speed = node.robot_twist.linear.x
+
+                # if np.abs(total_steering_error) >= np.pi / 2:
+                #     target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
+                # else:
+                #     target_speed = node.robot_twist.linear.x
+                target_speed = node.last_v
                 accel_linear = proportional_control(target_speed, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
+                # cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
+                #                             np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2,
+                #                             node.robot_constraints_dict["max_linear_velocity"])
                 cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
-                                            np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2,
+                                            -node.robot_constraints_dict["max_linear_velocity"],
                                             node.robot_constraints_dict["max_linear_velocity"])
                 node.pub_cmd.publish(cmd_msg)
+                node.last_v = next_v
+                # node.last_w = next_w
+
             else:
                 rospy.loginfo("goal reached! {:.2f}".format(dis_robot2goal))
                 # Stop the robot
@@ -209,5 +276,6 @@ if __name__ == '__main__':
                                             node.robot_constraints_dict["max_linear_velocity"])
                 node.pub_cmd.publish(cmd_msg)
                 node.pub_tracking_progress.publish(1.0)
+
         rate.sleep()
 

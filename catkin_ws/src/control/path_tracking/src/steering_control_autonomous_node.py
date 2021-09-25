@@ -36,7 +36,7 @@ class SteeringControlAutonomousNode(object):
         # ROS parameters
         self.map_resolution         = rospy.get_param("~map_resolution", 0.2)
         self.smooth_path_resolution = self.map_resolution / 2.0     # much smoother than original path
-        self.cmd_freq               = rospy.get_param("~cmd_freq", 5.0)
+        self.cmd_freq               = rospy.get_param("~cmd_freq", 10.0)
         self.goal_tolerance         = rospy.get_param("~goal_tolerance", 0.2)
         self.robot_constraints_dict = rospy.get_param('constraints')
 

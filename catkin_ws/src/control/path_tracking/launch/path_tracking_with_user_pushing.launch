@@ -11,7 +11,7 @@
         <node name="pushing_action_simulation_node" pkg="path_tracking" type="pushing_action_simulation_node.py" output="screen" />
 
         <!-- Force to velocity command -->
-        <node name="path_tracking_with_user_pushing_node" pkg="path_tracking" type="force2cmd_node.py" output="screen" />
+        <!-- <node name="path_tracking_with_user_pushing_node" pkg="path_tracking" type="force2cmd_node.py" output="screen" /> -->
         
         <!-- Steering control with user pushing -->
         <node name="steering_control_with_user_pushing_node" pkg="path_tracking" type="steering_control_with_user_pushing_node.py" output="screen">
