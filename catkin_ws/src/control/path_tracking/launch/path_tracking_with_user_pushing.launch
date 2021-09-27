@@ -17,5 +17,8 @@
         <node name="steering_control_with_user_pushing_node" pkg="path_tracking" type="steering_control_with_user_pushing_node.py" output="screen">
             <param name="goal_tolerance" type="double" value="$(arg goal_tolerance)" />
         </node>
+
+        <!-- Trigger the user pushing service when receive the destination assignment -->
+        <node name="robot_force_synchronizer" pkg="path_tracking" type="robot_force_synchronizer.py" />
     </group>
 </launch>

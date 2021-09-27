@@ -51,20 +51,31 @@ class SteeringControlWithPushingNode(object):
         sub_user_force = message_filters.Subscriber("force_filtered", WrenchStamped)
         # sub_user_cmd = message_filters.Subscriber("user_contributed/cmd_vel", Twist)
         sub_odom = message_filters.Subscriber("odom_filtered", Odometry)
-        # ts = message_filters.ApproximateTimeSynchronizer([sub_user_cmd, sub_odom], 10, 0.1, allow_headerless=True)
         ts = message_filters.ApproximateTimeSynchronizer([sub_user_force, sub_odom], 10, 0.1, allow_headerless=True)
         ts.registerCallback(self.cmd_odom_cb)
 
-        self.pub_speed = rospy.Publisher('/speed', Float32, queue_size=1)
 
+        self.pub_accel = rospy.Publisher('accel', Twist, queue_size=1)
+        self.pub_inhibition_force = rospy.Publisher('inhibition_force', Float32, queue_size=1)
         self.user_force_msg = Wrench()
         self.last_v = 0
         self.last_w = 0
+        self.last_time = None
 
         rospy.loginfo(rospy.get_name() + ' is ready.')
     
 
     def cmd_odom_cb(self, user_force_msg, odom_msg):
+        # Publish acceleration
+        if self.last_time is not None:
+            accel_msg = Twist()
+            dt = (odom_msg.header.stamp - self.last_time).to_sec()
+            accel_msg.linear.x = (odom_msg.twist.twist.linear.x - self.robot_twist.linear.x) / dt
+            accel_msg.angular.z = (odom_msg.twist.twist.angular.z - self.robot_twist.angular.z) / dt
+            if self.pub_accel.get_num_connections() > 0:
+                self.pub_accel.publish(accel_msg)
+        self.last_time = odom_msg.header.stamp
+
         self.robot_pose.x = odom_msg.pose.pose.position.x
         self.robot_pose.y = odom_msg.pose.pose.position.y
         euler_angle = euler_from_quaternion([odom_msg.pose.pose.orientation.x, 
@@ -75,21 +86,6 @@ class SteeringControlWithPushingNode(object):
         self.robot_twist = odom_msg.twist.twist
         # self.robot_twist.angular.z = odom_msg.twist.twist.angular.z
         self.user_force_msg = user_force_msg.wrench
-
-    # def cmd_odom_cb(self, user_cmd_msg, odom_msg):
-    #     self.robot_pose.x = odom_msg.pose.pose.position.x
-    #     self.robot_pose.y = odom_msg.pose.pose.position.y
-    #     euler_angle = euler_from_quaternion([odom_msg.pose.pose.orientation.x, 
-    #                                         odom_msg.pose.pose.orientation.y, 
-    #                                         odom_msg.pose.pose.orientation.z, 
-    #                                         odom_msg.pose.pose.orientation.w])
-    #     self.robot_pose.theta = euler_angle[2]
-    #     self.robot_twist = user_cmd_msg
-    #     self.robot_twist.angular.z = odom_msg.twist.twist.angular.z
-
-        # Random noise
-        # self.robot_twist.linear.x = self.robot_twist.linear.x + (np.random.rand() - 0.5) * 0.5
-        # self.pub_speed.publish(self.robot_twist.linear.x)
 
 
     def path_cb(self, msg):
@@ -218,14 +214,12 @@ if __name__ == '__main__':
                                                 node.robot_constraints_dict["max_angular_velocity"])
                 
                 # Assign linear velocity command
-
-                ##############################
-
                 force_y = node.user_force_msg.force.y if np.abs(node.user_force_msg.force.y) > node.robot_constraints_dict["min_enable_force"] else 0.0
                 total_mass = node.robot_dynamics_dict["mass"] + (-node.user_force_msg.force.z / 9.8)       # Newton -> kg
 
                 x_t = np.abs(total_steering_error) * 2 / np.pi
                 inhibition_force = (force_y / total_mass) * (1 / (1 + np.exp(-x_t * 10 + 5)))
+                node.pub_inhibition_force.publish(inhibition_force * 30)
                 v_dot = force_y / total_mass - \
                         node.last_v * node.robot_dynamics_dict["damping_xy"] / total_mass - \
                         node.robot_dynamics_dict["constant_fraction_xy"] - \
@@ -233,27 +227,8 @@ if __name__ == '__main__':
                 # next_v = np.clip(node.last_v + v_dot * dt, 0.0, node.robot_constraints_dict["max_linear_velocity"])
                 next_v = node.last_v + v_dot * dt
                 # print("e: {:.2f} degs".format(total_steering_error * 180 / np.pi))
-                print("x_t: {:.2f} inh_force: {:.2f}".format(x_t, inhibition_force))
-                ##############################
-                # if np.abs(total_steering_error) >= np.pi / 2:
-                #     target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
-                # else:
-                #     target_speed = node.last_v
+                # print("x_t: {:.2f} inh_force: {:.2f}".format(x_t, inhibition_force))
 
-                # if np.abs(total_steering_error) >= np.pi / 4 and not flag_high_steering_error:
-                #     flag_high_steering_error = True
-                #     target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
-                # elif np.abs(total_steering_error) >= np.pi / 8 and flag_high_steering_error:
-                #     flag_high_steering_error = True
-                #     target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
-                # else:
-                #     flag_high_steering_error = False
-                #     target_speed = node.robot_twist.linear.x
-
-                # if np.abs(total_steering_error) >= np.pi / 2:
-                #     target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
-                # else:
-                #     target_speed = node.robot_twist.linear.x
                 target_speed = node.last_v
                 accel_linear = proportional_control(target_speed, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
                 # cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,

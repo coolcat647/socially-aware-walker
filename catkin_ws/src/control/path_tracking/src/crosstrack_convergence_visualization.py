@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
 
     # Visualization
-    fig = plt.figure(figsize=(8, 3))
+    fig = plt.figure(figsize=(12, 3))
     ax =  fig.add_subplot(111)
 
     line_v025 = None
@@ -94,11 +94,11 @@ if __name__ == '__main__':
 
     # ax.legend([line_d10_v05_k2, line_d10_v025_k2], ["$v=0.5 + 0.1sin(2t)$", "$v=0.25 + 0.1sin(2t)$"])
     plt.xlabel("t (seconds)", fontsize=12)
-    plt.ylabel("Cross-track error: $d$", fontsize=14)
+    plt.ylabel("Cross-track error: $d(t)$", fontsize=14)
     ax.set_ylim([-0.6, 1.0])
     ax.set_yticks(np.linspace(-0.6, 1.0, 9))
     ax.set_xticks(np.linspace(0, 40, 9))
     plt.grid(True)
     plt.box(False)
-    plt.subplots_adjust(bottom=0.2)
+    plt.subplots_adjust(bottom=0.2, left=0.08, right=0.97)
     plt.show()

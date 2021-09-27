@@ -191,16 +191,22 @@ if __name__ == '__main__':
                                             node.robot_constraints_dict["max_angular_velocity"])
                 
                 # Assign linear velocity command
-                if np.abs(total_steering_error) >= np.pi / 4 and not flag_high_steering_error:
-                    flag_high_steering_error = True
-                    target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
-                elif np.abs(total_steering_error) >= np.pi / 8 and flag_high_steering_error:
-                    flag_high_steering_error = True
-                    target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
-                else:
-                    flag_high_steering_error = False
-                    target_speed = node.robot_constraints_dict["max_linear_velocity"]
+                # if np.abs(total_steering_error) >= np.pi / 4 and not flag_high_steering_error:
+                #     flag_high_steering_error = True
+                #     target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
+                # elif np.abs(total_steering_error) >= np.pi / 8 and flag_high_steering_error:
+                #     flag_high_steering_error = True
+                #     target_speed = np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2
+                # else:
+                #     flag_high_steering_error = False
+                #     target_speed = node.robot_constraints_dict["max_linear_velocity"]
+                # accel_linear = proportional_control(target_speed, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
+                x_t = np.abs(total_steering_error) * 2 / np.pi
+                inhibition_accel = node.robot_constraints_dict["max_linear_velocity"] * (1 / (1 + np.exp(-x_t * 10 + 5)))
+                target_speed = node.robot_constraints_dict["max_linear_velocity"]
                 accel_linear = proportional_control(target_speed, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
+                accel_linear -= inhibition_accel
+
                 cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
                                             np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2,
                                             node.robot_constraints_dict["max_linear_velocity"])

@@ -498,7 +498,7 @@ geometry_msgs::Point PathFindingNode::generate_subgoal(const nav_msgs::Occupancy
     int candidate_j_list[19] = {0};
     double max_subgoal_distance = 8.0;
     double step_distance = 0.6;
-    double min_j_score = 0.0;
+    double min_j_score = 100.0;
     for(int i = 2; i <= 16; i++) {
       double theta = M_PI / 18 * i;
       double candidate_distance;
@@ -513,21 +513,20 @@ geometry_msgs::Point PathFindingNode::generate_subgoal(const nav_msgs::Occupancy
         double obstacle_cost = get_local_max_cost(map_msg_ptr, idx);
         if(obstacle_cost >= kThresObstacleDangerCost || map_msg_ptr->data[idx] == -1){
           candidate_j_list[i] = j - 2;
+          // printf("(angle: %.2f, j: %d), ", theta * 180 / M_PI, j);
           break;
         }
         // Calculate candidate score
         double dis_candidate2goal = vec_goal_baseframe.distance(candidate_pt);
-        // double score = (1.0 - obstacle_cost / 100.0) + (1.0 - dis_candidate2goal / dis_base2goal);
         double score = (obstacle_cost / 100.0) + (dis_candidate2goal / dis_base2goal);
 
         // Find the max score among the candidates in same direction
-        if(score > min_j_score){
+        if(score < min_j_score){
           min_j_score = score;
           candidate_j_list[i] = j;
         }
       }
       candidate_distance = step_distance * candidate_j_list[i];
-      printf("%.2f, ", candidate_distance);
       candidate_score_list.push_back(min_j_score);
   
       // Visualization
