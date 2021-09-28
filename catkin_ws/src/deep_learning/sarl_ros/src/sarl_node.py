@@ -10,6 +10,7 @@ import numpy as np
 import gym
 import matplotlib.pyplot as plt
 import imp
+import copy
 
 import rospy
 import rospkg
@@ -149,6 +150,8 @@ class CrowdNavNode(object):
         self.mrk_array = MarkerArray()
         self.marker_init()      # Init function
 
+        self.last_sarl_robot_state = None
+
         # Signal callback setup 
         rospy.on_shutdown(self.shutdown_cb)
         # Timer setup
@@ -232,7 +235,7 @@ class CrowdNavNode(object):
 
             # Trick for SARL to reduce the timeout rate
             if not isinstance(self.robot.policy, ORCA) and self.finalgoal[0] == 0.0 and self.finalgoal[1] == 4.0:
-                self.finalgoal[1] += 0.5
+                self.finalgoal[1] += 0.0
 
             tf_sarl2odom = get_tf_matrix(theta=np.arctan2(msg.pose.position.y - self.robot_state[1],
                                                      msg.pose.position.x - self.robot_state[0]) - np.pi / 2,
@@ -403,6 +406,13 @@ class CrowdNavNode(object):
             cmd_msg.angular.z = action[1]
         self.pub_cmd.publish(cmd_msg)
         self.robot.set_position([sarl_robot_state[0], sarl_robot_state[1]])
+
+        if self.last_sarl_robot_state is None:
+            self.last_sarl_robot_state = copy.deepcopy(sarl_robot_state)
+        else:
+            sarl_robot_vx = sarl_robot_state[0] - self.last_sarl_robot_state[0]
+            sarl_robot_vy = sarl_robot_state[1] - self.last_sarl_robot_state[1]
+            self.robot.set_velocity([sarl_robot_vx, sarl_robot_vy])
 
         # Publish visualization msg if there are any subscribers existed
         if self.pub_mrk_vis.get_num_connections() > 0:

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
 
-    <arg name="flag_only_static" default="true" />
+    <arg name="flag_only_static" default="false" />
     <arg name="static_obstacle_radius" default="0.5" />
     <arg name="dynamic_obstacle_radius" default="0.4" />
     <arg name="base_frameid" value="base_link" />
