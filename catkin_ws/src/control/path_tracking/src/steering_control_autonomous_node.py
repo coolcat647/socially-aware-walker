@@ -13,7 +13,9 @@ from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from std_msgs.msg import Float32
 
 SPEED_PROPORTIONAL_GAIN     = 2.0   # speed proportional gain
-CROSSTRACK_ERROR_GAIN       = 2.5   # crosstrack error gain
+# CROSSTRACK_ERROR_GAIN       = 2.5   # crosstrack error gain
+K1_GAIN                     = 1.0
+K2_GAIN                     = 2.0
 
 ROBOT_REF_LENGTH            = 0.6   
 ROBOT_WHEELS_DISTANCE       = 0.6   # [m] Wheel base of vehicle
@@ -157,8 +159,7 @@ if __name__ == '__main__':
             total_steering_error, target_idx = my_steering_control(node.robot_pose,
                                                                 node.robot_twist,
                                                                 node.flat_path,
-                                                                ROBOT_REF_LENGTH,
-                                                                CROSSTRACK_ERROR_GAIN)
+                                                                ROBOT_REF_LENGTH)
             
             # Publish tracking progress
             tracking_progress = (target_idx + 1) / len(node.flat_path)
@@ -185,7 +186,7 @@ if __name__ == '__main__':
                     total_steering_error = -(theta - theta_desired)
                     theta_dot_dot = -k2 * theta_dot + k3 * total_steering_error
                 '''
-                accel_angular = -node.robot_twist.angular.z * 1 + total_steering_error * 1
+                accel_angular = -node.robot_twist.angular.z * K1_GAIN + total_steering_error * K2_GAIN
                 cmd_msg.angular.z = np.clip(node.robot_twist.angular.z + accel_angular * dt,
                                             -node.robot_constraints_dict["max_angular_velocity"], 
                                             node.robot_constraints_dict["max_angular_velocity"])
@@ -201,7 +202,7 @@ if __name__ == '__main__':
                 #     flag_high_steering_error = False
                 #     target_speed = node.robot_constraints_dict["max_linear_velocity"]
                 # accel_linear = proportional_control(target_speed, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
-                x_t = np.abs(total_steering_error) * 2 / np.pi
+                x_t = np.abs(total_steering_error) / (np.pi / 4)
                 inhibition_accel = node.robot_constraints_dict["max_linear_velocity"] * (1 / (1 + np.exp(-x_t * 10 + 5)))
                 target_speed = node.robot_constraints_dict["max_linear_velocity"]
                 accel_linear = proportional_control(target_speed, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)

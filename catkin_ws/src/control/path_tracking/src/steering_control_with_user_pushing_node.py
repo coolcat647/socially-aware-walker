@@ -14,7 +14,8 @@ from std_msgs.msg import Float32
 import message_filters
 
 SPEED_PROPORTIONAL_GAIN     = 2.0   # speed proportional gain
-CROSSTRACK_ERROR_GAIN       = 2.5   # crosstrack error gain
+K1_GAIN                     = 1.0
+K2_GAIN                     = 2.0
 
 ROBOT_REF_LENGTH            = 0.6   # [m] Wheel base of vehicle
 ROBOT_WHEELS_DISTANCE       = 0.6
@@ -59,7 +60,6 @@ class SteeringControlWithPushingNode(object):
         self.pub_inhibition_force = rospy.Publisher('inhibition_force', Float32, queue_size=1)
         self.user_force_msg = Wrench()
         self.last_v = 0
-        self.last_w = 0
         self.last_time = None
 
         rospy.loginfo(rospy.get_name() + ' is ready.')
@@ -127,6 +127,20 @@ class SteeringControlWithPushingNode(object):
         self.pub_path_flat.publish(flat_path_msg)
 
 
+    def apply_estop_force(self, force_forwarding, total_mass):
+        damping_xy = self.robot_dynamics_dict["damping_xy"]
+        dt = 1.0 / self.cmd_freq
+
+        estop_force = force_forwarding  + self.last_v * (damping_xy - K1_GAIN * total_mass)
+        v_dot = force_forwarding / total_mass - \
+                self.last_v * damping_xy / total_mass - \
+                estop_force / total_mass
+        next_v = np.clip(self.last_v + v_dot * dt,
+                        0.0,
+                        self.robot_constraints_dict["max_linear_velocity"])
+        return next_v, estop_force
+
+
     def shutdown_cb(self):
         self.pub_cmd.publish(Twist())
         rospy.loginfo("Shutdown " + rospy.get_name())
@@ -152,18 +166,23 @@ if __name__ == '__main__':
                 node.flat_path = copy.deepcopy(node.updated_flat_path)
                 # rospy.loginfo("path updated!")
 
+        cmd_msg = Twist()   # Robot velocity command
+        dt = 1.0 / node.cmd_freq
+        force_forwarding = 0.0
+        if np.abs(node.user_force_msg.force.y) > node.robot_constraints_dict["min_enable_force"]:
+            force_forwarding = node.user_force_msg.force.y
+        total_mass = node.robot_dynamics_dict["mass"] + (-node.user_force_msg.force.z / 9.8)       # Newton -> kg
+
         if len(node.flat_path) == 0:
             if not flag_message_published: 
                 rospy.loginfo("Empty planning path, wait for new path")
                 flag_message_published = True
-            # Stop the robot
-            cmd_msg = Twist()
-            dt = 1.0 / node.cmd_freq
-            accel_linear = proportional_control(0, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
-            cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
-                                        0.0,
-                                        node.robot_constraints_dict["max_linear_velocity"])
-            node.pub_cmd.publish(cmd_msg)
+
+            # Stop the robot by provide estop force
+            next_v, estop_force = node.apply_estop_force(force_forwarding, total_mass)
+            cmd_msg.linear.x = next_v
+            # node.last_v = next_v
+            node.pub_inhibition_force.publish(estop_force)
 
         else:
             flag_message_published = False
@@ -177,8 +196,7 @@ if __name__ == '__main__':
             total_steering_error, target_idx = my_steering_control(node.robot_pose,
                                                                 node.robot_twist,
                                                                 node.flat_path,
-                                                                ROBOT_REF_LENGTH,
-                                                                CROSSTRACK_ERROR_GAIN)
+                                                                ROBOT_REF_LENGTH)
             
             # Publish tracking progress
             tracking_progress = (target_idx + 1) / len(node.flat_path)
@@ -197,60 +215,39 @@ if __name__ == '__main__':
             now_time = rospy.Time().now()
 
             if dis_robot2goal > node.goal_tolerance:
-                # Car command 
-                dt = 1.0 / node.cmd_freq
-                cmd_msg = Twist()
-
                 # Assign angular velocity command
-                '''
-                Notice:
-                    total_steering_error = -(theta - theta_desired)
-                    theta_dot_dot = -k2 * theta_dot + k3 * total_steering_error
-                '''
-                if node.robot_twist.linear.x > 0.1:
-                    accel_angular = -node.robot_twist.angular.z * 1 + total_steering_error * 1
+                # Notice:
+                #    total_steering_error = -(theta - theta_desired)
+                #    theta_dot_dot = -k2 * theta_dot + k3 * total_steering_error
+                #
+                if node.robot_twist.linear.x > 0.05:
+                    accel_angular = -node.robot_twist.angular.z * K1_GAIN + total_steering_error * K2_GAIN
                     cmd_msg.angular.z = np.clip(node.robot_twist.angular.z + accel_angular * dt,
                                                 -node.robot_constraints_dict["max_angular_velocity"], 
                                                 node.robot_constraints_dict["max_angular_velocity"])
                 
                 # Assign linear velocity command
-                force_y = node.user_force_msg.force.y if np.abs(node.user_force_msg.force.y) > node.robot_constraints_dict["min_enable_force"] else 0.0
-                total_mass = node.robot_dynamics_dict["mass"] + (-node.user_force_msg.force.z / 9.8)       # Newton -> kg
-
-                x_t = np.abs(total_steering_error) * 2 / np.pi
-                inhibition_force = (force_y / total_mass) * (1 / (1 + np.exp(-x_t * 10 + 5)))
-                node.pub_inhibition_force.publish(inhibition_force * 30)
-                v_dot = force_y / total_mass - \
+                x_t = np.abs(total_steering_error) / (np.pi / 4)
+                inhibition_force = force_forwarding * (1 / (1 + np.exp(-x_t * 10 + 5)))
+                node.pub_inhibition_force.publish(inhibition_force)
+                v_dot = force_forwarding / total_mass - \
                         node.last_v * node.robot_dynamics_dict["damping_xy"] / total_mass - \
                         node.robot_dynamics_dict["constant_fraction_xy"] - \
-                        inhibition_force
-                # next_v = np.clip(node.last_v + v_dot * dt, 0.0, node.robot_constraints_dict["max_linear_velocity"])
-                next_v = node.last_v + v_dot * dt
-                # print("e: {:.2f} degs".format(total_steering_error * 180 / np.pi))
-                # print("x_t: {:.2f} inh_force: {:.2f}".format(x_t, inhibition_force))
-
-                target_speed = node.last_v
-                accel_linear = proportional_control(target_speed, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
-                # cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
-                #                             np.abs(cmd_msg.angular.z) * ROBOT_WHEELS_DISTANCE / 2,
-                #                             node.robot_constraints_dict["max_linear_velocity"])
-                cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
-                                            -node.robot_constraints_dict["max_linear_velocity"],
-                                            node.robot_constraints_dict["max_linear_velocity"])
-                node.pub_cmd.publish(cmd_msg)
-                node.last_v = next_v
-                # node.last_w = next_w
+                        inhibition_force / total_mass
+                next_v = np.clip(node.last_v + v_dot * dt, 0.0, node.robot_constraints_dict["max_linear_velocity"])
+                cmd_msg.linear.x = next_v
 
             else:
                 rospy.loginfo("goal reached! {:.2f}".format(dis_robot2goal))
-                # Stop the robot
-                cmd_msg = Twist()
-                accel_linear = proportional_control(0, node.robot_twist.linear.x, SPEED_PROPORTIONAL_GAIN)
-                cmd_msg.linear.x = np.clip(node.robot_twist.linear.x + accel_linear * dt,
-                                            0.0,
-                                            node.robot_constraints_dict["max_linear_velocity"])
-                node.pub_cmd.publish(cmd_msg)
+
+                # Stop the robot by provide estop force
+                next_v, estop_force = node.apply_estop_force(force_forwarding, total_mass)
+                cmd_msg.linear.x = next_v
+                node.last_v = next_v
+                node.pub_inhibition_force.publish(estop_force)
                 node.pub_tracking_progress.publish(1.0)
 
+        node.pub_cmd.publish(cmd_msg)
+        node.last_v = cmd_msg.linear.x
         rate.sleep()
 
