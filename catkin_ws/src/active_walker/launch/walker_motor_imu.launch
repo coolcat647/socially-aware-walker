@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="motor_disable" default="true" />
+
+    <!-- Motor driver -->
+    <include file="$(find mcbl3006s_drivers)/launch/motor_driver.launch" >
+        <arg name="motor_disable" value="$(arg motor_disable)" />
+    </include>
+
+    <!-- IMU -->
+    <include file="$(find razor_imu_9dof)/launch/razor-pub.launch" />
+
+    <!-- EKF -->
+    <include file="$(find robot_localization)/launch/ekf_walker.launch" />
+    
+</launch>

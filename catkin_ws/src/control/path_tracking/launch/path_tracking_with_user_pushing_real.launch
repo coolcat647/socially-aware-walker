@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="robot_namespace" value="walker" />
+    <arg name="goal_tolerance" default="0.4" />
+
+    <!-- Load robot constraints -->
+    <rosparam file="$(find path_tracking)/config/walker_dynamics.yaml" command="load"/>
+
+    <group ns="$(arg robot_namespace)">
+        <!-- Pushing action generator service -->
+        <!-- <node name="pushing_action_simulation_node" pkg="path_tracking" type="pushing_action_simulation_node.py" output="screen" /> -->
+
+        <!-- Force to velocity command -->
+        <!-- <node name="path_tracking_with_user_pushing_node" pkg="path_tracking" type="force2cmd_node.py" output="screen" /> -->
+        
+        <!-- Steering control with user pushing -->
+        <node name="steering_control_with_user_pushing_node" pkg="path_tracking" type="steering_control_with_user_pushing_node.py" output="screen">
+            <param name="goal_tolerance" type="double" value="$(arg goal_tolerance)" />
+        </node>
+
+        <!-- Trigger the user pushing service when receive the destination assignment -->
+        <!-- <node name="robot_force_synchronizer" pkg="path_tracking" type="robot_force_synchronizer.py" /> -->
+    </group>
+</launch>

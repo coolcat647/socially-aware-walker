@@ -6,32 +6,30 @@
     <arg name="camera_frame_id" default="camera_link" />
     <arg name="image_view" default="false" />
     <arg name="use_rviz" default="false" />
-    <arg name="use_proc" default="false" />
-
     <arg name="robot_namespace" default="walker" />
-    <group ns="$(arg robot_namespace)">
 
-        <!-- USB camera -->
+    <!-- USB camera -->
+    <group ns="$(arg robot_namespace)">
         <include file="$(find usb_cam)/launch/c930e.launch" >
             <arg name="video_device" value="$(arg video_device)" />
             <arg name="camera_frame_id" value="$(arg camera_frame_id)" />
             <arg name="image_view" value="$(arg image_view)" />
         </include>
 
-        <!-- Hokuyo laserscan -->
-        <!-- <include file="$(find hokuyo_node)/launch/laserscan.launch" >
-            <arg name="laser_frame_id" value="$(arg laser_frame_id)" />
-        </include> -->
-
         <!-- YDLiDAR G4 -->
         <include file="$(find ydlidar)/launch/lidar.launch">
             <arg name="ydlidar_device" value="$(arg ydlidar_device)" />
         </include>
+    </group>
+
+        <!-- WACOH WEF-6A200-4-RCD -->
+        <include file="$(find dynpick_driver)/launch/driver.launch" />
+
+        <!-- SparkFun 9DoF Razor IMU M0 -->
+        <!-- <include file="$(find razor_imu_9dof)/launch/razor-pub.launch" /> -->
 
 
         <!-- Static transformation -->
-        <!-- Camera Laserscan calibration result: -->
-        <!-- 5.03168100114148e-02 9.5209630006627572e-02 -7.872196022398195e-02 -0.4931572  0.5025891  -0.4968664  0.5072711 -->
         <node name="laser2camera" pkg="tf" type="static_transform_publisher" 
                 args="-5.03168100114148e-02 -0.04 -3.25e-02 1.658063 0 -1.343903501
                 /laser_link /camera_link 20"/>
@@ -42,21 +40,9 @@
                 args="0.41 0 0.535 0  0  1  0 
                 /base_link /laser_link 20"/>
 
-
-        <!-- RVIZ -->
-        <group if="$(eval arg('use_rviz') == true)">
-            <node pkg="rviz" type="rviz" name="rviz_node" 
-                args="-d $(find active_walker)/rviz/default_setting.rviz"/>
-        </group>
-
-
-        <!-- Image proc -->
-        <group if="$(eval arg('use_proc') == true)">
-            <remap from="image_raw" to="/usb_cam/image_raw" />
-            <remap from="camera_info" to="/usb_cam/camera_info" />
-            <node name="image_proc_node" pkg="image_proc" type="image_proc" />
-        </group>
+    <!-- RVIZ -->
+    <group if="$(eval arg('use_rviz') == true)">
+        <node pkg="rviz" type="rviz" name="rviz_node" 
+            args="-d $(find active_walker)/rviz/default_setting.rviz"/>
     </group>
-
-
 </launch>

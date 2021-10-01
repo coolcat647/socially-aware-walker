@@ -55,27 +55,14 @@ class SteeringControlWithPushingNode(object):
         ts = message_filters.ApproximateTimeSynchronizer([sub_user_force, sub_odom], 10, 0.1, allow_headerless=True)
         ts.registerCallback(self.cmd_odom_cb)
 
-
-        self.pub_accel = rospy.Publisher('accel', Twist, queue_size=1)
         self.pub_inhibition_force = rospy.Publisher('inhibition_force', Float32, queue_size=1)
         self.user_force_msg = Wrench()
         self.last_v = 0
-        self.last_time = None
 
         rospy.loginfo(rospy.get_name() + ' is ready.')
     
 
     def cmd_odom_cb(self, user_force_msg, odom_msg):
-        # Publish acceleration
-        if self.last_time is not None:
-            accel_msg = Twist()
-            dt = (odom_msg.header.stamp - self.last_time).to_sec()
-            accel_msg.linear.x = (odom_msg.twist.twist.linear.x - self.robot_twist.linear.x) / dt
-            accel_msg.angular.z = (odom_msg.twist.twist.angular.z - self.robot_twist.angular.z) / dt
-            if self.pub_accel.get_num_connections() > 0:
-                self.pub_accel.publish(accel_msg)
-        self.last_time = odom_msg.header.stamp
-
         self.robot_pose.x = odom_msg.pose.pose.position.x
         self.robot_pose.y = odom_msg.pose.pose.position.y
         euler_angle = euler_from_quaternion([odom_msg.pose.pose.orientation.x, 
@@ -84,7 +71,6 @@ class SteeringControlWithPushingNode(object):
                                             odom_msg.pose.pose.orientation.w])
         self.robot_pose.theta = euler_angle[2]
         self.robot_twist = odom_msg.twist.twist
-        # self.robot_twist.angular.z = odom_msg.twist.twist.angular.z
         self.user_force_msg = user_force_msg.wrench
 
 
