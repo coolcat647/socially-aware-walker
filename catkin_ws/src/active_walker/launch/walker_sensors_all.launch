@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <arg name="laser_frame_id" default="laser_link" />
-    <arg name="video_device" default="/dev/video2" />
+    <arg name="video_device" default="/dev/video0" />
     <arg name="ydlidar_device" default="/dev/walker_ydlidar_sensor" />
     <arg name="camera_frame_id" default="camera_link" />
     <arg name="image_view" default="false" />
