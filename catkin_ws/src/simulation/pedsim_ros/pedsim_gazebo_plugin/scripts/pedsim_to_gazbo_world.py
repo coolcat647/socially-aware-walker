@@ -98,6 +98,12 @@ def generate_gzb_world( pedsim_file_name ):
         print >> gzb_world, '''  <!-- this file is auto generated using pedsim_gazebo_plugin pkg -->    
   <sdf version="1.5">
     <world name="default">
+
+    <gui>
+      <camera name="user_camera">
+        <pose>0 0 16 0 1.5707 1.5707</pose>
+      </camera>
+    </gui>
     
     <!-- Ground Plane -->
     <include>
@@ -148,11 +154,9 @@ def generate_launch_file( pedsim_file_name ):
       
 if __name__ == "__main__": 
     pedsim_file_name = raw_input(">> enter pedsim scenaria name: file_name.xml \n")
-    # pedsim_file_name = "fallguys_scenario.xml"
 
     # genrate gazebo wolrd 
     generate_gzb_world( pedsim_file_name )     
     generate_launch_file( pedsim_file_name ) 
     print ">> after you launch the scenario using pedsim_simulator, launch the generated world using: "
     print " \" $roslaunch pedsim_gazebo_plugin {}.launch\"  ".format( pedsim_file_name.split('.')[0] )
-    

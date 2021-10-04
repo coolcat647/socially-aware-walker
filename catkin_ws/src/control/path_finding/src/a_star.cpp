@@ -200,7 +200,7 @@ bool Solver::FindPathByHashmap(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr,
         Node* successor_ptr = new Node(tmp_grid, cur_node);
         successor_ptr->g_val = g_cost;
         successor_ptr->h_val = GetHeuristic_(successor_ptr->grid, *goal_grid_ptr_) +
-                                GetPotentialCost(tmp_grid) / 10.0;
+                                GetPotentialCost(tmp_grid) / 5.0;
         successor_ptr->decision = i;
 
         // Add successor node to open set
@@ -345,7 +345,7 @@ bool Solver::FindPathByHeap(nav_msgs::OccupancyGrid::ConstPtr map_msg_ptr,
       if(successor_ptr == nullptr){
         successor_ptr = new Node(tmp_grid, cur_node);       // Expand a new node from current node
         successor_ptr->g_val = g_cost;
-        successor_ptr->h_val = GetHeuristic_(successor_ptr->grid, goal) + GetPotentialCost(tmp_grid) / 10.0;  // Calc the heuristic value
+        successor_ptr->h_val = GetHeuristic_(successor_ptr->grid, goal) + GetPotentialCost(tmp_grid) / 5.0;  // Calc the heuristic value
 
         successor_ptr->decision = i;
         open_set.push_back(successor_ptr);

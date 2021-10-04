@@ -3,7 +3,6 @@
 
 import argparse
 import numpy as np
-import time
 import matplotlib.pyplot as plt
 from matplotlib.text import Annotation
 from matplotlib.patches import FancyArrowPatch
