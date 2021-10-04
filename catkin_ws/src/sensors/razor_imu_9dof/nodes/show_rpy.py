@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from sensor_msgs.msg import Imu
@@ -22,14 +22,14 @@ def callback(msg):
     global pub_pose
     if pub_pose is not None:
         pose_msg = PoseStamped()
-        pose_msg.header.frame_id = msg.header.frame_id
+        pose_msg.header.frame_id = "odom" # msg.header.frame_id
         pose_msg.header.stamp = rospy.Time.now()
         pose_msg.pose.orientation = msg.orientation
         pub_pose.publish(pose_msg)
 
 if __name__ == '__main__':
     rospy.init_node('show_rpy_node', anonymous=True)
-    rospy.Subscriber("/imu", Imu, callback)
+    rospy.Subscriber("/walker/imu", Imu, callback)
 
     # global pub_pose
     pub_pose = rospy.Publisher("imu_vis", PoseStamped, queue_size=1)

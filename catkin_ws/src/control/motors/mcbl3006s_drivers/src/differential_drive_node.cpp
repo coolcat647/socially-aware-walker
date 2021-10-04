@@ -212,14 +212,16 @@ void DiffDriveNode::timer_cb(const ros::TimerEvent& event) {
     if(is_first_odom_) {
         is_first_odom_ = false;
         robot_x_ = robot_y_ = robot_theta_ = 0.0;
-        last_pulsel_ = pulsel;
-        last_pulser_ = pulser;
+        // last_pulsel_ = pulsel;
+        // last_pulser_ = pulser;
         last_feedback_time_ = ros::Time::now();
     }
     ros::Time current_time = ros::Time::now();
     double time_diff = (current_time - last_feedback_time_).toSec();
-    double omega_l = (double)(pulsel - last_pulsel_) / 3000 / gear_ratio_ * 2 * M_PI / time_diff;
-    double omega_r = -(double)(pulser - last_pulser_) / 3000 / gear_ratio_ * 2 * M_PI / time_diff;     // notice the "minus"
+    // double omega_l = (double)(pulsel - last_pulsel_) / 3000 / gear_ratio_ * 2 * M_PI / time_diff;
+    // double omega_r = -(double)(pulser - last_pulser_) / 3000 / gear_ratio_ * 2 * M_PI / time_diff;     // notice the "minus"
+    double omega_l = (double)ask_motor_feedback(serial_port_ptr_, "1GN") / 3000 / gear_ratio_ * 2 * M_PI / time_diff;
+    double omega_r = -(double)ask_motor_feedback(serial_port_ptr_, "2GN") / 3000 / gear_ratio_ * 2 * M_PI / time_diff;
     // cout << "wheel -> desire (rpm_l, rpm_r): " << desire_rpml / gear_ratio_ << ", " << desire_rpmr / gear_ratio_;
     // cout << "\nwheel ->   real (rpm_l, rpm_r): " <<  omega_l * 60 / 2 / M_PI << ", " << omega_r * 60 / 2 / M_PI << "\n" << endl;
     
@@ -271,8 +273,8 @@ void DiffDriveNode::timer_cb(const ros::TimerEvent& event) {
 
     pub_odom_.publish(odom_msg);
 
-    last_pulsel_ = pulsel;
-    last_pulser_ = pulser;
+    // last_pulsel_ = pulsel;
+    // last_pulser_ = pulser;
     last_feedback_time_ = current_time;
 } 
 
