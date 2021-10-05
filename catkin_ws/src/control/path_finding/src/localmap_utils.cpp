@@ -33,7 +33,7 @@ void localmap_utils::apply_original_agf(nav_msgs::OccupancyGrid::Ptr localmap_pt
   if(target_speed > 0.25) {
     for(int i = 0; i < kernel_size; i++){
       for(int j = 0; j < kernel_size; j++){
-        double sigma_head = std::max(target_speed * 2, 1.0);
+        double sigma_head = std::max(target_speed, 1.0);
         double sigma_side = sigma_head * 2 / 5;
         double sigma_rear = sigma_head / 2;
 
@@ -112,7 +112,7 @@ void localmap_utils::apply_social_agf(nav_msgs::OccupancyGrid::Ptr localmap_ptr,
   if(target_speed > 0.25) {
     for(int i = 0; i < kernel_size; i++){
       for(int j = 0; j < kernel_size; j++){
-        double sigma_head = std::max(target_speed * 2, 1.0);
+        double sigma_head = std::max(target_speed, 1.0);
         double sigma_right = (flag_right_hand_side)? sigma_head * 3 / 5 : sigma_head * 2 / 7;
         double sigma_left = (flag_right_hand_side)? sigma_head * 2 / 7 : sigma_head * 3 / 5;
         double sigma_rear = sigma_head * 2 / 7;
@@ -212,7 +212,7 @@ void localmap_utils::butterworth_filter_generate(std::vector<std::vector<int8_t>
                                                  int filter_order,
                                                  double map_resolution,
                                                  int peak_value) {
-  double kernel_range = filter_radius * 8;
+  double kernel_range = filter_radius * 12;
   // std::cout << "Filter kernel: " << std::endl;
   for(double y = -kernel_range / 2 ; y <= kernel_range / 2 * 1.00000001; y += map_resolution){
     std::vector<int8_t> tmp_row;

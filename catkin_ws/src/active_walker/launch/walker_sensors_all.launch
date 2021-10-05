@@ -37,7 +37,7 @@
                 args="0 0 −0.1 1.5707963 0 0
                 /laser_link /imu_link 20"/>
         <node name="laser2base" pkg="tf" type="static_transform_publisher" 
-                args="0.41 0 0.535 0  0  1  0 
+                args="0.41 0 0.535 3.037  0 0
                 /base_link /laser_link 20"/>
 
     <!-- RVIZ -->
