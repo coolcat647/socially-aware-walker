@@ -4,12 +4,12 @@ port: /dev/walker_imu_sensor
 
 ##### Calibration ####
 ### accelerometer
-accel_x_min: -260.86
-accel_x_max: 260.25
-accel_y_min: -260.74
-accel_y_max: 260.13
-accel_z_min: -260.13
-accel_z_max: 260.74
+accel_x_min: -250.0
+accel_x_max: 250.0
+accel_y_min: -250.0
+accel_y_max: 250.0
+accel_z_min: -250.0
+accel_z_max: 250.0
 
 ### magnetometer
 # standard calibration
@@ -22,8 +22,8 @@ magn_z_max: 600.0
 
 # extended calibration
 calibration_magn_use_extended: true
-magn_ellipsoid_center: [-19.7437, -306.895, -600.793]
-magn_ellipsoid_transform: [[0.806353, -0.0136878, -0.0527222], [-0.0136878, 0.805096, 0.0807579], [-0.0527222, 0.0807579, 0.948842]]
+magn_ellipsoid_center: [324.372, 189.543, 352.655]
+magn_ellipsoid_transform: [[0.917724, 0.0333746, 0.0472006], [0.0333746, 0.911149, 0.024925], [0.0472006, 0.024925, 0.947132]]
 
 # AHRS to robot calibration
 imu_yaw_calibration: 0.0
