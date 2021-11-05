@@ -12,6 +12,9 @@
             <param name="serial_device" value="$(arg serial_device)" />
             <param name="command_interval" value="$(arg command_interval)" />
             <param name="watchdog_interval" value="$(arg watchdog_interval)" />
+            <param name="wheels_distance" type="double" value="0.485" />
+            <param name="wheel_radius" type="double" value="0.0625" />
+            <param name="gear_ratio" type="double" value="13.0" />
         </node>
     </group>
 
