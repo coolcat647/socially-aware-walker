@@ -101,6 +101,7 @@ def calc_social_agf(x, y, x_middle, y_middle, speed, theta):
 def plot_human_circle(ax, x=0.0, y=0.0, speed=0.0, theta=0.0, use_legend=False):
     human_radius = 0.4
     circle1 = plt.Circle((x, y), human_radius, color='black', fill=False, alpha=0.4)
+    circle2 = None
     ax.add_patch(circle1)
     if speed != 0.0:
         circle2 = plt.Circle((x + speed * 0.5 * np.cos(theta), 0 + speed * 0.5 * np.sin(theta)), human_radius, color='black', fill=False, alpha=1.0)
@@ -108,7 +109,10 @@ def plot_human_circle(ax, x=0.0, y=0.0, speed=0.0, theta=0.0, use_legend=False):
 
     if use_legend:
         # plt.legend([circle], ["Assumed human circle"], fontsize=8, bbox_to_anchor=(0.5, 1.0), loc='upper left')
-        plt.legend([circle1, circle2], ["Human at 0 sec", "Human at 0.5 secs"], fontsize=8)
+        if circle2 is not None:
+            plt.legend([circle1, circle2], ["Human at 0 sec", "Human at 0.5 secs"], fontsize=8)
+        else:
+            plt.legend([circle1, ], ["Human at 0 sec", ], fontsize=8)
 
 
 '''
@@ -319,10 +323,95 @@ def show_comparison(flag_display_3d=False):
         else:
             fig.tight_layout()
             plt.subplots_adjust(wspace=-0.1, right=0.9)
-
-
-        
     plt.show()
+
+
+
+
+def show_comparison2():
+    resolution = 0.1
+
+    SPEED_RANGE = 1
+    XY_LIMIT_RANGE = 3.5
+    fig.set_size_inches(8, SPEED_RANGE * 3)
+
+    for cnt_plot in range(SPEED_RANGE):
+        speed = 0.0
+        yaw = np.pi * 7 / 4
+
+        INFLATION_RADIUS = 0.3
+        FILTER_ORDER = int(2)
+
+        t = np.arange(-XY_LIMIT_RANGE, XY_LIMIT_RANGE + resolution, resolution)
+        x, y = np.meshgrid(t, t)
+
+        # Gaussian Function for slow person
+        z = 1.0 / np.exp(1.0 * np.power(x_middle - x, 2) + 1.0 * np.power(y_middle - y, 2))
+        z = np.clip(z, 1e-9, 1) 
+        # z = calc_social_agf(x, y, x_middle, y_middle, speed, yaw)
+
+        # Measure the minimum safe distance
+        val_xy_cross0_8 = 0
+        idx_center = int(XY_LIMIT_RANGE / resolution)
+        for idx in range(idx_center + 1, z.shape[0]):
+            print("z({}, {}) = {:.3f}".format(idx, idx, z[idx, idx]))
+            if z[idx, idx] < 0.8: break
+            else:                 val_xy_cross0_8 += resolution
+        
+        ax = fig.add_subplot(SPEED_RANGE, 2, 1 + cnt_plot * 2)
+        ax.grid("on")
+        plt_contour = ax.contour(x, y, z, levels=np.linspace(0, 1, 6), cmap='jet', alpha=0.75)
+        ax.plot([x_middle, val_xy_cross0_8], [y_middle, -val_xy_cross0_8], linestyle="--", color="black")
+        plt.gca().set_aspect("equal")
+        ax.text(0.3, 0.6, "{:.2f} m".format(np.hypot(val_xy_cross0_8, -val_xy_cross0_8)))
+        if cnt_plot == SPEED_RANGE - 1:
+            fig.colorbar(plt_contour, ax=ax)
+            plot_human_circle(ax, x=0, y=0, speed=speed, theta=yaw, use_legend=True)
+        else:
+            plot_human_circle(ax, x=0, y=0, speed=speed, theta=yaw)
+
+        ax.scatter(x_middle, y_middle, 1.1, marker='o', c='red')
+        # if cnt_plot == SPEED_RANGE - 1:
+        ax.set_xlabel("x", fontsize=12, fontweight='bold',labelpad=1)
+        ax.set_ylabel("y", fontsize=12, fontweight='bold',labelpad=1)
+        ax.set_xticks(np.linspace(-2, 2, 3))
+        ax.set_yticks(np.linspace(-2, 2, 3))
+        ax.set_title("Gaussian function for " + "$v_{human}\leq$" + "{:.2f} m/s".format(0.25), fontsize=11)
+
+
+        # Butterworth function for static obstacles
+        r = np.sqrt(x**2 + y**2)
+        z = 1 / np.sqrt(1 + (r / INFLATION_RADIUS)**(2* FILTER_ORDER))
+        
+        # Measure the minimum safe distance
+        val_xy_cross0_8 = 0
+        idx_center = int(XY_LIMIT_RANGE / resolution)
+        for idx in range(idx_center, z.shape[0]):
+            # print("z({}, {}) = {:.3f}".format(idx, idx, z[idx, idx]))
+            if z[idx, idx] < 0.8: break
+            else:                 val_xy_cross0_8 += resolution
+
+        ax = fig.add_subplot(SPEED_RANGE, 2, 2 + cnt_plot * 2)
+        ax.grid("on")
+        plt.gca().set_aspect("equal")
+        plt_contour = ax.contour(x, y, z, levels=np.linspace(0, 1, 6), cmap='jet', alpha=0.75)
+        fig.colorbar(plt_contour, ax=ax)
+        ax.plot([x_middle, val_xy_cross0_8], [y_middle, -val_xy_cross0_8], linestyle="--", color="black")
+        ax.text(0.6, 0.6, "{:.2f} m".format(np.hypot(val_xy_cross0_8, val_xy_cross0_8)))
+        # plot_human_circle(ax, x=0, y=0, speed=0, theta=yaw)
+
+        ax.scatter(x_middle, y_middle, 1.1, marker='o', c='red')
+        ax.set_xlabel("x", fontsize=12, fontweight='bold',labelpad=1)
+        ax.set_ylabel("y", fontsize=12, fontweight='bold',labelpad=1)
+        ax.set_xticks(np.linspace(-2, 2, 3))
+        ax.set_yticks(np.linspace(-2, 2, 3))
+        ax.set_title("Butterworth function for static obstacles", fontsize=11)
+
+
+        fig.tight_layout()
+        plt.subplots_adjust(wspace=0.2, right=0.94)
+    plt.show()
+
 
 
 '''
@@ -403,7 +492,7 @@ def show_butterworth():
     for val_xy in np.arange(0, XY_LIMIT_RANGE + resolution, resolution):
         idx_x = int((val_xy - (-XY_LIMIT_RANGE)) / resolution)
         idx_y = int((-val_xy - (-XY_LIMIT_RANGE)) / resolution)
-        if z[idx_y, idx_x] < 0.6:
+        if z[idx_y, idx_x] < 0.8:
             val_xy_cross0_8 = val_xy - resolution
             # print("{:.2f}, {:.2f}".format(z[idx_y, idx_x], z[int((-val_xy_cross0_8 - (-XY_LIMIT_RANGE)) / resolution), int((val_xy_cross0_8 - (-XY_LIMIT_RANGE)) / resolution)]))
             break
@@ -438,6 +527,8 @@ if __name__ == '__main__':
         show_comparison(flag_display_3d=False)
     elif args.case == 5:
         show_butterworth()
+    elif args.case == 6:
+        show_comparison2()
     else:
         raise KeyError("Unkown show case number: " + str(args.case))
         
