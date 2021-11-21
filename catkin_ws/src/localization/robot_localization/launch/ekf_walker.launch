@@ -3,7 +3,11 @@
 
     <arg name="robot_namespace" default="walker" />
     <group ns="$(arg robot_namespace)">
-        <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
+        <node pkg="robot_localization" 
+              type="ekf_localization_node" 
+              name="ekf_se" 
+              clear_params="true"
+              launch-prefix="bash -c 'sleep 12; $0 $@'">
         <rosparam command="load" file="$(find robot_localization)/params/ekf_walker.yaml" />
 
         <!--  Placeholder for output topic remapping-->
