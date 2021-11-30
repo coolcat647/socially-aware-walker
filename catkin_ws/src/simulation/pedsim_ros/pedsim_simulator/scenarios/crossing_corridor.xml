@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<scenario>
+    <!--Obstacles-->
+    <!-- stage1 -->
+    <obstacle x1="-2" y1="-6" x2="-2" y2="-4"/>
+    <obstacle x1="2" y1="-6" x2="2" y2="-4"/>
+    
+    <obstacle x1="-2" y1="-4" x2="-4" y2="-4"/>
+    <obstacle x1="2" y1="-4" x2="4" y2="-4"/>
+    <obstacle x1="-4" y1="-4" x2="-4" y2="-2"/>
+    <obstacle x1="4" y1="-4" x2="4" y2="-2"/>
+    <obstacle x1="-4" y1="2" x2="-4" y2="4"/>
+    <obstacle x1="4" y1="2" x2="4" y2="4"/>
+    <obstacle x1="-2" y1="4" x2="-4" y2="4"/>
+    <obstacle x1="2" y1="4" x2="4" y2="4"/>
+
+    <obstacle x1="-4" y1="-2" x2="-8" y2="-2"/>
+    <obstacle x1="4" y1="-2" x2="8" y2="-2"/>
+    <obstacle x1="-4" y1="2" x2="-8" y2="2"/>
+    <obstacle x1="4" y1="2" x2="8" y2="2"/>
+
+    <obstacle x1="-2" y1="4" x2="-2" y2="6"/>
+    <obstacle x1="2" y1="4" x2="2" y2="6"/>
+
+
+
+    <!-- stage8 -->
+    <!-- <waypoint id="ped_wpt_corridor1_1" x="37.5" y="-2.5.5" r="1.0"/>
+    <waypoint id="ped_wpt_corridor1_2" x="47.5" y="-2.5.5" r="1.0"/>
+    <waypoint id="ped_wpt_corridor2_1" x="37.5" y="0" r="1.0"/>
+    <waypoint id="ped_wpt_corridor2_2" x="47.5" y="0" r="1.0"/>
+    <waypoint id="ped_wpt_corridor3_1" x="37.5" y="-2" r="1.0"/>
+    <waypoint id="ped_wpt_corridor3_2" x="47.5" y="-2" r="1.0"/> -->
+
+    <!--AgentClusters-->
+    <waypoint id="ped_wpt_corridor1_1" x="6" y="1" r="1.0"/>
+    <waypoint id="ped_wpt_corridor1_2" x="-6" y="1" r="1.0"/>
+    <waypoint id="ped_wpt_corridor1_3" x="-6" y="-1" r="1.0"/>
+    <waypoint id="ped_wpt_corridor1_4" x="6" y="-1" r="1.0"/>
+    <agent x="6" y="-1" n="2" dx="0.4" dy="1.0" type="0">
+        <addwaypoint id="ped_wpt_corridor1_1"/>
+        <addwaypoint id="ped_wpt_corridor1_2"/>
+        <addwaypoint id="ped_wpt_corridor1_3"/>
+        <addwaypoint id="ped_wpt_corridor1_4"/>
+    </agent>
+    <agent x="0" y="1" n="2" dx="0.4" dy="1.0" type="0">
+        <addwaypoint id="ped_wpt_corridor1_2"/>
+        <addwaypoint id="ped_wpt_corridor1_3"/>
+        <addwaypoint id="ped_wpt_corridor1_4"/>
+        <addwaypoint id="ped_wpt_corridor1_1"/>
+    </agent>
+    <agent x="-6" y="-1" n="2" dx="0.4" dy="1.0" type="0">
+        <addwaypoint id="ped_wpt_corridor1_3"/>
+        <addwaypoint id="ped_wpt_corridor1_4"/>
+        <addwaypoint id="ped_wpt_corridor1_1"/>
+        <addwaypoint id="ped_wpt_corridor1_2"/>
+    </agent>
+    <agent x="0" y="-1" n="2" dx="0.4" dy="1.0" type="0">
+        <addwaypoint id="ped_wpt_corridor1_4"/>
+        <addwaypoint id="ped_wpt_corridor1_1"/>
+        <addwaypoint id="ped_wpt_corridor1_2"/>
+        <addwaypoint id="ped_wpt_corridor1_3"/>
+    </agent>
+
+
+    <!-- <queue id="checkpoint1_1" x="1" y="7" direction="90"/>
+    <queue id="checkpoint1_2" x="-1" y="7" direction="-90"/>
+    <waypoint id="ped_wpt_corridor2_1" x="1" y="4" r="0.5"/>
+    <waypoint id="ped_wpt_corridor2_2" x="1" y="10" r="0.5"/>
+    <waypoint id="ped_wpt_corridor2_3" x="-1" y="10" r="0.5"/>
+    <waypoint id="ped_wpt_corridor2_4" x="-1" y="4" r="0.5"/>
+    <agent x="0" y="9 " n="2" dx="0.4" dy="2.0" type="0">
+        <addwaypoint id="ped_wpt_corridor2_1"/>
+        <addqueue id="checkpoint1_1"/>
+        <addwaypoint id="ped_wpt_corridor2_2"/>
+        <addwaypoint id="ped_wpt_corridor2_3"/>
+        <addqueue id="checkpoint1_2"/>
+        <addwaypoint id="ped_wpt_corridor2_4"/>
+    </agent>
+    <agent x="0" y="9 " n="2" dx="0.4" dy="2.0" type="0">
+        <addwaypoint id="ped_wpt_corridor2_1"/>
+        <addqueue id="checkpoint1_1"/>
+        <addwaypoint id="ped_wpt_corridor2_2"/>
+        <addwaypoint id="ped_wpt_corridor2_3"/>
+        <addqueue id="checkpoint1_2"/>
+        <addwaypoint id="ped_wpt_corridor2_4"/>
+    </agent> -->
+
+
+
+    <!--Robot-->
+    <agent x="0" y="-4" n="1" dx="0" dy="-2" type="2">
+    </agent>
+
+</scenario>
