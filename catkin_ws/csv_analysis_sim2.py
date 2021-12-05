@@ -49,28 +49,31 @@ def render(dataframe, mode='human', output_file=None):
         ax.set_ylabel('y(m)', fontsize=16)
 
         ##### Plot the walls start #####
-        # wall = plt.Line2D((-2, -2), (-6, -4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        # wall = plt.Line2D((2, 2), (-6, -4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        ## Sim 2-1
+        wall = plt.Line2D((-2, -2), (-6, -4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((2, 2), (-6, -4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
 
-        # wall = plt.Line2D((-2, -4), (-4, -4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        # wall = plt.Line2D((2, 4), (-4, -4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        # wall = plt.Line2D((-4, -4), (-4, -2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        # wall = plt.Line2D((4, 4), (-4, -2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        # wall = plt.Line2D((-4, -4), (2, 4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        # wall = plt.Line2D((4, 4), (2, 4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        # wall = plt.Line2D((-2, -4), (4, 4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        # wall = plt.Line2D((2, 4), (4, 4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((-2, -4), (-4, -4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((2, 4), (-4, -4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((-4, -4), (-4, -2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((4, 4), (-4, -2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((-4, -4), (2, 4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((4, 4), (2, 4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((-2, -4), (4, 4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((2, 4), (4, 4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
 
-        # wall = plt.Line2D((-4, -8), (-2, -2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        # wall = plt.Line2D((4, 8), (-2, -2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        # wall = plt.Line2D((-4, -8), (2, 2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        # wall = plt.Line2D((4, 8), (2, 2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((-4, -8), (-2, -2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((4, 8), (-2, -2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((-4, -8), (2, 2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((4, 8), (2, 2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
 
-        # wall = plt.Line2D((-2, -2), (4, 6), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        # wall = plt.Line2D((2, 2), (4, 6), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((-2, -2), (4, 6), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((2, 2), (4, 6), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
 
-        wall = plt.Line2D((-2, -2), (-6, 6), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
-        wall = plt.Line2D((2, 2), (-6, 6), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+
+        ## Sim 2-2
+        # wall = plt.Line2D((-2, -2), (-6, 6), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        # wall = plt.Line2D((2, 2), (-6, 6), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
         ##### Plot the walls end #####
 
         robot_positions = dataframe[["pxr", "pyr"]].to_numpy()
@@ -144,39 +147,82 @@ def render(dataframe, mode='human', output_file=None):
         fig, ax = plt.subplots(figsize=(7, 7))
         ax.tick_params(labelsize=16)
         ax.set_xlim(-8, 8)
-        ax.set_ylim(-8, 8)
+        ax.set_ylim(-6, 6)
+        plt.gca().set_aspect("equal")
         ax.set_xlabel('x(m)', fontsize=16)
         ax.set_ylabel('y(m)', fontsize=16)
 
+        ##### Plot the walls start #####
+        ## Sim 2-1
+        wall = plt.Line2D((-2, -2), (-6, -4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((2, 2), (-6, -4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+
+        wall = plt.Line2D((-2, -4), (-4, -4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((2, 4), (-4, -4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((-4, -4), (-4, -2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((4, 4), (-4, -2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((-4, -4), (2, 4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((4, 4), (2, 4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((-2, -4), (4, 4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((2, 4), (4, 4), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+
+        wall = plt.Line2D((-4, -8), (-2, -2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((4, 8), (-2, -2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((-4, -8), (2, 2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((4, 8), (2, 2), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+
+        wall = plt.Line2D((-2, -2), (4, 6), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        wall = plt.Line2D((2, 2), (4, 6), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+
+
+        ## Sim 2-2
+        # wall = plt.Line2D((-2, -2), (-6, 6), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        # wall = plt.Line2D((2, 2), (-6, 6), color="gray", ls='solid', linewidth=3); ax.add_artist(wall)
+        ##### Plot the walls end #####
+
+
         # add robot and its goal
         robot_positions = dataframe[["pxr", "pyr"]].to_numpy()
-        goal = mlines.Line2D([0], [4], color=goal_color, marker='*', linestyle='None', markersize=15, label='Goal')
-        robot = plt.Circle(robot_positions[0], ROBOT_RADIUS, fill=True, color=robot_color)
-        ax.add_artist(robot)
-        ax.add_artist(goal)
+        # goal = mlines.Line2D([0], [4], color=goal_color, marker='*', linestyle='None', markersize=15, label='Goal')
+        # robot = plt.Circle(robot_positions[0], ROBOT_RADIUS, fill=True, color=robot_color)
+        # ax.add_artist(robot)
+        # ax.add_artist(goal)
         # plt.legend([robot, goal], ['Robot conservative radius', 'Goal'], fontsize=12)
 
         # add humans and their numbers
         agent_info_list = []
         num_agents = 0
+
         for i in range(1, 32):
             if ("px"+str(i)) in dataframe.columns:
                 agent_info_list.extend([("px"+str(i)), ("py"+str(i))])
                 num_agents += 1
             else: break
         human_positions = dataframe[agent_info_list].to_numpy().reshape((len(dataframe), num_agents, 2))
-        humans = [plt.Circle(human_positions[0][i], HUMAN_RADIUS, fill=False)
+        
+        
+        # Little trick for sim2_1
+        for j in range(len(dataframe)):
+            for i in range(num_agents):
+                human_positions[j][i][1] += 0.15
+                human_positions[j][i][0] += 0.2
+
+
+
+        humans = [plt.Circle(human_positions[0][i], HUMAN_RADIUS, fill=False, color=cmap(i))
                   for i in range(num_agents)]
-        human_numbers = [plt.text(humans[i].center[0] - x_offset, humans[i].center[1] - y_offset, str(i),
-                                  color='black', fontsize=12) for i in range(num_agents)]
+        # human_numbers = [plt.text(humans[i].center[0] - x_offset, humans[i].center[1] - y_offset, str(i),
+        #                           color='black', fontsize=12) for i in range(num_agents)]
         for i, human in enumerate(humans):
             ax.add_artist(human)
-            ax.add_artist(human_numbers[i])
+            # ax.add_artist(human_numbers[i])
 
         # add time annotation
-        time = plt.text(-1, 5, 'Time: {}'.format(0), fontsize=16)
+        # time = plt.text(-1.6, 5, 'Time: {}'.format(0), fontsize=16)
+        time = plt.text(-1.7, 5, 'Time: {:.1f}'.format(0), fontsize=16)
         ax.add_artist(time)
 
+        # add robot arrow
         robot_theta_list = dataframe["thetar"].to_numpy()
         orientation = [(robot_positions[i], [robot_positions[i][0] + ROBOT_RADIUS * np.cos(robot_theta_list[i]),
                                              robot_positions[i][1] + ROBOT_RADIUS * np.sin(robot_theta_list[i])]) for i in range(len(dataframe))]
@@ -201,9 +247,9 @@ def render(dataframe, mode='human', output_file=None):
             polygon_list.append(pts)
         footprint = Polygon(polygon_list[0], facecolor='k', fill=False)
         ax.add_artist(footprint)
-        plt.legend([footprint, robot, goal],
-                   ["Robot footprint", 'Assumed radius', 'Goal'],
-                   fontsize=10)
+        # plt.legend([footprint, robot, goal],
+        #            ["Robot footprint", 'Assumed radius', 'Goal'],
+        #            fontsize=10)
 
         global_step = 0
         def update(frame_num):
@@ -212,12 +258,12 @@ def render(dataframe, mode='human', output_file=None):
             global_step = frame_num
 
             # Robot position change
-            robot.center = robot_positions[frame_num]
+            # robot.center = robot_positions[frame_num]
 
             # Humans position change
             for i, human in enumerate(humans):
                 human.center = human_positions[frame_num][i]
-                human_numbers[i].set_position((human.center[0] - x_offset, human.center[1] - y_offset))
+                # human_numbers[i].set_position((human.center[0] - x_offset, human.center[1] - y_offset))
             # Arrow change
             for arrow in arrows:
                 arrow.remove()
@@ -228,7 +274,21 @@ def render(dataframe, mode='human', output_file=None):
 
             footprint.set_xy(polygon_list[frame_num])
 
-            time.set_text('Time: {:.2f}'.format(frame_num * TIME_STEP))
+            time.set_text('Time: {:.1f}'.format(frame_num * TIME_STEP))
+
+
+            # add robot path
+            nav_direction = plt.Line2D((robot_positions[frame_num - 1][0], robot_positions[frame_num][0]),
+                                       (robot_positions[frame_num - 1][1], robot_positions[frame_num][1]),
+                                       color=robot_color, ls='solid', alpha=(float(frame_num) / len(dataframe)))
+            ax.add_artist(nav_direction)
+
+            human_directions = [plt.Line2D((human_positions[frame_num - 1][i][0], human_positions[frame_num][i][0]),
+                                               (human_positions[frame_num - 1][i][1], human_positions[frame_num][i][1]),
+                                               color=cmap(i), ls='solid', alpha=(float(frame_num) / len(dataframe)))
+                                    for i in range(num_agents)]
+            for human_direction in human_directions:
+                    ax.add_artist(human_direction)
 
             # if frame_num >= len(dataframe) - 1:
             #     plt.close()
@@ -256,8 +316,11 @@ def render(dataframe, mode='human', output_file=None):
 
 
 if __name__ == '__main__':
-    df = pd.read_csv("/home/samliu/code/socially-aware-walker/catkin_ws/SociallyAwareAstar_case0_h8_d8_v05_t20210930173931.csv")
-    render(df, "traj")
+    # df = pd.read_csv("/home/samliu/code/socially-aware-walker/catkin_ws/good_result2/SociallyAwareAstar_case0_h8_d8_v05_t20210930173931.csv")
+    # render(df, "video", output_file="sim2_2_animation.gif")
+
+    df = pd.read_csv("/home/samliu/code/socially-aware-walker/catkin_ws/good_result1/SociallyAwareAstar_case0_h8_d8_v05_t20210930114256.csv")
+    render(df, "video", output_file="sim2_1_animation.gif")
     exit(-1)
 
     files_current_dir = os.listdir("testcase_h8_d8_v05")
