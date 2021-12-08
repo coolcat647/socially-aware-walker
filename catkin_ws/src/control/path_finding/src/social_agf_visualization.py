@@ -506,6 +506,149 @@ def show_butterworth():
     plt.show()
 
 
+def show_comparison3(flag_display_3d=False):
+    resolution = 0.1
+
+    SPEED_RANGE = 2
+    XY_LIMIT_RANGE = 3.5
+    fig.set_size_inches(8, SPEED_RANGE * 3 / 2)
+
+    for cnt_plot in range(SPEED_RANGE):
+        speed = (cnt_plot + 1) * 0.5
+        yaw = np.pi * 7 / 4
+
+        t = np.arange(-XY_LIMIT_RANGE, XY_LIMIT_RANGE + resolution, resolution)
+        x, y = np.meshgrid(t, t)
+
+        # Original AGF
+        # z = calc_original_agf(x, y, x_middle, y_middle, speed, yaw)
+
+        # # Measure the minimum safe distance
+        # val_xy_cross0_8 = 0
+        # for val_xy in np.arange(0, XY_LIMIT_RANGE + resolution, resolution):
+        #     idx_x = int((val_xy - (-XY_LIMIT_RANGE)) / resolution)
+        #     idx_y = int((-val_xy - (-XY_LIMIT_RANGE)) / resolution)
+        #     if z[idx_y, idx_x] < 0.8:
+        #         val_xy_cross0_8 = val_xy - resolution
+        #         break
+        # # Plot 3D
+
+        
+        # if flag_display_3d:
+        #     ax = fig.add_subplot(1, 2, 1 + cnt_plot * 2, projection='3d')
+        #     ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.get_cmap('rainbow'))
+        #     ax.contour(x, y, z, levels=np.linspace(0, 1, 6), offset=1.1, cmap='rainbow')
+        #     ax.arrow3D(x_middle, y_middle, 1.1,
+        #            val_xy_cross0_8, -val_xy_cross0_8, 0.0,
+        #            mutation_scale=8,
+        #            arrowstyle="-",
+        #            linestyle='dashed')
+        #     ax.text2D(0.60, 0.55, "{:.2f} m".format(np.hypot(val_xy_cross0_8, -val_xy_cross0_8)), transform=ax.transAxes)
+        #     ax.set_xticks(np.linspace(-XY_LIMIT_RANGE, XY_LIMIT_RANGE, 5))
+        #     ax.set_yticks(np.linspace(-XY_LIMIT_RANGE, XY_LIMIT_RANGE, 5))
+        # # Plot 2D
+        # else:
+        #     ax = fig.add_subplot(1, 2, 1 + cnt_plot)
+        #     ax.grid("on")
+        #     plt.gca().set_aspect("equal")
+        #     plt_contour = ax.contour(x, y, z, levels=np.linspace(0, 1, 6), cmap='jet', alpha=0.75)
+        #     # fig.colorbar(plt_contour, ax=ax)
+        #     # ax.plot([x_middle, val_xy_cross0_8], [y_middle, -val_xy_cross0_8], linestyle="--", color="black")
+        #     # ax.text(0.6, 0.6, "{:.2f} m".format(np.hypot(val_xy_cross0_8, -val_xy_cross0_8)))
+        #     plot_human_circle(ax, x=0, y=0, speed=speed, theta=yaw, use_legend=True)
+        #     ax.set_xticks(np.linspace(-2, 2, 3))
+        #     ax.set_yticks(np.linspace(-2, 2, 3))
+        #     fig.colorbar(plt_contour, ax=ax)
+        #     ax.set_xlabel("x", fontsize=12, fontweight='bold',labelpad=1)
+        #     ax.set_ylabel("y", fontsize=12, fontweight='bold',labelpad=1)
+
+        # ax.scatter(x_middle, y_middle, 1.1, marker='o', c='red')
+        # # ax.set_xlabel("x", fontsize=12, fontweight='bold')
+        # # ax.set_ylabel("y", fontsize=12, fontweight='bold')
+        # # ax.set_zlabel("z", fontsize=12, fontweight='bold')
+        # if speed <= 0.5:
+        #     ax.set_title("Original AGF, " + "{:.2f}".format(0.25) + "$\leq v_{human}\leq$" + "{:.1f} m/s".format(0.5), fontsize=11)
+        # else:
+        #     ax.set_title("Original AGF, $v_{human}$=" + "{:.1f} m/s".format(speed), fontsize=11)
+        
+        
+
+        # Socially-aware AGF
+        z = calc_social_agf(x, y, x_middle, y_middle, speed, yaw)
+
+        # Measure the minimum safe distance
+        val_xy_cross0_8 = 0
+        for val_xy in np.arange(0, XY_LIMIT_RANGE + resolution, resolution):
+            idx_x = int((val_xy - (-XY_LIMIT_RANGE)) / resolution)
+            idx_y = int((-val_xy - (-XY_LIMIT_RANGE)) / resolution)
+            if z[idx_y, idx_x] < 0.8:
+                val_xy_cross0_8 = val_xy - resolution
+                # print("{:.2f}, {:.2f}".format(z[idx_y, idx_x], z[int((-val_xy_cross0_8 - (-XY_LIMIT_RANGE)) / resolution), int((val_xy_cross0_8 - (-XY_LIMIT_RANGE)) / resolution)]))
+                break
+        # Plot 3D
+        if flag_display_3d:
+            ax = fig.add_subplot(1, 2, 1 + cnt_plot, projection='3d')
+            ax.plot_surface(x, y, z, rstride=1, cstride=1, cmap=plt.get_cmap('rainbow'))
+            plt_contour = ax.contour(x, y, z, levels=np.linspace(0, 1, 6), offset=1.1, cmap='rainbow')
+            if cnt_plot == SPEED_RANGE - 1:
+                fig.colorbar(plt_contour, ax=ax, fraction=0.02, pad=0.15, aspect=20)
+            ax.arrow3D(x_middle, y_middle, 1.1,
+                   val_xy_cross0_8, -val_xy_cross0_8, 0.0,
+                   mutation_scale=8,
+                   arrowstyle="-",
+                   linestyle='dashed')
+            ax.text2D(0.6, 0.6, "{:.2f} m".format(np.hypot(val_xy_cross0_8, -val_xy_cross0_8)), transform=ax.transAxes)
+            ax.set_xticks(np.linspace(-XY_LIMIT_RANGE, XY_LIMIT_RANGE, 5))
+            ax.set_yticks(np.linspace(-XY_LIMIT_RANGE, XY_LIMIT_RANGE, 5))
+        # Plot 2D
+        else:
+            ax = fig.add_subplot(1, 2, 1 + cnt_plot)
+            ax.grid("on")
+            plt_contour = ax.contour(x, y, z, levels=np.linspace(0, 1, 6), cmap='jet', alpha=0.75)
+            # ax.plot([x_middle, val_xy_cross0_8], [y_middle, -val_xy_cross0_8], linestyle="--", color="black")
+            plt.gca().set_aspect("equal")
+            # ax.text(0.6, 0.6, "{:.2f} m".format(np.hypot(val_xy_cross0_8, -val_xy_cross0_8)))
+            if cnt_plot == SPEED_RANGE - 1:
+                fig.colorbar(plt_contour, ax=ax)
+                # plot_human_circle(ax, x=0, y=0, speed=speed, theta=yaw, use_legend=True)
+                plot_human_circle(ax, x=0, y=0, speed=speed, theta=yaw, use_legend=False)
+            else:
+                plot_human_circle(ax, x=0, y=0, speed=speed, theta=yaw, use_legend=True)
+                pass
+
+        ax.scatter(x_middle, y_middle, 1.1, marker='o', c='red')
+        ax.set_xlabel("x", fontsize=12, fontweight='bold',labelpad=1)
+        ax.set_ylabel("y", fontsize=12, fontweight='bold',labelpad=1)
+
+        if cnt_plot == SPEED_RANGE - 1:
+            # ax.set_xlabel("x", fontsize=12, fontweight='bold',labelpad=1)
+            # ax.set_ylabel("y", fontsize=12, fontweight='bold',labelpad=1)
+            if flag_display_3d:
+                ax.set_zlabel("z", fontsize=12, fontweight='bold',labelpad=1)
+        if speed <= 0.5:
+            ax.set_title("Socially aware AGF, " + "{:.2f}".format(0.25) + "$\leq v_{human}\leq$" + "{:.1f} m/s".format(0.5), fontsize=11)
+        else:
+            ax.set_title("Socially aware AGF, $v_{human}$=" + "{:.1f} m/s".format(speed), fontsize=11)
+
+        
+        
+
+
+        # if cnt_plot < SPEED_RANGE - 1:
+        #     ax.axes.xaxis.set_ticklabels([])
+        #     ax.axes.yaxis.set_ticklabels([])
+        #     ax.axes.zaxis.set_ticklabels([])
+
+        if flag_display_3d:
+            fig.tight_layout()
+            plt.subplots_adjust(left=-0.04, wspace=-0.05, bottom=0.08, right=0.85)
+            # plt.subplots_adjust(left=-0.04, bottom=0.05, right=0.9, top=0.95, wspace=-0.0, hspace=0.25)
+        else:
+            fig.tight_layout()
+            plt.subplots_adjust(wspace=0.2, right=0.94)
+    plt.show()
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser('Parse configuration file')
@@ -515,21 +658,24 @@ if __name__ == '__main__':
     # parser.add_argument('__log', type=str, default='log_file')      # Dummy args for ROS
     args = parser.parse_args()
 
-    if args.case == 0:
-        show_social_agf()
-    elif args.case == 1:
-        show_animation_direction()
-    elif args.case == 2:
-        show_animation_speed()
-    elif args.case == 3:
-        show_comparison(flag_display_3d=True)
-    elif args.case == 4:
-        show_comparison(flag_display_3d=False)
-    elif args.case == 5:
-        show_butterworth()
-    elif args.case == 6:
-        show_comparison2()
-    else:
-        raise KeyError("Unkown show case number: " + str(args.case))
+    show_comparison3(flag_display_3d=False)
+    # if args.case == 0:
+    #     show_social_agf()
+    # elif args.case == 1:
+    #     show_animation_direction()
+    # elif args.case == 2:
+    #     show_animation_speed()
+    # elif args.case == 3:
+    #     show_comparison(flag_display_3d=True)
+    # elif args.case == 4:
+    #     show_comparison(flag_display_3d=False)
+    # elif args.case == 5:
+    #     show_butterworth()
+    # elif args.case == 6:
+    #     show_comparison2()
+    # elif args.case == 7:
+    #     show_comparison3(flag_display_3d=False)
+    # else:
+    #     raise KeyError("Unkown show case number: " + str(args.case))
         
         

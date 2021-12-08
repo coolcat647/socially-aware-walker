@@ -68,7 +68,7 @@ if __name__ == '__main__':
         figure-eight curve
     '''
     SHAPE_SCALE = 5.0
-    t = np.linspace(np.pi * 1 / 50, np.pi * 99 / 50, 50)
+    t = np.linspace(np.pi * 2 / 50, np.pi * 98 / 50, 50)
     x = np.sin(t) * SHAPE_SCALE
     y = np.sin(t) * np.cos(t) * SHAPE_SCALE
     for i in range(t.shape[0]):

@@ -3,7 +3,7 @@
 import numpy as np
 import copy
 from steering_control_libs import cubic_spline_planner
-from steering_control_libs.utils import calc_target_index, stanley_control, proportional_control, my_steering_control
+from steering_control_libs.utils import calc_target_index, stanley_control, proportional_control, my_steering_control, heading_control
 
 # ROS
 import rospy
@@ -151,11 +151,6 @@ if __name__ == '__main__':
             flag_message_published = False
 
             # Steering control law    
-            # total_steering_error, target_idx = stanley_control(node.robot_pose,
-            #                                                     node.robot_twist,
-            #                                                     node.flat_path,
-            #                                                     ROBOT_REF_LENGTH,
-            #                                                     CROSSTRACK_ERROR_GAIN)
             total_steering_error, target_idx = my_steering_control(node.robot_pose,
                                                                 node.robot_twist,
                                                                 node.flat_path,

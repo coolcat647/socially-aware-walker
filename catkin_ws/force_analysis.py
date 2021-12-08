@@ -45,9 +45,13 @@ def plot_force3(data_dict):
 
     user_force_line, = ax_list[0].plot(user_force[0], user_force[1])
     inhibition_force_line, = ax_list[0].plot(inhibition_force[0], inhibition_force[1], color="red")
+    # ax_list[0].legend([user_force_line, inhibition_force_line],
+    #                   ["Simulated user pushing force", "Force provided by the robot"],
+    #                   loc='upper right', fontsize=12)
     ax_list[0].legend([user_force_line, inhibition_force_line],
-                      ["Simulated user pushing force", "Force provided by the robot"],
+                      ["User-applied force", "Force provided by the robot"],
                       loc='upper right', fontsize=12)
+
     # plt.xlabel("t (seconds)", fontsize=12)
     ax_list[0].set_ylabel("Force: (N)", fontsize=18)
     ax_list[0].set_yticks(np.linspace(0, 60, 7))
@@ -73,8 +77,9 @@ def plot_force3(data_dict):
 
     import matplotlib.patches as patches
 
-    p1 = patches.FancyArrowPatch((0, 0), (1, 1), arrowstyle='<->', mutation_scale=20)
-
+    arrow = patches.FancyArrowPatch((7.8, 40), (10.2, 40), arrowstyle='<->', mutation_scale=10)
+    ax_list[0].text(x=7.8, y=45, s=r"$T_{gait}$", color="gray", fontsize=14)
+    ax_list[0].add_artist(arrow)
 
     # Scenario B
     # ax_list[0].set_xticks(list(ax_list[0].get_xticks()) + [16.32] + [])
@@ -96,9 +101,8 @@ def plot_force3(data_dict):
     # ax_list[0].set_xlabel("t (seconds)", fontsize=16)
 
 
-    # ax = fig.add_subplot(413)
+    #### Plot linear velocity ####
     linear_velocity_line, = ax_list[1].plot(linear_velocity[0], linear_velocity[1])
-    plt.legend([linear_velocity_line], ["$v$"])
     plt.xlabel("t (seconds)", fontsize=12)
     ax_list[1].set_ylabel(r"$v$" + " : (m/s)", fontsize=14)
     ax_list[1].set_yticks(np.linspace(-0.25, 1.0, 6))
@@ -106,9 +110,8 @@ def plot_force3(data_dict):
     ax_list[1].set_xlim([-2.5, 60])
     ax_list[1].grid(True, alpha=0.5)
 
-    # ax = fig.add_subplot(412)
+    #### Plot torque ####
     system_torque_line, = ax_list[2].plot(system_torque[0], system_torque[1])
-    # ax_list[2].legend([system_torque_line], ["System torque"])
     plt.xlabel("t (seconds)", fontsize=12)
     ax_list[2].set_ylabel("Driving torque:\n(N·m)", fontsize=14)
     ax_list[2].set_yticks(np.linspace(-10, 40, 6))
@@ -116,9 +119,8 @@ def plot_force3(data_dict):
     ax_list[2].set_xlim([-2.5, 60])
     ax_list[2].grid(True, alpha=0.5)
 
-    # ax = fig.add_subplot(414)
+    #### Plot angular velocity ####
     angular_velocity_line, = ax_list[3].plot(angular_velocity[0], angular_velocity[1])
-    # plt.legend([angular_velocity_line], ["$\omega$"])
     ax_list[3].set_xlabel("t (seconds)", fontsize=12)
     ax_list[3].set_ylabel(r"$\omega$" + " : (1/s)", fontsize=14)
     ax_list[3].set_yticks(np.linspace(-0.75, 0.75, 7))
@@ -126,7 +128,6 @@ def plot_force3(data_dict):
     ax_list[3].set_xlim([-2.5, 60])
     ax_list[3].grid(True, alpha=0.5)
 
-    # plt.subplots_adjust(top=0.96, bottom=0.18, left=0.08, right=0.97, hspace=0.3)
     plt.subplots_adjust(top=0.98, bottom=0.08, left=0.08, right=0.97, hspace=0.3)
     plt.show()
 

@@ -199,6 +199,11 @@ def render(dataframe, mode='human', output_file=None):
 
 
 if __name__ == '__main__':
+    df = pd.read_csv('/home/samliu/code/socially-aware-walker/catkin_ws/good_result1/SociallyAwareAstar_case0_h8_d8_v05_t20210930114256.csv')
+    render(df, "video")
+    exit(-1)
+
+
     files_current_dir = os.listdir()
     target_dir_list = []
     for dirname in files_current_dir:

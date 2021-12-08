@@ -52,6 +52,33 @@ def calc_target_index(robot_pose, target_path, robot_ref_length):
     return target_idx, error_front_axle
 
 
+def calc_target_index_short(robot_pose, target_path, robot_ref_length):
+    if not isinstance(robot_pose, Pose2D):
+        raise NotImplementedError("Variable \'robot_pose\' should be Pose2D.")
+    robot_theta = robot_pose.theta
+
+    # Calc front axle position
+    fx = robot_pose.x + robot_ref_length * np.cos(robot_theta) * 0.5
+    fy = robot_pose.y + robot_ref_length * np.sin(robot_theta) * 0.5
+
+    # Search nearest point index
+    dx = []
+    dy = []
+    for tmp_pose in target_path:
+        dx.append(fx - tmp_pose.x)
+        dy.append(fy - tmp_pose.y)
+    d = np.hypot(dx, dy)
+    target_idx = np.argmin(d)
+    # print("target_idx:", target_idx)
+
+    # Project RMS error onto front axle vector
+    front_axle_vec = [-np.cos(robot_theta + np.pi / 2),
+                      -np.sin(robot_theta + np.pi / 2)]
+    error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
+
+    return target_idx, error_front_axle
+
+
 # Stanley steering control
 def stanley_control(robot_pose, robot_twist, target_path, robot_ref_length, crosstrack_error_gain=5.0):
     """
@@ -90,7 +117,7 @@ def heading_control(robot_pose, robot_twist, target_path, robot_ref_length):
     if not isinstance(robot_pose, Pose2D) or not isinstance(robot_twist, Twist):
         raise NotImplementedError("Variables \'robot_pose\' should be Pose2D and \'robot_twist\' should be Twist.")
 
-    current_target_idx, error_front_axle = calc_target_index(robot_pose, target_path, robot_ref_length)
+    current_target_idx, error_front_axle = calc_target_index_short(robot_pose, target_path, robot_ref_length)
 
     # heading error
     heading_error = normalize_angle(target_path[current_target_idx].theta - robot_pose.theta)

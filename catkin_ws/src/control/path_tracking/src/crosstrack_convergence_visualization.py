@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
 
     # Visualization
-    fig = plt.figure(figsize=(12, 3))
+    fig = plt.figure(figsize=(10, 4))
     ax =  fig.add_subplot(111)
 
     line_v025 = None
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
     ax.legend([line_v025, line_v05, line_v05_k1], [r"$k_1= 1.0, k_2= 2.0$" + r"$, \bf{v= 0.25}$" + " m/s",
                                                    r"$k_1= 1.0, k_2= 2.0$" + r"$, v= 0.5$" + " m/s",
-                                                   r"$k_1= 1.0, \bf{k_2}= 1.0$" + r"$, v= 0.5 $" + " m/s"])
+                                                   r"$k_1= 1.0, \bf{k_2}= 1.0$" + r"$, v= 0.5 $" + " m/s"], fontsize=13)
 
     # line_d10_v05_k2, = ax.plot(t, d_d10_v05_k2[:,0], color="blue", alpha=0.5)
     # line_d10_v025_k2, = ax.plot(t, d_d10_v025_k2[:,0], color="red", alpha=0.5)
@@ -100,5 +100,5 @@ if __name__ == '__main__':
     ax.set_xticks(np.linspace(0, 30, 7))
     plt.grid(True)
     plt.box(False)
-    plt.subplots_adjust(bottom=0.2, left=0.08, right=0.97)
+    plt.subplots_adjust(bottom=0.15, left=0.08, right=0.97, top=0.97)
     plt.show()
