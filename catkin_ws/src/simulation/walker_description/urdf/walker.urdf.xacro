@@ -78,7 +78,7 @@
             <mass value="${rear_wheel_mass}" />
             <!-- <inertia ixx="0.00013887" ixy="-1.6386E-36" ixz="2.1452E-37"
                     iyy="0.00013887" iyz="-7.5427E-20" izz="0.00026251" /> -->
-            <cylinder_inertia m="${rear_wheel_mass}" r="${rear_wheel_radius}" h="${rear_wheel_width}" />
+            <xacro:cylinder_inertia m="${rear_wheel_mass}" r="${rear_wheel_radius}" h="${rear_wheel_width}" />
         </inertial>
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -117,7 +117,7 @@
             <mass value="${rear_wheel_mass}" />
             <!-- <inertia ixx="0.00013887" ixy="4.2884E-36" ixz="-8.5028E-20"
                     iyy="0.00013887" iyz="-7.5708E-21" izz="0.00026251" /> -->
-            <cylinder_inertia m="${rear_wheel_mass}" r="${rear_wheel_radius}" h="${rear_wheel_width}" />
+            <xacro:cylinder_inertia m="${rear_wheel_mass}" r="${rear_wheel_radius}" h="${rear_wheel_width}" />
         </inertial>
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -158,7 +158,7 @@
             <mass value="0.5" />
             <!-- <inertia ixx="8.7156E-05" ixy="-9.4168E-06" ixz="4.2663E-06"
                     iyy="0.00011084" iyz="1.6414E-06" izz="0.0001673" /> -->
-            <cylinder_inertia m="0.5" r="0.04" h="0.03" />
+            <xacro:cylinder_inertia m="0.5" r="0.04" h="0.03" />
         </inertial>
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -228,7 +228,7 @@
         <inertial>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <mass value="${front_wheel_mass}" />
-            <sphere_inertia m="${front_wheel_mass}" r="${front_wheel_radius}"/>
+            <xacro:sphere_inertia m="${front_wheel_mass}" r="${front_wheel_radius}"/>
         </inertial>
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -261,7 +261,7 @@
         <inertial>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <mass value="${front_wheel_mass}" />
-            <sphere_inertia m="${front_wheel_mass}" r="${front_wheel_radius}"/>
+            <xacro:sphere_inertia m="${front_wheel_mass}" r="${front_wheel_radius}"/>
         </inertial>
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
@@ -290,7 +290,7 @@
     
 
     <!-- YDLiDAR G4 plugin -->
-    <ydlidar_g4 frame="laser" topic="scan" min_angle="${M_PI / 4}" max_angle="${M_PI / 4 * 7}" robot_namespace="$(arg robot_namespace)"/>
+    <xacro:ydlidar_g4 frame="laser" topic="scan" min_angle="${M_PI / 4}" max_angle="${M_PI / 4 * 7}" robot_namespace="$(arg robot_namespace)"/>
     <joint name="ydlidar_mount_joint" type="fixed">
         <origin xyz="${ydlidar_xyz}" rpy="${ydlidar_rpy}" />
         <parent link="base_link" />
@@ -299,7 +299,7 @@
 
 
     <!-- Logitech C930e webcam -->
-    <webcam_c930e frame="camera" topic="usb_cam" robot_namespace="$(arg robot_namespace)"/>
+    <xacro:webcam_c930e frame="camera" topic="usb_cam" robot_namespace="$(arg robot_namespace)"/>
     <joint name="webcam_mount_joint" type="fixed">
         <origin xyz="${webcam_xyz}" rpy="${webcam_rpy}" />
         <parent link="laser_link" />
@@ -311,7 +311,7 @@
         <inertial>
             <origin xyz="0.1 0 0" rpy="0 0 0" />
             <mass value="0.1" />
-            <box_inertia m="0.1" x="0.2" y="0.08" z="0.01"/>
+            <xacro:box_inertia m="0.1" x="0.2" y="0.08" z="0.01"/>
         </inertial>
         <collision name='collision'>
             <origin xyz="0.1 0 0" rpy="0 0 0" />
@@ -336,7 +336,7 @@
     </joint>
 
     <!-- E-stop -->
-    <estop frame="estop" />
+    <xacro:estop frame="estop" />
     <joint name="estop_joint1" type="fixed">
         <origin xyz="0.161 0 0.905" rpy="0 0 0" />
         <parent link="base_link" />

@@ -10,7 +10,7 @@
             <inertial>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <mass value="0.1" />
-                <cylinder_inertia m="0.1" r="0.012" h="0.012" />
+                <xacro:cylinder_inertia m="0.1" r="0.012" h="0.012" />
             </inertial>
             <visual name='${frame}_button1_visual'>
                 <origin xyz="0 0 0" rpy="0 0 0" />
@@ -36,7 +36,7 @@
             <inertial>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <mass value="0.1" />
-                <cylinder_inertia m="0.1" r="0.015" h="0.015" />
+                <xacro:cylinder_inertia m="0.1" r="0.015" h="0.015" />
             </inertial>
             <visual name='${frame}_button2_visual'>
                 <origin xyz="0 0 0" rpy="0 0 0" />
@@ -76,7 +76,7 @@
             <inertial>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <mass value="0.1" />
-                <box_inertia m="0.1" x="0.05" y="0.05" z="0.02"/>
+                <xacro:box_inertia m="0.1" x="0.05" y="0.05" z="0.02"/>
             </inertial>
             <visual name='${frame}_base_visual'>
                 <origin xyz="0 0 0" rpy="0 0 0" />
@@ -102,7 +102,7 @@
             <inertial>
                 <origin xyz="0.0 0 0" rpy="0 0 0" />
                 <mass value="0.1" />
-                <box_inertia m="0.1" x="0.05" y="0.05" z="0.02"/>
+                <xacro:box_inertia m="0.1" x="0.05" y="0.05" z="0.02"/>
             </inertial>
             <visual name='${frame}_topbase_visual'>
                 <origin xyz="0 0 0" rpy="0 0 0" />

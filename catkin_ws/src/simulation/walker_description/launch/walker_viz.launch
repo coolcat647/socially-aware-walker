@@ -5,7 +5,7 @@
     <!-- <param name="robot_description"
         textfile="$(find walker_description)/urdf/walker_description.urdf" /> -->
     <param name="robot_description"
-        command="$(find xacro)/xacro.py '$(find walker_description)/urdf/walker.urdf.xacro'" />
+        command="$(find xacro)/xacro '$(find walker_description)/urdf/walker.urdf.xacro'" />
     <param name="use_gui" value="$(arg gui)" />
     
     <!-- <node name="joint_state_publisher"
