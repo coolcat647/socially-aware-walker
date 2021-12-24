@@ -5,5 +5,5 @@ If you are interested in this project, please check out our [wiki page](https://
 
 Simulation | Real walking assist robot
 --- | ---
-<img src="figures/simulation_pedestrian_tracking.jpg" width=100% /> | <img src="figures/walker_hardware.jpg" />
+<img src="figures/simulation_pedestrian_tracking.jpg" width=100% /> | <img src="figures/walker_hardware.png" />
 The walking assist robot is detecting and tracking the pedestrians in Gazebo. | The walking assist robot is composed of human force sensor, perception module, embedded computer, and motor controller.

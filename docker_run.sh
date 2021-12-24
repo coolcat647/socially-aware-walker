@@ -37,7 +37,7 @@ if [ $# -gt 0 ]; then
         echo -e "${COLOR_RED}Usage: source docker_run.sh [cuda10 | same]${COLOR_NC}"
     fi
 else
-    echo -e "${COLOR_RED}Usage: source docker_run.sh [cuda10| same]${COLOR_NC}"
+    echo -e "${COLOR_RED}Usage:    'source docker_run.sh cuda10'\t--> launching a new container \n       or 'source docker_run.sh same'\t--> entering a existed container.${COLOR_NC}"
 fi
 
 # Find current directory and transfer it to container directory for Docker
